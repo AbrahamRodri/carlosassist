@@ -30,4 +30,30 @@ defmodule Carlosassist.Accounts.Scope do
   end
 
   def for_user(nil), do: nil
+
+  @doc """
+  Checks if the current scope is a volunteer or admin (admins have volunteer privileges).
+  """
+  def volunteer?(%__MODULE__{user: %User{role: role}}) when role in ["volunteer", "admin"],
+    do: true
+
+  def volunteer?(_), do: false
+
+  @doc """
+  Checks if the current scope is a rider or admin (admins have rider privileges).
+  """
+  def rider?(%__MODULE__{user: %User{role: role}}) when role in ["rider", "admin"], do: true
+  def rider?(_), do: false
+
+  @doc """
+  Checks if the current scope is an admin.
+  """
+  def admin?(%__MODULE__{user: %User{role: "admin"}}), do: true
+  def admin?(_), do: false
+
+  @doc """
+  Gets the user's role as a string, or nil if no user.
+  """
+  def get_role(%__MODULE__{user: %User{role: role}}), do: role
+  def get_role(_), do: nil
 end

@@ -29,6 +29,8 @@ defmodule CarlosassistWeb.UserLive.Registration do
             phx-mounted={JS.focus()}
           />
 
+          <.input field={@form[:role]} type="select" label="Role" options={["volunteer", "rider"]} />
+
           <.button variant="primary" phx-disable-with="Creating account..." class="w-full">
             Create an account
           </.button>

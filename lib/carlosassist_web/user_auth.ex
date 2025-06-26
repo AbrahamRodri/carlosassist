@@ -245,6 +245,51 @@ defmodule CarlosassistWeb.UserAuth do
     end
   end
 
+  def on_mount(:require_volunteer, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && Scope.volunteer?(socket.assigns.current_scope) do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, "You don't have permission to access this page.")
+        |> Phoenix.LiveView.redirect(to: ~p"/")
+
+      {:halt, socket}
+    end
+  end
+
+  def on_mount(:require_rider, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && Scope.rider?(socket.assigns.current_scope) do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, "You don't have permission to access this page.")
+        |> Phoenix.LiveView.redirect(to: ~p"/")
+
+      {:halt, socket}
+    end
+  end
+
+  def on_mount(:require_admin, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    if socket.assigns.current_scope && Scope.admin?(socket.assigns.current_scope) do
+      {:cont, socket}
+    else
+      socket =
+        socket
+        |> Phoenix.LiveView.put_flash(:error, "You don't have permission to access this page.")
+        |> Phoenix.LiveView.redirect(to: ~p"/")
+
+      {:halt, socket}
+    end
+  end
+
   defp mount_current_scope(socket, session) do
     Phoenix.Component.assign_new(socket, :current_scope, fn ->
       {user, _} =
@@ -275,6 +320,48 @@ defmodule CarlosassistWeb.UserAuth do
       |> put_flash(:error, "You must log in to access this page.")
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users/log-in")
+      |> halt()
+    end
+  end
+
+  @doc """
+  Plug for routes that require the user to be a volunteer or admin.
+  """
+  def require_volunteer(conn, _opts) do
+    if conn.assigns.current_scope && Scope.volunteer?(conn.assigns.current_scope) do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You don't have permission to access this page.")
+      |> redirect(to: signed_in_path(conn))
+      |> halt()
+    end
+  end
+
+  @doc """
+  Plug for routes that require the user to be a rider or admin.
+  """
+  def require_rider(conn, _opts) do
+    if conn.assigns.current_scope && Scope.rider?(conn.assigns.current_scope) do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You don't have permission to access this page.")
+      |> redirect(to: signed_in_path(conn))
+      |> halt()
+    end
+  end
+
+  @doc """
+  Plug for routes that require the user to be an admin.
+  """
+  def require_admin(conn, _opts) do
+    if conn.assigns.current_scope && Scope.admin?(conn.assigns.current_scope) do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You don't have permission to access this page.")
+      |> redirect(to: signed_in_path(conn))
       |> halt()
     end
   end

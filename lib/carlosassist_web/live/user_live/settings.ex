@@ -13,6 +13,20 @@ defmodule CarlosassistWeb.UserLive.Settings do
         <:subtitle>Manage your account email address and password settings</:subtitle>
       </.header>
 
+      <div class="mb-6 p-4 bg-base-200 rounded-lg">
+        <h3 class="text-lg font-semibold mb-2">Account Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <span class="text-sm font-medium text-gray-600">Email:</span>
+            <p class="text-base">{@current_scope.user.email}</p>
+          </div>
+          <div>
+            <span class="text-sm font-medium text-gray-600">Role:</span>
+            <p class="text-base capitalize">{@current_scope.user.role}</p>
+          </div>
+        </div>
+      </div>
+
       <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
         <.input
           field={@email_form[:email]}

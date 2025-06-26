@@ -1,9 +1,23 @@
 defmodule Carlosassist.Accounts.User do
+  @moduledoc """
+  User schema and changesets for the authentication system.
+
+  ## Roles
+
+  The system supports three user roles:
+  - `"volunteer"` - Users who provide assistance/services
+  - `"rider"` - Users who request assistance/services
+  - `"admin"` - Users with administrative privileges (can access both volunteer and rider functionality)
+
+  The default role is `"rider"` as set in the database migration.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 
   schema "users" do
     field :email, :string
+    field :role, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
@@ -25,8 +39,9 @@ defmodule Carlosassist.Accounts.User do
   """
   def email_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email])
+    |> cast(attrs, [:email, :role])
     |> validate_email(opts)
+    |> validate_role()
   end
 
   defp validate_email(changeset, opts) do
@@ -54,6 +69,14 @@ defmodule Carlosassist.Accounts.User do
     else
       changeset
     end
+  end
+
+  defp validate_role(changeset) do
+    changeset
+    |> validate_required([:role])
+    |> validate_inclusion(:role, ["volunteer", "rider", "admin"],
+      message: "must be either volunteer, rider, or admin"
+    )
   end
 
   @doc """
