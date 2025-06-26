@@ -72,4 +72,20 @@ defmodule CarlosassistWeb.Router do
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete
   end
+
+  scope "/dashboard", CarlosassistWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    # Volunteer Dashboard
+    live_session :volunteer_dashboard,
+      on_mount: [{CarlosassistWeb.UserAuth, :require_volunteer}] do
+      live "/volunteer", VolunteerDashboardLive, :show
+    end
+
+    # Rider Dashboard
+    live_session :rider_dashboard,
+      on_mount: [{CarlosassistWeb.UserAuth, :require_rider}] do
+      live "/rider", RideLive.RiderDashboardLive, :show
+    end
+  end
 end

@@ -248,13 +248,15 @@ defmodule CarlosassistWeb.UserAuth do
   def on_mount(:require_volunteer, _params, session, socket) do
     socket = mount_current_scope(socket, session)
 
-    if socket.assigns.current_scope && Scope.volunteer?(socket.assigns.current_scope) do
+    role = Scope.get_role(socket.assigns.current_scope)
+
+    if socket.assigns.current_scope && role == "volunteer" do
       {:cont, socket}
     else
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, "You don't have permission to access this page.")
-        |> Phoenix.LiveView.redirect(to: ~p"/")
+        |> Phoenix.LiveView.redirect(to: "/dashboard/#{role}")
 
       {:halt, socket}
     end
@@ -263,13 +265,15 @@ defmodule CarlosassistWeb.UserAuth do
   def on_mount(:require_rider, _params, session, socket) do
     socket = mount_current_scope(socket, session)
 
-    if socket.assigns.current_scope && Scope.rider?(socket.assigns.current_scope) do
+    role = Scope.get_role(socket.assigns.current_scope)
+
+    if socket.assigns.current_scope && role == "rider" do
       {:cont, socket}
     else
       socket =
         socket
         |> Phoenix.LiveView.put_flash(:error, "You don't have permission to access this page.")
-        |> Phoenix.LiveView.redirect(to: ~p"/")
+        |> Phoenix.LiveView.redirect(to: "/dashboard/#{role}")
 
       {:halt, socket}
     end
