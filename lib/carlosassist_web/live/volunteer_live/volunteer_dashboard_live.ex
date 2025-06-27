@@ -18,11 +18,6 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
   end
 
   def mount(_params, _session, socket) do
-    if connected?(socket) do
-      # Subscribe to ride updates
-      Phoenix.PubSub.subscribe(Carlosassist.PubSub, "rides")
-    end
-
     current_user = socket.assigns.current_scope.user
     my_requests = Rides.list_volunteer_requests_for_user(current_user.id)
     available_rides = get_available_rides_for_volunteer(current_user.id)
@@ -59,14 +54,7 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
            volunteer_user_id: current_user.id,
            message: message
          }) do
-      {:ok, request} ->
-        # Broadcast to riders that a new volunteer request was created
-        Phoenix.PubSub.broadcast(
-          Carlosassist.PubSub,
-          "ride:#{socket.assigns.selected_ride}",
-          {:new_volunteer_request, request}
-        )
-
+      {:ok, _request} ->
         {:noreply,
          socket
          |> put_flash(:info, "Your request has been sent to the rider!")
@@ -87,16 +75,6 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
 
   def handle_event("update_message", %{"message" => message}, socket) do
     {:noreply, assign(socket, :request_message, message)}
-  end
-
-  def handle_info({:volunteer_request_updated}, socket) do
-    # Refresh volunteer requests when there's an update
-    current_user = socket.assigns.current_scope.user
-
-    {:noreply,
-     socket
-     |> assign(:pending_rides, get_available_rides_for_volunteer(current_user.id))
-     |> assign(:my_requests, Rides.list_volunteer_requests_for_user(current_user.id))}
   end
 
   def render(assigns) do

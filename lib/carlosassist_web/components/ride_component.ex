@@ -27,13 +27,6 @@ defmodule CarlosassistWeb.RideComponent do
 
     rides = Rides.list_rides_for_user(assigns.current_scope)
 
-    # Subscribe to PubSub topics for each ride to get real-time updates
-    if connected?(socket) do
-      Enum.each(rides, fn ride ->
-        Phoenix.PubSub.subscribe(Carlosassist.PubSub, "ride:#{ride.id}")
-      end)
-    end
-
     # Get volunteer requests for each ride
     rides_with_requests =
       Enum.map(rides, fn ride ->
@@ -123,16 +116,6 @@ defmodule CarlosassistWeb.RideComponent do
             Map.put(ride, :volunteer_requests, volunteer_requests)
           end)
 
-        # Broadcast the update to volunteer dashboards
-        Phoenix.PubSub.broadcast(Carlosassist.PubSub, "rides", {:volunteer_request_updated})
-
-        # Also broadcast to the specific ride topic
-        Phoenix.PubSub.broadcast(
-          Carlosassist.PubSub,
-          "ride:#{ride_id}",
-          {:volunteer_request_accepted}
-        )
-
         {:noreply,
          socket
          |> put_flash(:info, "Volunteer accepted! Your ride is now confirmed.")
@@ -156,9 +139,6 @@ defmodule CarlosassistWeb.RideComponent do
             Map.put(ride, :volunteer_requests, volunteer_requests)
           end)
 
-        # Broadcast the update to volunteer dashboards
-        Phoenix.PubSub.broadcast(Carlosassist.PubSub, "rides", {:volunteer_request_updated})
-
         {:noreply,
          socket
          |> put_flash(:info, "Volunteer request rejected.")
@@ -167,22 +147,6 @@ defmodule CarlosassistWeb.RideComponent do
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Could not reject volunteer request.")}
     end
-  end
-
-  def handle_info({:new_volunteer_request, _request}, socket) do
-    # Refresh rides when a new volunteer request is received
-    rides = Rides.list_rides_for_user(socket.assigns.current_scope)
-
-    rides_with_requests =
-      Enum.map(rides, fn ride ->
-        volunteer_requests = Rides.list_volunteer_requests_for_ride(ride.id)
-        Map.put(ride, :volunteer_requests, volunteer_requests)
-      end)
-
-    {:noreply,
-     socket
-     |> put_flash(:info, "🔔 New volunteer request received!")
-     |> assign(:rides, rides_with_requests)}
   end
 
   @impl true
