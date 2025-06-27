@@ -29,10 +29,10 @@ defmodule CarlosassistWeb.UserLive.Registration do
             phx-mounted={JS.focus()}
           />
 
-          <.input field={@form[:role]} type="select" label="Role" options={["volunteer", "rider"]} />
+          <.input field={@form[:role]} type="select" label="Role" options={["rider", "volunteer"]} />
 
-          <div :if={@selected_role == "volunteer"} class="space-y-4 mt-4 p-4 bg-blue-50 rounded-lg">
-            <h3 class="text-lg font-medium text-blue-900">Volunteer Information</h3>
+          <div :if={@selected_role == "volunteer"} class="space-y-4 mt-4 p-4 bg-base-100 rounded-lg">
+            <h3 class="text-lg font-medium text-base-content">Volunteer Information</h3>
             <.input
               field={@form[:volunteer_license_plate]}
               type="text"

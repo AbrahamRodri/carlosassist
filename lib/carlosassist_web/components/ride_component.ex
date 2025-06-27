@@ -26,7 +26,6 @@ defmodule CarlosassistWeb.RideComponent do
       |> assign_new(:rides, fn -> [] end)
 
     rides = Rides.list_rides_for_user(assigns.current_scope)
-
     # Get volunteer requests for each ride
     rides_with_requests =
       Enum.map(rides, fn ride ->
@@ -272,9 +271,48 @@ defmodule CarlosassistWeb.RideComponent do
               </div>
             </div>
             
-    <!-- Volunteer Requests Section -->
+    <!-- Assigned Volunteer Section (for confirmed rides) -->
             <div
-              :if={ride.volunteer_requests && length(ride.volunteer_requests) > 0}
+              :if={ride.status == "confirmed" && ride.volunteer}
+              class="mt-6 border-t border-base-300 pt-4"
+            >
+              <h4 class="text-md font-semibold mb-4 text-success">
+                🎉 Assigned Volunteer
+              </h4>
+              <div class="bg-success/5 border border-success/20 p-4 rounded-lg">
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <p class="text-sm font-medium text-base-content/60">Volunteer Contact</p>
+                    <p class="font-medium text-base-content">{ride.volunteer.email}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-base-content/60">License Plate</p>
+                    <p class="font-medium text-base-content">
+                      {ride.volunteer.volunteer_license_plate || "Not provided"}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-base-content/60">Car Details</p>
+                    <p class="font-medium text-base-content">
+                      {ride.volunteer.volunteer_car || "Not provided"}
+                    </p>
+                  </div>
+                  <div :if={ride.volunteer.volunteer_bio}>
+                    <p class="text-sm font-medium text-base-content/60">Bio</p>
+                    <p class="text-sm text-base-content/80">
+                      {ride.volunteer.volunteer_bio}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+    <!-- Volunteer Requests Section (for pending rides) -->
+            <div
+              :if={
+                ride.status == "pending" && ride.volunteer_requests &&
+                  length(ride.volunteer_requests) > 0
+              }
               class="mt-6 border-t border-base-300 pt-4"
             >
               <h4 class="text-md font-semibold mb-4 text-primary">

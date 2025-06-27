@@ -19,7 +19,14 @@ defmodule Carlosassist.Rides.Ride do
   @doc false
   def changeset(ride, attrs, user_scope \\ nil) do
     ride
-    |> cast(attrs, [:pickup_location, :destination, :description, :status, :ride_date])
+    |> cast(attrs, [
+      :pickup_location,
+      :destination,
+      :description,
+      :status,
+      :ride_date,
+      :volunteer_id
+    ])
     |> validate_required([:pickup_location, :destination, :description, :ride_date])
     |> validate_length(:pickup_location, min: 3, max: 200)
     |> validate_length(:destination, min: 3, max: 200)

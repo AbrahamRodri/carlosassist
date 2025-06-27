@@ -21,6 +21,7 @@ defmodule Carlosassist.Rides do
   def list_rides_for_user(user_scope) do
     Ride
     |> where([r], r.user_id == ^user_scope.user.id)
+    |> preload([:volunteer])
     |> order_by([r], desc: r.inserted_at)
     |> Repo.all()
   end
