@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html
+  lang="en"
+  class="[[data-theme=light]_&]:sage-gradient-light [[data-theme=dark]_&]:sage-gradient-dark"
+>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="Carlosassist" suffix=" · Phoenix Framework">
+    <.live_title default="CarlosAssist">
       {assigns[:page_title]}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
@@ -27,30 +30,71 @@
       })();
     </script>
   </head>
-  <body>
-    <ul class="menu menu-horizontal w-full relative z-10 flex items-center gap-4 px-4 sm:px-6 lg:px-8 justify-end">
-      <%= if @current_scope do %>
-        <li>
-          <div class="flex flex-col text-sm">
-            <span>{@current_scope.user.email}</span>
-            <span class="text-xs opacity-70 capitalize">{@current_scope.user.role}</span>
+  <body class="min-h-screen transition-colors duration-300">
+    <!-- Modern Navigation Header -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-base-100/80 border-b border-base-300/50">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo/Brand -->
+          <div class="flex items-center">
+            <.link navigate={~p"/"} class="flex items-center space-x-3 group">
+              <div class="w-8 h-8 bg-primary rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                <span class="text-primary-content font-bold text-sm">C</span>
+              </div>
+              <span class="text-xl font-semibold text-base-content">CarlosAssist</span>
+            </.link>
           </div>
-        </li>
-        <li>
-          <.link href={~p"/users/settings"}>Settings</.link>
-        </li>
-        <li>
-          <.link href={~p"/users/log-out"} method="delete">Log out</.link>
-        </li>
-      <% else %>
-        <li>
-          <.link href={~p"/users/register"}>Register</.link>
-        </li>
-        <li>
-          <.link href={~p"/users/log-in"}>Log in</.link>
-        </li>
-      <% end %>
-    </ul>
-    {@inner_content}
+          
+<!-- Navigation Actions -->
+          <div class="flex items-center space-x-4">
+            <!-- Theme Toggle -->
+            <Layouts.theme_toggle />
+            
+<!-- User Menu -->
+            <div class="flex items-center space-x-2">
+              <%= if @current_scope do %>
+                <div class="hidden sm:flex items-center space-x-3">
+                  <%!-- <div class="text-right">
+                    <div class="text-sm font-medium text-base-content">
+                      {@current_scope.user.email}
+                    </div>
+                    <div class="text-sm text-base-content/70 capitalize">
+                      {@current_scope.user.role}
+                    </div>
+                  </div> --%>
+                  <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                    <span class="text-primary text-sm font-medium">
+                      {String.first(@current_scope.user.email) |> String.upcase()}
+                    </span>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <.link href={~p"/users/settings"} class="btn btn-ghost btn-sm">
+                    Settings
+                  </.link>
+                  <.link href={~p"/users/log-out"} method="delete" class="btn btn-outline btn-sm">
+                    Log out
+                  </.link>
+                </div>
+              <% else %>
+                <div class="flex items-center space-x-2">
+                  <.link href={~p"/users/log-in"} class="btn btn-ghost btn-sm">
+                    Log in
+                  </.link>
+                  <.link href={~p"/users/register"} class="btn btn-primary btn-sm">
+                    Register
+                  </.link>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+<!-- Main Content -->
+    <main class="flex-1">
+      {@inner_content}
+    </main>
   </body>
 </html>

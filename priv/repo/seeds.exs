@@ -12,7 +12,6 @@
 
 alias Carlosassist.Accounts
 alias Carlosassist.Rides
-alias Carlosassist.Repo
 
 # Create test users
 rider_attrs = %{

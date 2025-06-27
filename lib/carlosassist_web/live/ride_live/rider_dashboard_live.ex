@@ -10,8 +10,6 @@ defmodule CarlosassistWeb.RideLive.RiderDashboardLive do
   def render(assigns) do
     ~H"""
     <div>
-      <h1>My Rides</h1>
-      <p>Current scope: {inspect(@current_scope)}</p>
       <.live_component module={RideComponent} id="ride_component" current_scope={@current_scope} />
     </div>
     """

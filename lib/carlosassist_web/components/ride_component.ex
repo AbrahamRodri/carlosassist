@@ -25,12 +25,8 @@ defmodule CarlosassistWeb.RideComponent do
       |> assign_new(:form, fn -> to_form(Rides.change_ride(%Ride{})) end)
       |> assign_new(:rides, fn -> [] end)
 
-    if connected?(socket) and assigns[:current_scope] do
-      rides = Rides.list_rides_for_user(assigns.current_scope)
-      {:ok, assign(socket, :rides, rides)}
-    else
-      {:ok, socket}
-    end
+    rides = Rides.list_rides_for_user(assigns.current_scope)
+    {:ok, assign(socket, :rides, rides)}
   end
 
   @impl true
