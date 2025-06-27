@@ -26,6 +26,50 @@ defmodule CarlosassistWeb.UserLive.Settings do
           </div>
         </div>
       </div>
+      
+    <!-- Volunteer Information Section -->
+      <div :if={@current_scope.user.role == "volunteer"} class="mb-6">
+        <h3 class="text-lg font-semibold mb-4">Volunteer Information</h3>
+        <div class="card bg-base-100 shadow">
+          <div class="card-body">
+            <.form
+              for={@volunteer_form}
+              id="volunteer_form"
+              phx-submit="update_volunteer_info"
+              phx-change="validate_volunteer_info"
+            >
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <.input
+                  field={@volunteer_form[:volunteer_license_plate]}
+                  type="text"
+                  label="License Plate Number"
+                  required
+                />
+                <.input
+                  field={@volunteer_form[:volunteer_car]}
+                  type="text"
+                  label="Car Make/Model/Color"
+                  required
+                />
+
+                <div class="md:col-span-2">
+                  <.input
+                    field={@volunteer_form[:volunteer_bio]}
+                    type="textarea"
+                    label="Bio / Notes"
+                    placeholder="Tell riders about yourself, your experience, etc."
+                  />
+                </div>
+              </div>
+              <div class="card-actions justify-end mt-4">
+                <.button variant="primary" phx-disable-with="Updating...">
+                  Update Volunteer Info
+                </.button>
+              </div>
+            </.form>
+          </div>
+        </div>
+      </div>
 
       <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
         <.input
@@ -95,11 +139,22 @@ defmodule CarlosassistWeb.UserLive.Settings do
     email_changeset = Accounts.change_user_email(user, %{}, validate_email: false)
     password_changeset = Accounts.change_user_password(user, %{}, hash_password: false)
 
+    volunteer_changeset =
+      if user.role == "volunteer" do
+        Accounts.change_user_email(user, %{}, validate_email: false)
+      else
+        nil
+      end
+
     socket =
       socket
       |> assign(:current_email, user.email)
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:password_form, to_form(password_changeset))
+      |> assign(
+        :volunteer_form,
+        if(volunteer_changeset, do: to_form(volunteer_changeset), else: nil)
+      )
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
@@ -161,6 +216,38 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
       changeset ->
         {:noreply, assign(socket, password_form: to_form(changeset, action: :insert))}
+    end
+  end
+
+  def handle_event("validate_volunteer_info", params, socket) do
+    %{"user" => user_params} = params
+
+    volunteer_form =
+      socket.assigns.current_scope.user
+      |> Accounts.change_user_email(user_params, validate_email: false)
+      |> Map.put(:action, :validate)
+      |> to_form()
+
+    {:noreply, assign(socket, volunteer_form: volunteer_form)}
+  end
+
+  def handle_event("update_volunteer_info", params, socket) do
+    %{"user" => user_params} = params
+    user = socket.assigns.current_scope.user
+    true = Accounts.sudo_mode?(user)
+
+    case Accounts.update_user(user, user_params) do
+      {:ok, updated_user} ->
+        # Update the current_scope with new user data
+        updated_scope = %{socket.assigns.current_scope | user: updated_user}
+
+        {:noreply,
+         socket
+         |> assign(:current_scope, updated_scope)
+         |> put_flash(:info, "Volunteer information updated successfully.")}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, volunteer_form: to_form(changeset, action: :insert))}
     end
   end
 end

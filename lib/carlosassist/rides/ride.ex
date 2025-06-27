@@ -9,6 +9,9 @@ defmodule Carlosassist.Rides.Ride do
     field :status, :string
     field :ride_date, :utc_datetime
     belongs_to :user, Carlosassist.Accounts.User
+    belongs_to :volunteer, Carlosassist.Accounts.User
+
+    has_many :volunteer_requests, Carlosassist.Rides.VolunteerRequest
 
     timestamps(type: :utc_datetime)
   end

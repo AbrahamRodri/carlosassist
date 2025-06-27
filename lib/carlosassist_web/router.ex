@@ -85,7 +85,7 @@ defmodule CarlosassistWeb.Router do
     # Rider Dashboard
     live_session :rider_dashboard,
       on_mount: [{CarlosassistWeb.UserAuth, :require_rider}] do
-      live "/rider", RideLive.RiderDashboardLive, :show
+      live "/rider", RiderDashboardLive, :show
     end
   end
 end

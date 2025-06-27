@@ -26,7 +26,22 @@ defmodule CarlosassistWeb.RideComponent do
       |> assign_new(:rides, fn -> [] end)
 
     rides = Rides.list_rides_for_user(assigns.current_scope)
-    {:ok, assign(socket, :rides, rides)}
+
+    # Subscribe to PubSub topics for each ride to get real-time updates
+    if connected?(socket) do
+      Enum.each(rides, fn ride ->
+        Phoenix.PubSub.subscribe(Carlosassist.PubSub, "ride:#{ride.id}")
+      end)
+    end
+
+    # Get volunteer requests for each ride
+    rides_with_requests =
+      Enum.map(rides, fn ride ->
+        volunteer_requests = Rides.list_volunteer_requests_for_ride(ride.id)
+        Map.put(ride, :volunteer_requests, volunteer_requests)
+      end)
+
+    {:ok, assign(socket, :rides, rides_with_requests)}
   end
 
   @impl true
@@ -89,6 +104,85 @@ defmodule CarlosassistWeb.RideComponent do
       {:error, _changeset} ->
         {:noreply, put_flash(socket, :error, "Could not delete ride.")}
     end
+  end
+
+  @impl true
+  def handle_event(
+        "accept_volunteer",
+        %{"request_id" => request_id, "ride_id" => ride_id},
+        socket
+      ) do
+    case Rides.accept_volunteer_request(String.to_integer(request_id), String.to_integer(ride_id)) do
+      {:ok, {_accepted_request, _updated_ride}} ->
+        # Refresh the rides list to show updated status
+        rides = Rides.list_rides_for_user(socket.assigns.current_scope)
+
+        rides_with_requests =
+          Enum.map(rides, fn ride ->
+            volunteer_requests = Rides.list_volunteer_requests_for_ride(ride.id)
+            Map.put(ride, :volunteer_requests, volunteer_requests)
+          end)
+
+        # Broadcast the update to volunteer dashboards
+        Phoenix.PubSub.broadcast(Carlosassist.PubSub, "rides", {:volunteer_request_updated})
+
+        # Also broadcast to the specific ride topic
+        Phoenix.PubSub.broadcast(
+          Carlosassist.PubSub,
+          "ride:#{ride_id}",
+          {:volunteer_request_accepted}
+        )
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Volunteer accepted! Your ride is now confirmed.")
+         |> assign(:rides, rides_with_requests)}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Could not accept volunteer request.")}
+    end
+  end
+
+  @impl true
+  def handle_event("reject_volunteer", %{"request_id" => request_id}, socket) do
+    case Rides.reject_volunteer_request(String.to_integer(request_id)) do
+      {:ok, _rejected_request} ->
+        # Refresh the rides list to show updated volunteer requests
+        rides = Rides.list_rides_for_user(socket.assigns.current_scope)
+
+        rides_with_requests =
+          Enum.map(rides, fn ride ->
+            volunteer_requests = Rides.list_volunteer_requests_for_ride(ride.id)
+            Map.put(ride, :volunteer_requests, volunteer_requests)
+          end)
+
+        # Broadcast the update to volunteer dashboards
+        Phoenix.PubSub.broadcast(Carlosassist.PubSub, "rides", {:volunteer_request_updated})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Volunteer request rejected.")
+         |> assign(:rides, rides_with_requests)}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Could not reject volunteer request.")}
+    end
+  end
+
+  def handle_info({:new_volunteer_request, _request}, socket) do
+    # Refresh rides when a new volunteer request is received
+    rides = Rides.list_rides_for_user(socket.assigns.current_scope)
+
+    rides_with_requests =
+      Enum.map(rides, fn ride ->
+        volunteer_requests = Rides.list_volunteer_requests_for_ride(ride.id)
+        Map.put(ride, :volunteer_requests, volunteer_requests)
+      end)
+
+    {:noreply,
+     socket
+     |> put_flash(:info, "🔔 New volunteer request received!")
+     |> assign(:rides, rides_with_requests)}
   end
 
   @impl true
@@ -211,6 +305,77 @@ defmodule CarlosassistWeb.RideComponent do
                     </button>
                   </li>
                 </ul>
+              </div>
+            </div>
+            
+    <!-- Volunteer Requests Section -->
+            <div
+              :if={ride.volunteer_requests && length(ride.volunteer_requests) > 0}
+              class="mt-6 border-t border-base-300 pt-4"
+            >
+              <h4 class="text-md font-semibold mb-4 text-primary">
+                Volunteer Requests ({length(ride.volunteer_requests)})
+              </h4>
+              <div class="space-y-4">
+                <div
+                  :for={request <- ride.volunteer_requests}
+                  class="bg-primary/5 border border-primary/10 p-4 rounded-lg"
+                >
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <p class="text-sm font-medium text-base-content/60">Volunteer Contact</p>
+                          <p class="font-medium text-base-content">{request.volunteer_user.email}</p>
+                        </div>
+                        <div>
+                          <p class="text-sm font-medium text-base-content/60">License Plate</p>
+                          <p class="font-medium text-base-content">
+                            {request.volunteer_user.volunteer_license_plate}
+                          </p>
+                        </div>
+                        <div>
+                          <p class="text-sm font-medium text-base-content/60">Car Details</p>
+                          <p class="font-medium text-base-content">
+                            {request.volunteer_user.volunteer_car}
+                          </p>
+                        </div>
+                        <div :if={request.volunteer_user.volunteer_bio}>
+                          <p class="text-sm font-medium text-base-content/60">Bio</p>
+                          <p class="text-sm text-base-content/80">
+                            {request.volunteer_user.volunteer_bio}
+                          </p>
+                        </div>
+                      </div>
+                      <div :if={request.message} class="mt-3">
+                        <p class="text-sm font-medium text-base-content/60">Message from Volunteer</p>
+                        <p class="text-sm bg-base-200 p-2 rounded border border-base-300 italic">
+                          "{request.message}"
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex gap-2 ml-4">
+                      <button
+                        phx-click="accept_volunteer"
+                        phx-target={@myself}
+                        phx-value-request_id={request.id}
+                        phx-value-ride_id={ride.id}
+                        class="btn btn-sm btn-success"
+                        data-confirm="Accept this volunteer? This will confirm your ride and reject other requests."
+                      >
+                        Accept
+                      </button>
+                      <button
+                        phx-click="reject_volunteer"
+                        phx-target={@myself}
+                        phx-value-request_id={request.id}
+                        class="btn btn-sm btn-error btn-outline"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

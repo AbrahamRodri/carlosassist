@@ -7,6 +7,7 @@ defmodule Carlosassist.Rides do
   alias Carlosassist.Repo
 
   alias Carlosassist.Rides.Ride
+  alias Carlosassist.Rides.VolunteerRequest
 
   @doc """
   Returns the list of rides for a specific user.
@@ -123,5 +124,93 @@ defmodule Carlosassist.Rides do
   """
   def change_ride(%Ride{} = ride, attrs \\ %{}) do
     Ride.changeset(ride, attrs)
+  end
+
+  # Volunteer Request functions
+
+  @doc """
+  Returns the list of pending rides that volunteers can request to help with.
+  """
+  def list_pending_rides_for_volunteers do
+    Ride
+    |> where([r], r.status == "pending" and is_nil(r.volunteer_id))
+    |> preload([:user])
+    |> order_by([r], asc: r.ride_date)
+    |> Repo.all()
+  end
+
+  @doc """
+  Creates a volunteer request for a ride.
+  """
+  def create_volunteer_request(attrs \\ %{}) do
+    %VolunteerRequest{}
+    |> VolunteerRequest.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Returns the list of volunteer requests for a specific ride.
+  """
+  def list_volunteer_requests_for_ride(ride_id) do
+    VolunteerRequest
+    |> where([vr], vr.ride_id == ^ride_id and vr.status == "pending")
+    |> preload([:volunteer_user])
+    |> order_by([vr], asc: vr.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Accepts a volunteer request and assigns the volunteer to the ride.
+  """
+  def accept_volunteer_request(volunteer_request_id, ride_id) do
+    Repo.transaction(fn ->
+      volunteer_request = Repo.get!(VolunteerRequest, volunteer_request_id)
+
+      # Update the accepted volunteer request status
+      {:ok, accepted_request} =
+        volunteer_request
+        |> VolunteerRequest.changeset(%{status: "accepted"})
+        |> Repo.update()
+
+      # Assign volunteer to ride and update status to confirmed
+      ride = Repo.get!(Ride, ride_id)
+
+      {:ok, updated_ride} =
+        ride
+        |> Ride.changeset(%{
+          volunteer_id: volunteer_request.volunteer_user_id,
+          status: "confirmed"
+        })
+        |> Repo.update()
+
+      # Reject all other pending requests for this ride
+      VolunteerRequest
+      |> where([vr], vr.ride_id == ^ride_id and vr.status == "pending")
+      |> Repo.update_all(set: [status: "rejected"])
+
+      {accepted_request, updated_ride}
+    end)
+  end
+
+  @doc """
+  Rejects a volunteer request.
+  """
+  def reject_volunteer_request(volunteer_request_id) do
+    volunteer_request = Repo.get!(VolunteerRequest, volunteer_request_id)
+
+    volunteer_request
+    |> VolunteerRequest.changeset(%{status: "rejected"})
+    |> Repo.update()
+  end
+
+  @doc """
+  Gets volunteer requests for a specific volunteer user.
+  """
+  def list_volunteer_requests_for_user(user_id) do
+    VolunteerRequest
+    |> where([vr], vr.volunteer_user_id == ^user_id)
+    |> preload(ride: :user)
+    |> order_by([vr], desc: vr.inserted_at)
+    |> Repo.all()
   end
 end

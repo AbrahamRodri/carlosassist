@@ -21,7 +21,11 @@ rider_attrs = %{
 
 volunteer_attrs = %{
   email: "volunteer@example.com",
-  role: "volunteer"
+  role: "volunteer",
+  volunteer_license_plate: "ABC123",
+  volunteer_car: "Red Toyota Camry 2018",
+  volunteer_bio:
+    "Friendly volunteer driver with 5 years of experience. Safe driver, non-smoker, and happy to help!"
 }
 
 admin_attrs = %{
@@ -29,9 +33,19 @@ admin_attrs = %{
   role: "admin"
 }
 
+# Create additional volunteer for demo
+volunteer2_attrs = %{
+  email: "volunteer2@example.com",
+  role: "volunteer",
+  volunteer_license_plate: "XYZ789",
+  volunteer_car: "Blue Honda Civic 2020",
+  volunteer_bio: "College student volunteer. Available evenings and weekends. Very reliable!"
+}
+
 # Create the users
 {:ok, rider} = Accounts.register_user(rider_attrs)
 {:ok, _volunteer} = Accounts.register_user(volunteer_attrs)
+{:ok, _volunteer2} = Accounts.register_user(volunteer2_attrs)
 {:ok, _admin} = Accounts.register_user(admin_attrs)
 
 # Create some test rides for the rider
@@ -69,7 +83,9 @@ ride3_attrs = %{
 IO.puts("Seeds created successfully!")
 IO.puts("Test users:")
 IO.puts("  Rider: rider@example.com")
-IO.puts("  Volunteer: volunteer@example.com")
+IO.puts("  Volunteer 1: volunteer@example.com")
+IO.puts("  Volunteer 2: volunteer2@example.com")
 IO.puts("  Admin: admin@example.com")
 IO.puts("  (Login using magic link functionality)")
 IO.puts("\nSample rides created for the rider user.")
+IO.puts("Volunteers have sample car/license plate info for demo purposes.")

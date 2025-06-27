@@ -31,6 +31,30 @@ defmodule CarlosassistWeb.UserLive.Registration do
 
           <.input field={@form[:role]} type="select" label="Role" options={["volunteer", "rider"]} />
 
+          <div :if={@selected_role == "volunteer"} class="space-y-4 mt-4 p-4 bg-blue-50 rounded-lg">
+            <h3 class="text-lg font-medium text-blue-900">Volunteer Information</h3>
+            <.input
+              field={@form[:volunteer_license_plate]}
+              type="text"
+              label="License Plate Number"
+              required
+            />
+            <.input
+              field={@form[:volunteer_car]}
+              type="text"
+              label="Car Make/Model/Color"
+              placeholder="e.g., Red Toyota Camry 2018"
+              required
+            />
+
+            <.input
+              field={@form[:volunteer_bio]}
+              type="textarea"
+              label="Bio / Notes (Optional)"
+              placeholder="Tell riders a bit about yourself, your experience, or anything else you'd like them to know..."
+            />
+          </div>
+
           <.button variant="primary" phx-disable-with="Creating account..." class="w-full">
             Create an account
           </.button>
@@ -48,7 +72,10 @@ defmodule CarlosassistWeb.UserLive.Registration do
   def mount(_params, _session, socket) do
     changeset = Accounts.change_user_email(%User{})
 
-    {:ok, assign_form(socket, changeset), temporary_assigns: [form: nil]}
+    {:ok,
+     socket
+     |> assign_form(changeset)
+     |> assign(:selected_role, "rider"), temporary_assigns: [form: nil]}
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do
@@ -75,7 +102,12 @@ defmodule CarlosassistWeb.UserLive.Registration do
 
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset = Accounts.change_user_email(%User{}, user_params)
-    {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
+    selected_role = Map.get(user_params, "role", "rider")
+
+    {:noreply,
+     socket
+     |> assign_form(Map.put(changeset, :action, :validate))
+     |> assign(:selected_role, selected_role)}
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do

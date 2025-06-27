@@ -76,7 +76,7 @@ defmodule Carlosassist.Accounts do
   """
   def register_user(attrs) do
     %User{}
-    |> User.email_changeset(attrs)
+    |> User.registration_changeset(attrs)
     |> Repo.insert()
   end
 
@@ -108,7 +108,7 @@ defmodule Carlosassist.Accounts do
 
   """
   def change_user_email(user, attrs \\ %{}, opts \\ []) do
-    User.email_changeset(user, attrs, opts)
+    User.registration_changeset(user, attrs, opts)
   end
 
   @doc """
@@ -129,7 +129,7 @@ defmodule Carlosassist.Accounts do
   end
 
   defp user_email_multi(user, email, context) do
-    changeset = User.email_changeset(user, %{email: email})
+    changeset = User.registration_changeset(user, %{email: email})
 
     Ecto.Multi.new()
     |> Ecto.Multi.update(:user, changeset)
@@ -149,6 +149,24 @@ defmodule Carlosassist.Accounts do
   """
   def change_user_password(user, attrs \\ %{}, opts \\ []) do
     User.password_changeset(user, attrs, opts)
+  end
+
+  @doc """
+  Updates a user with the given attributes.
+
+  ## Examples
+
+      iex> update_user(user, %{volunteer_license_plate: "ABC123"})
+      {:ok, %User{}}
+
+      iex> update_user(user, %{volunteer_license_plate: ""})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user(%User{} = user, attrs) do
+    user
+    |> User.registration_changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """

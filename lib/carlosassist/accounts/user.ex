@@ -23,13 +23,18 @@ defmodule Carlosassist.Accounts.User do
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
 
+    # Volunteer-specific fields
+    field :volunteer_license_plate, :string
+    field :volunteer_car, :string
+    field :volunteer_bio, :string
+
     has_many :rides, Carlosassist.Rides.Ride
 
     timestamps(type: :utc_datetime)
   end
 
   @doc """
-  A user changeset for registering or changing the email.
+  A user changeset for registering or updating user information.
 
   It requires the email to change otherwise an error is added.
 
@@ -39,11 +44,18 @@ defmodule Carlosassist.Accounts.User do
       uniqueness of the email, useful when displaying live validations.
       Defaults to `true`.
   """
-  def email_changeset(user, attrs, opts \\ []) do
+  def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email, :role])
+    |> cast(attrs, [
+      :email,
+      :role,
+      :volunteer_license_plate,
+      :volunteer_car,
+      :volunteer_bio
+    ])
     |> validate_email(opts)
     |> validate_role()
+    |> validate_volunteer_fields()
   end
 
   defp validate_email(changeset, opts) do
@@ -79,6 +91,22 @@ defmodule Carlosassist.Accounts.User do
     |> validate_inclusion(:role, ["volunteer", "rider", "admin"],
       message: "must be either volunteer, rider, or admin"
     )
+  end
+
+  defp validate_volunteer_fields(changeset) do
+    role = get_field(changeset, :role)
+
+    if role == "volunteer" do
+      changeset
+      |> validate_required([:volunteer_license_plate, :volunteer_car],
+        message: "is required for volunteers"
+      )
+      |> validate_length(:volunteer_license_plate, min: 2, max: 20)
+      |> validate_length(:volunteer_car, min: 3, max: 100)
+      |> validate_length(:volunteer_bio, max: 1000)
+    else
+      changeset
+    end
   end
 
   @doc """
