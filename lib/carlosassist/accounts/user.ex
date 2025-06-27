@@ -17,6 +17,7 @@ defmodule Carlosassist.Accounts.User do
 
   schema "users" do
     field :email, :string
+    field :phone, :string
     field :role, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
@@ -48,12 +49,14 @@ defmodule Carlosassist.Accounts.User do
     user
     |> cast(attrs, [
       :email,
+      :phone,
       :role,
       :volunteer_license_plate,
       :volunteer_car,
       :volunteer_bio
     ])
     |> validate_email(opts)
+    |> validate_phone()
     |> validate_role()
     |> validate_volunteer_fields()
   end
@@ -82,6 +85,44 @@ defmodule Carlosassist.Accounts.User do
       add_error(changeset, :email, "did not change")
     else
       changeset
+    end
+  end
+
+  defp validate_phone(changeset) do
+    changeset
+    |> validate_required([:phone])
+    |> update_change(:phone, &normalize_phone/1)
+    |> validate_format(:phone, ~r/^\+?1?\d{10,14}$/,
+      message:
+        "must be a valid phone number. Example formats: 415-555-0101, (415) 555-0101, +14155550101"
+    )
+  end
+
+  defp normalize_phone(nil), do: nil
+
+  defp normalize_phone(phone) do
+    # Remove all non-digit characters except + at the start
+    normalized =
+      phone
+      |> String.trim()
+      |> String.replace(~r/[^\d+]/, "")
+      |> String.replace(~r/^\+?1?(\d{10,14})$/, "\\1")
+
+    # Add +1 prefix if not present and we have a 10-digit number
+    case String.length(normalized) do
+      10 ->
+        "+1" <> normalized
+
+      n when n in 11..14 ->
+        if String.starts_with?(normalized, "1") do
+          "+" <> normalized
+        else
+          normalized
+        end
+
+      # Return original if we can't normalize it
+      _ ->
+        phone
     end
   end
 

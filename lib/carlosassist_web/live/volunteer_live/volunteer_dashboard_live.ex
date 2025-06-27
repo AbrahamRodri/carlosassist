@@ -123,11 +123,19 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
               <p class="text-xs text-success/80 mt-1">
                 The rider has confirmed you as their volunteer for this ride.
               </p>
-              <div class="mt-2 text-sm">
-                <p class="text-base-content">
-                  <strong>Rider Contact:</strong> {request.ride.user.email}
-                </p>
-                <p class="text-xs text-success/80 mt-1">
+              <div class="mt-3 space-y-2">
+                <h4 class="text-sm font-semibold text-base-content">Rider Contact Information</h4>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span class="text-base-content/60">Email:</span>
+                    <div class="font-medium">{request.ride.user.email}</div>
+                  </div>
+                  <div>
+                    <span class="text-base-content/60">Phone:</span>
+                    <div class="font-medium">{request.ride.user.phone}</div>
+                  </div>
+                </div>
+                <p class="text-xs text-success/80 mt-2">
                   Please reach out to coordinate pickup details!
                 </p>
               </div>

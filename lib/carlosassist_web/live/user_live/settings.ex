@@ -21,6 +21,10 @@ defmodule CarlosassistWeb.UserLive.Settings do
             <p class="text-base">{@current_scope.user.email}</p>
           </div>
           <div>
+            <span class="text-sm font-medium text-gray-600">Phone:</span>
+            <p class="text-base">{@current_scope.user.phone}</p>
+          </div>
+          <div>
             <span class="text-sm font-medium text-gray-600">Role:</span>
             <p class="text-base capitalize">{@current_scope.user.role}</p>
           </div>
@@ -84,6 +88,19 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
       <div class="divider" />
 
+      <.form for={@phone_form} id="phone_form" phx-submit="update_phone" phx-change="validate_phone">
+        <.input
+          field={@phone_form[:phone]}
+          type="tel"
+          label="Phone Number"
+          autocomplete="tel"
+          required
+        />
+        <.button variant="primary" phx-disable-with="Changing...">Change Phone Number</.button>
+      </.form>
+
+      <div class="divider" />
+
       <.form
         for={@password_form}
         id="password_form"
@@ -99,6 +116,13 @@ defmodule CarlosassistWeb.UserLive.Settings do
           id="hidden_user_email"
           autocomplete="username"
           value={@current_email}
+        />
+        <input
+          name={@password_form[:phone].name}
+          type="hidden"
+          id="hidden_user_phone"
+          autocomplete="phone"
+          value={@current_phone}
         />
         <.input
           field={@password_form[:password]}
@@ -138,6 +162,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
     user = socket.assigns.current_scope.user
     email_changeset = Accounts.change_user_email(user, %{}, validate_email: false)
     password_changeset = Accounts.change_user_password(user, %{}, hash_password: false)
+    phone_changeset = Accounts.change_user_phone(user, %{})
 
     volunteer_changeset =
       if user.role == "volunteer" do
@@ -149,7 +174,9 @@ defmodule CarlosassistWeb.UserLive.Settings do
     socket =
       socket
       |> assign(:current_email, user.email)
+      |> assign(:current_phone, user.phone)
       |> assign(:email_form, to_form(email_changeset))
+      |> assign(:phone_form, to_form(phone_changeset))
       |> assign(:password_form, to_form(password_changeset))
       |> assign(
         :volunteer_form,
@@ -248,6 +275,35 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
       {:error, changeset} ->
         {:noreply, assign(socket, volunteer_form: to_form(changeset, action: :insert))}
+    end
+  end
+
+  def handle_event("validate_phone", params, socket) do
+    %{"user" => user_params} = params
+
+    phone_form =
+      socket.assigns.current_scope.user
+      |> Accounts.change_user_phone(user_params)
+      |> Map.put(:action, :validate)
+      |> to_form()
+
+    {:noreply, assign(socket, phone_form: phone_form)}
+  end
+
+  def handle_event("update_phone", params, socket) do
+    %{"user" => user_params} = params
+    user = socket.assigns.current_scope.user
+    true = Accounts.sudo_mode?(user)
+
+    case Accounts.update_user_phone(user, user_params) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(:current_phone, user.phone)
+         |> put_flash(:info, "Phone number updated successfully.")}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, phone_form: to_form(changeset))}
     end
   end
 end

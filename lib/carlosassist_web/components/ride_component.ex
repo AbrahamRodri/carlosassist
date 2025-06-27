@@ -286,6 +286,10 @@ defmodule CarlosassistWeb.RideComponent do
                     <p class="font-medium text-base-content">{ride.volunteer.email}</p>
                   </div>
                   <div>
+                    <p class="text-sm font-medium text-base-content/60">Phone</p>
+                    <p class="font-medium text-base-content">{ride.volunteer.phone}</p>
+                  </div>
+                  <div>
                     <p class="text-sm font-medium text-base-content/60">License Plate</p>
                     <p class="font-medium text-base-content">
                       {ride.volunteer.volunteer_license_plate || "Not provided"}

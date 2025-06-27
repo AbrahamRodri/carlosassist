@@ -323,4 +323,29 @@ defmodule Carlosassist.Accounts do
       {:ok, user, expired_tokens}
     end
   end
+
+  @doc """
+  Returns a user changeset for tracking phone changes.
+  """
+  def change_user_phone(user, attrs \\ %{}) do
+    User.registration_changeset(user, attrs)
+  end
+
+  @doc """
+  Updates the user phone.
+
+  ## Examples
+
+      iex> update_user_phone(user, %{phone: ...})
+      {:ok, %User{}}
+
+      iex> update_user_phone(user, %{phone: ...})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user_phone(user, attrs) do
+    user
+    |> User.registration_changeset(attrs)
+    |> Repo.update()
+  end
 end

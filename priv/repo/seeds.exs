@@ -16,11 +16,13 @@ alias Carlosassist.Rides
 # Create test users
 rider_attrs = %{
   email: "rider@example.com",
+  phone: "+14155550101",
   role: "rider"
 }
 
 volunteer_attrs = %{
   email: "volunteer@example.com",
+  phone: "+14155550102",
   role: "volunteer",
   volunteer_license_plate: "ABC123",
   volunteer_car: "Red Toyota Camry 2018",
@@ -30,12 +32,14 @@ volunteer_attrs = %{
 
 admin_attrs = %{
   email: "admin@example.com",
+  phone: "+14155550100",
   role: "admin"
 }
 
 # Create additional volunteer for demo
 volunteer2_attrs = %{
   email: "volunteer2@example.com",
+  phone: "+14155550103",
   role: "volunteer",
   volunteer_license_plate: "XYZ789",
   volunteer_car: "Blue Honda Civic 2020",

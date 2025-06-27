@@ -29,6 +29,14 @@ defmodule CarlosassistWeb.UserLive.Registration do
             phx-mounted={JS.focus()}
           />
 
+          <.input
+            field={@form[:phone]}
+            type="text"
+            label="Phone Number"
+            autocomplete="phone"
+            required
+          />
+
           <.input field={@form[:role]} type="select" label="Role" options={["rider", "volunteer"]} />
 
           <div :if={@selected_role == "volunteer"} class="space-y-4 mt-4 p-4 bg-base-100 rounded-lg">
