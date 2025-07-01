@@ -138,8 +138,13 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
                     <div class="font-medium">{request.ride.user.phone}</div>
                   </div>
                 </div>
+                <div class="mt-3 flex gap-2">
+                  <.link navigate={~p"/dashboard/inbox"} class="btn btn-primary btn-sm">
+                    💬 Chat with Rider
+                  </.link>
+                </div>
                 <p class="text-xs text-success/80 mt-2">
-                  Please reach out to coordinate pickup details!
+                  Use the chat to coordinate pickup details and communicate securely!
                 </p>
               </div>
             </div>

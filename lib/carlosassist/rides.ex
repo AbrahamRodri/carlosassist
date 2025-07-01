@@ -8,6 +8,7 @@ defmodule Carlosassist.Rides do
 
   alias Carlosassist.Rides.Ride
   alias Carlosassist.Rides.VolunteerRequest
+  alias Carlosassist.Messages
 
   @doc """
   Returns the list of rides for a specific user.
@@ -174,7 +175,7 @@ defmodule Carlosassist.Rides do
         |> Repo.update()
 
       # Assign volunteer to ride and update status to confirmed
-      ride = Repo.get!(Ride, ride_id)
+      ride = Repo.get!(Ride, ride_id) |> Repo.preload(:user)
 
       {:ok, updated_ride} =
         ride
@@ -183,6 +184,15 @@ defmodule Carlosassist.Rides do
           status: "confirmed"
         })
         |> Repo.update()
+
+      # Create a conversation between rider and volunteer
+      {:ok, _conversation} =
+        Messages.create_conversation(%{
+          ride_id: ride_id,
+          rider_user_id: ride.user_id,
+          volunteer_user_id: volunteer_request.volunteer_user_id,
+          status: "active"
+        })
 
       # Reject all other pending requests for this ride
       VolunteerRequest
@@ -213,5 +223,32 @@ defmodule Carlosassist.Rides do
     |> preload(ride: :user)
     |> order_by([vr], desc: vr.inserted_at)
     |> Repo.all()
+  end
+
+  @doc """
+  Completes a ride and closes the associated conversation.
+  """
+  def complete_ride(ride_id) do
+    Repo.transaction(fn ->
+      # Update ride status to completed
+      ride = Repo.get!(Ride, ride_id)
+
+      {:ok, updated_ride} =
+        ride
+        |> Ride.changeset(%{status: "completed"})
+        |> Repo.update()
+
+      # Close the conversation if it exists
+      case Messages.get_conversation_by_ride(ride_id) do
+        nil ->
+          # No conversation to close
+          :ok
+
+        conversation ->
+          Messages.close_conversation(conversation.id)
+      end
+
+      updated_ride
+    end)
   end
 end

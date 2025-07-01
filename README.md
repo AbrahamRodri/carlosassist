@@ -9,6 +9,11 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
+## Documentation
+
+Project documentation can be found in the `docs` directory:
+* `docs/location_privacy_plan.md` - Implementation plan for the location privacy system
+
 ## Learn more
 
 * Official website: https://www.phoenixframework.org/

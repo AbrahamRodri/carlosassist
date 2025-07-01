@@ -87,5 +87,12 @@ defmodule CarlosassistWeb.Router do
       on_mount: [{CarlosassistWeb.UserAuth, :require_rider}] do
       live "/rider", RiderDashboardLive, :show
     end
+
+    # Chat Routes (available to both riders and volunteers)
+    live_session :chat,
+      on_mount: [{CarlosassistWeb.UserAuth, :require_authenticated}] do
+      live "/inbox", InboxLive, :show
+      live "/chat/:id", ChatLive, :show
+    end
   end
 end

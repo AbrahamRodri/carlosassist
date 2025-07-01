@@ -315,6 +315,11 @@ defmodule CarlosassistWeb.RideComponent do
                     </p>
                   </div>
                 </div>
+                <div class="mt-4 flex gap-2">
+                  <.link navigate={~p"/dashboard/inbox"} class="btn btn-primary btn-sm">
+                    💬 Chat with Volunteer
+                  </.link>
+                </div>
               </div>
             </div>
             
