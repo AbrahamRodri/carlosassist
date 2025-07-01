@@ -94,14 +94,17 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
         <div :if={@my_requests != []} class="grid gap-4">
           <div :for={request <- @my_requests} class="card bg-base-100 p-4 rounded-lg shadow">
             <div class="flex justify-between items-start">
-              <div>
-                <h3 class="font-medium">Ride Request</h3>
-                <p class="text-sm text-base-content/60">
-                  From: {request.ride.pickup_location} to {request.ride.destination}
-                </p>
-                <p class="text-sm text-base-content/60">
-                  Date: {Calendar.strftime(request.ride.ride_date, "%B %d, %Y at %I:%M %p")}
-                </p>
+              <div class="flex items-start gap-4 flex-1">
+                <.avatar src={request.ride.user.profile_pic_location} alt="Rider Profile" size="md" />
+                <div class="flex-1">
+                  <h3 class="font-medium">Ride Request</h3>
+                  <p class="text-sm text-base-content/60">
+                    From: {request.ride.pickup_location} to {request.ride.destination}
+                  </p>
+                  <p class="text-sm text-base-content/60">
+                    Date: {Calendar.strftime(request.ride.ride_date, "%B %d, %Y at %I:%M %p")}
+                  </p>
+                </div>
               </div>
               <div class={[
                 "badge text-xs font-medium",
@@ -161,9 +164,13 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
         <div :if={@pending_rides != []} class="grid gap-6">
           <div :for={ride <- @pending_rides} class="card bg-base-100 p-6 rounded-lg shadow">
             <div class="flex justify-between items-start mb-4">
-              <div class="flex-1">
-                <h3 class="text-lg font-medium">Ride Request</h3>
-                <p class="text-base-content/60">Rider: {ride.user.email}</p>
+              <div class="flex items-start gap-4 flex-1">
+                <.avatar src={ride.user.profile_pic_location} alt="Rider Profile" size="lg" />
+                <div class="flex-1">
+                  <h3 class="text-lg font-medium">Ride Request</h3>
+                  <p class="text-base-content/60">{ride.user.email}</p>
+                  <p class="text-sm text-base-content/60">{ride.user.phone}</p>
+                </div>
               </div>
               <button phx-click="request_ride" phx-value-ride_id={ride.id} class="btn btn-primary">
                 Request to Help

@@ -28,6 +28,52 @@ defmodule CarlosassistWeb.UserLive.Settings do
             <span class="text-sm font-medium text-gray-600">Role:</span>
             <p class="text-base capitalize">{@current_scope.user.role}</p>
           </div>
+          <div>
+            <span class="text-sm font-medium text-gray-600">Profile Picture:</span>
+            <div class="mt-2">
+              <.avatar
+                src={@current_scope.user.profile_pic_location}
+                alt="Profile Picture"
+                size="2xl"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    <!-- Profile Picture Upload Section -->
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-4">Profile Picture</h3>
+        <div class="card bg-base-100 shadow">
+          <div class="card-body">
+            <.form
+              for={@profile_pic_form}
+              id="profile_pic_form"
+              phx-submit="update_profile_pic"
+              phx-change="validate_profile_pic"
+              multipart={true}
+            >
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Choose new profile picture
+                </label>
+                <input
+                  type="file"
+                  name="profile_pic"
+                  accept="image/*"
+                  class="file-input file-input-bordered w-full max-w-xs"
+                />
+                <p class="text-xs text-gray-500 mt-1">
+                  Supported formats: JPEG, PNG, WebP. Max size: 5MB
+                </p>
+              </div>
+              <div class="card-actions justify-end">
+                <.button variant="primary" phx-disable-with="Uploading...">
+                  Update Profile Picture
+                </.button>
+              </div>
+            </.form>
+          </div>
         </div>
       </div>
       
@@ -160,13 +206,14 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
-    email_changeset = Accounts.change_user_email(user, %{}, validate_email: false)
+    email_changeset = Accounts.change_user(user, %{}, validate_email: false)
     password_changeset = Accounts.change_user_password(user, %{}, hash_password: false)
     phone_changeset = Accounts.change_user_phone(user, %{})
+    profile_pic_changeset = Accounts.change_user_profile_pic(user, %{})
 
     volunteer_changeset =
       if user.role == "volunteer" do
-        Accounts.change_user_email(user, %{}, validate_email: false)
+        Accounts.change_user(user, %{}, validate_email: false)
       else
         nil
       end
@@ -178,6 +225,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:phone_form, to_form(phone_changeset))
       |> assign(:password_form, to_form(password_changeset))
+      |> assign(:profile_pic_form, to_form(profile_pic_changeset))
       |> assign(
         :volunteer_form,
         if(volunteer_changeset, do: to_form(volunteer_changeset), else: nil)
@@ -192,7 +240,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
     email_form =
       socket.assigns.current_scope.user
-      |> Accounts.change_user_email(user_params, validate_email: false)
+      |> Accounts.change_user(user_params, validate_email: false)
       |> Map.put(:action, :validate)
       |> to_form()
 
@@ -204,7 +252,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
     user = socket.assigns.current_scope.user
     true = Accounts.sudo_mode?(user)
 
-    case Accounts.change_user_email(user, user_params) do
+    case Accounts.change_user(user, user_params) do
       %{valid?: true} = changeset ->
         Accounts.deliver_user_update_email_instructions(
           Ecto.Changeset.apply_action!(changeset, :insert),
@@ -251,7 +299,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
     volunteer_form =
       socket.assigns.current_scope.user
-      |> Accounts.change_user_email(user_params, validate_email: false)
+      |> Accounts.change_user(user_params, validate_email: false)
       |> Map.put(:action, :validate)
       |> to_form()
 
@@ -304,6 +352,71 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
       {:error, changeset} ->
         {:noreply, assign(socket, phone_form: to_form(changeset))}
+    end
+  end
+
+  def handle_event("validate_profile_pic", _params, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("update_profile_pic", params, socket) do
+    user = socket.assigns.current_scope.user
+    true = Accounts.sudo_mode?(user)
+
+    case params do
+      %{"profile_pic" => %Plug.Upload{} = upload} ->
+        case save_profile_picture(upload, user.id) do
+          {:ok, file_path} ->
+            case Accounts.update_user_profile_pic(user, %{profile_pic_location: file_path}) do
+              {:ok, updated_user} ->
+                updated_scope = %{socket.assigns.current_scope | user: updated_user}
+
+                {:noreply,
+                 socket
+                 |> assign(:current_scope, updated_scope)
+                 |> put_flash(:info, "Profile picture updated successfully.")}
+
+              {:error, changeset} ->
+                {:noreply, assign(socket, profile_pic_form: to_form(changeset))}
+            end
+
+          {:error, reason} ->
+            {:noreply, put_flash(socket, :error, "Failed to upload profile picture: #{reason}")}
+        end
+
+      _ ->
+        {:noreply, put_flash(socket, :error, "Please select a valid image file.")}
+    end
+  end
+
+  defp save_profile_picture(%Plug.Upload{} = upload, user_id) do
+    # Validate file type
+    case upload.content_type do
+      "image/" <> _ ->
+        # Generate unique filename
+        extension = Path.extname(upload.filename)
+
+        unique_filename =
+          "#{user_id}-#{System.unique_integer([:positive])}-#{Ecto.UUID.generate()}#{extension}"
+
+        # Ensure uploads directory exists
+        upload_dir = Path.join(["priv", "static", "uploads", "profile_pics"])
+        File.mkdir_p!(upload_dir)
+
+        # Save file
+        destination = Path.join(upload_dir, unique_filename)
+
+        case File.cp(upload.path, destination) do
+          :ok ->
+            # Return the web-accessible path
+            {:ok, "/uploads/profile_pics/#{unique_filename}"}
+
+          {:error, reason} ->
+            {:error, "Failed to save file: #{reason}"}
+        end
+
+      _ ->
+        {:error, "Invalid file type. Please upload an image file."}
     end
   end
 end

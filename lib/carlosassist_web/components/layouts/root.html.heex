@@ -64,7 +64,11 @@
                   </div> --%>
                   <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                     <span class="text-primary text-sm font-medium">
-                      {String.first(@current_scope.user.email) |> String.upcase()}
+                      <img
+                        src={@current_scope.user.profile_pic_location}
+                        alt="Profile Picture"
+                        class="w-8 h-8 rounded-full"
+                      />
                     </span>
                   </div>
                 </div>

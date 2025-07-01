@@ -3,6 +3,7 @@ defmodule CarlosassistWeb.UserLive.Registration do
 
   alias Carlosassist.Accounts
   alias Carlosassist.Accounts.User
+  import CarlosassistWeb.CoreComponents
 
   def render(assigns) do
     ~H"""
@@ -38,6 +39,26 @@ defmodule CarlosassistWeb.UserLive.Registration do
           />
 
           <.input field={@form[:role]} type="select" label="Role" options={["rider", "volunteer"]} />
+
+          <div class="mt-4">
+            <.live_file_input upload={@uploads.profile_pic} class="mt-1" />
+
+            <%= for entry <- @uploads.profile_pic.entries do %>
+              <div class="mt-2">
+                <%= if entry.progress > 0 do %>
+                  <div class="progress-bar">
+                    <span style={"width: #{entry.progress}%"}>
+                      {entry.progress}%
+                    </span>
+                  </div>
+                <% end %>
+
+                <%= for err <- upload_errors(@uploads.profile_pic, entry) do %>
+                  <div class="alert alert-danger">{err}</div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
 
           <div :if={@selected_role == "volunteer"} class="space-y-4 mt-4 p-4 bg-base-100 rounded-lg">
             <h3 class="text-lg font-medium text-base-content">Volunteer Information</h3>
@@ -78,15 +99,45 @@ defmodule CarlosassistWeb.UserLive.Registration do
   end
 
   def mount(_params, _session, socket) do
-    changeset = Accounts.change_user_email(%User{})
+    changeset = %User{} |> User.registration_changeset(%{})
 
     {:ok,
      socket
      |> assign_form(changeset)
+     |> allow_upload(
+       :profile_pic,
+       accept: ~w(.jpg .jpeg .png),
+       max_entries: 1,
+       max_file_size: 10_000_000
+     )
      |> assign(:selected_role, "rider"), temporary_assigns: [form: nil]}
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do
+    profile_pic_location =
+      case consume_uploaded_entries(socket, :profile_pic, fn meta, entry ->
+             dest =
+               Path.join([
+                 "priv",
+                 "static",
+                 "uploads",
+                 "profile_pics",
+                 "#{entry.uuid}-#{entry.client_name}"
+               ])
+
+             File.cp!(meta.path, dest)
+             url_path = static_path(socket, "/uploads/profile_pics/#{Path.basename(dest)}")
+
+             {:ok, url_path}
+           end) do
+        # Take the first (and only) uploaded file
+        [path] -> path
+        # No file uploaded
+        [] -> nil
+      end
+
+    user_params = Map.put(user_params, "profile_pic_location", profile_pic_location)
+
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         {:ok, _} =
@@ -109,7 +160,7 @@ defmodule CarlosassistWeb.UserLive.Registration do
   end
 
   def handle_event("validate", %{"user" => user_params}, socket) do
-    changeset = Accounts.change_user_email(%User{}, user_params)
+    changeset = Accounts.change_user(%User{}, user_params)
     selected_role = Map.get(user_params, "role", "rider")
 
     {:noreply,

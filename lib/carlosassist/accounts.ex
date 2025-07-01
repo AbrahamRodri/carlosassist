@@ -11,6 +11,22 @@ defmodule Carlosassist.Accounts do
   ## Database getters
 
   @doc """
+  Gets a single user.
+
+  Raises `Ecto.NoResultsError` if the User does not exist.
+
+  ## Examples
+
+      iex> get_user!(123)
+      %User{}
+
+      iex> get_user!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_user!(id), do: Repo.get!(User, id)
+
+  @doc """
   Gets a user by email.
 
   ## Examples
@@ -44,22 +60,6 @@ defmodule Carlosassist.Accounts do
     if User.valid_password?(user, password), do: user
   end
 
-  @doc """
-  Gets a single user.
-
-  Raises `Ecto.NoResultsError` if the User does not exist.
-
-  ## Examples
-
-      iex> get_user!(123)
-      %User{}
-
-      iex> get_user!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_user!(id), do: Repo.get!(User, id)
-
   ## User registration
 
   @doc """
@@ -80,21 +80,25 @@ defmodule Carlosassist.Accounts do
     |> Repo.insert()
   end
 
-  ## Settings
-
   @doc """
-  Checks whether the user is in sudo mode.
+  Updates a user with the given attributes.
 
-  The user is in sudo mode when the last authentication was done no further
-  than 20 minutes ago. The limit can be given as second argument in minutes.
+  ## Examples
+
+      iex> update_user(user, %{volunteer_license_plate: "ABC123"})
+      {:ok, %User{}}
+
+      iex> update_user(user, %{volunteer_license_plate: ""})
+      {:error, %Ecto.Changeset{}}
+
   """
-  def sudo_mode?(user, minutes \\ -20)
-
-  def sudo_mode?(%User{authenticated_at: ts}, minutes) when is_struct(ts, DateTime) do
-    DateTime.after?(ts, DateTime.utc_now() |> DateTime.add(minutes, :minute))
+  def update_user(%User{} = user, attrs) do
+    user
+    |> User.registration_changeset(attrs)
+    |> Repo.update()
   end
 
-  def sudo_mode?(_user, _minutes), do: false
+  ## Email management
 
   @doc """
   Returns an `%Ecto.Changeset{}` for changing the user email.
@@ -107,8 +111,9 @@ defmodule Carlosassist.Accounts do
       %Ecto.Changeset{data: %User{}}
 
   """
-  def change_user_email(user, attrs \\ %{}, opts \\ []) do
-    User.registration_changeset(user, attrs, opts)
+  def change_user(user, attrs \\ %{}, opts \\ []) do
+    user
+    |> User.registration_changeset(attrs, opts)
   end
 
   @doc """
@@ -136,6 +141,52 @@ defmodule Carlosassist.Accounts do
     |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, [context]))
   end
 
+  @doc ~S"""
+  Delivers the update email instructions to the given user.
+
+  ## Examples
+
+      iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm-email/#{&1}"))
+      {:ok, %{to: ..., body: ...}}
+
+  """
+  def deliver_user_update_email_instructions(%User{} = user, current_email, update_email_url_fun)
+      when is_function(update_email_url_fun, 1) do
+    {encoded_token, user_token} = UserToken.build_email_token(user, "change:#{current_email}")
+
+    Repo.insert!(user_token)
+    UserNotifier.deliver_update_email_instructions(user, update_email_url_fun.(encoded_token))
+  end
+
+  ## Phone management
+
+  @doc """
+  Returns a user changeset for tracking phone changes.
+  """
+  def change_user_phone(user, attrs \\ %{}) do
+    User.registration_changeset(user, attrs)
+  end
+
+  @doc """
+  Updates the user phone.
+
+  ## Examples
+
+      iex> update_user_phone(user, %{phone: ...})
+      {:ok, %User{}}
+
+      iex> update_user_phone(user, %{phone: ...})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user_phone(user, attrs) do
+    user
+    |> User.registration_changeset(attrs)
+    |> Repo.update()
+  end
+
+  ## Password management
+
   @doc """
   Returns an `%Ecto.Changeset{}` for changing the user password.
 
@@ -149,24 +200,6 @@ defmodule Carlosassist.Accounts do
   """
   def change_user_password(user, attrs \\ %{}, opts \\ []) do
     User.password_changeset(user, attrs, opts)
-  end
-
-  @doc """
-  Updates a user with the given attributes.
-
-  ## Examples
-
-      iex> update_user(user, %{volunteer_license_plate: "ABC123"})
-      {:ok, %User{}}
-
-      iex> update_user(user, %{volunteer_license_plate: ""})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_user(%User{} = user, attrs) do
-    user
-    |> User.registration_changeset(attrs)
-    |> Repo.update()
   end
 
   @doc """
@@ -193,7 +226,33 @@ defmodule Carlosassist.Accounts do
     end
   end
 
-  ## Session
+  ## Profile picture management
+
+  def change_user_profile_pic(user, attrs \\ %{}) do
+    User.registration_changeset(user, attrs)
+  end
+
+  def update_user_profile_pic(user, attrs) do
+    user
+    |> User.registration_changeset(attrs)
+    |> Repo.update()
+  end
+
+  ## Session management
+
+  @doc """
+  Checks whether the user is in sudo mode.
+
+  The user is in sudo mode when the last authentication was done no further
+  than 20 minutes ago. The limit can be given as second argument in minutes.
+  """
+  def sudo_mode?(user, minutes \\ -20)
+
+  def sudo_mode?(%User{authenticated_at: ts}, minutes) when is_struct(ts, DateTime) do
+    DateTime.after?(ts, DateTime.utc_now() |> DateTime.add(minutes, :minute))
+  end
+
+  def sudo_mode?(_user, _minutes), do: false
 
   @doc """
   Generates a session token.
@@ -213,6 +272,16 @@ defmodule Carlosassist.Accounts do
     {:ok, query} = UserToken.verify_session_token_query(token)
     Repo.one(query)
   end
+
+  @doc """
+  Deletes the signed token with the given context.
+  """
+  def delete_user_session_token(token) do
+    Repo.delete_all(UserToken.by_token_and_context_query(token, "session"))
+    :ok
+  end
+
+  ## Magic link authentication
 
   @doc """
   Gets the user with the given magic link token.
@@ -273,23 +342,6 @@ defmodule Carlosassist.Accounts do
   end
 
   @doc ~S"""
-  Delivers the update email instructions to the given user.
-
-  ## Examples
-
-      iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm-email/#{&1}"))
-      {:ok, %{to: ..., body: ...}}
-
-  """
-  def deliver_user_update_email_instructions(%User{} = user, current_email, update_email_url_fun)
-      when is_function(update_email_url_fun, 1) do
-    {encoded_token, user_token} = UserToken.build_email_token(user, "change:#{current_email}")
-
-    Repo.insert!(user_token)
-    UserNotifier.deliver_update_email_instructions(user, update_email_url_fun.(encoded_token))
-  end
-
-  @doc ~S"""
   Delivers the magic link login instructions to the given user.
   """
   def deliver_login_instructions(%User{} = user, magic_link_url_fun)
@@ -297,14 +349,6 @@ defmodule Carlosassist.Accounts do
     {encoded_token, user_token} = UserToken.build_email_token(user, "login")
     Repo.insert!(user_token)
     UserNotifier.deliver_login_instructions(user, magic_link_url_fun.(encoded_token))
-  end
-
-  @doc """
-  Deletes the signed token with the given context.
-  """
-  def delete_user_session_token(token) do
-    Repo.delete_all(UserToken.by_token_and_context_query(token, "session"))
-    :ok
   end
 
   ## Token helper
@@ -322,30 +366,5 @@ defmodule Carlosassist.Accounts do
            |> Repo.transaction() do
       {:ok, user, expired_tokens}
     end
-  end
-
-  @doc """
-  Returns a user changeset for tracking phone changes.
-  """
-  def change_user_phone(user, attrs \\ %{}) do
-    User.registration_changeset(user, attrs)
-  end
-
-  @doc """
-  Updates the user phone.
-
-  ## Examples
-
-      iex> update_user_phone(user, %{phone: ...})
-      {:ok, %User{}}
-
-      iex> update_user_phone(user, %{phone: ...})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_user_phone(user, attrs) do
-    user
-    |> User.registration_changeset(attrs)
-    |> Repo.update()
   end
 end

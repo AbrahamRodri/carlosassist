@@ -280,15 +280,22 @@ defmodule CarlosassistWeb.RideComponent do
                 🎉 Assigned Volunteer
               </h4>
               <div class="bg-success/5 border border-success/20 p-4 rounded-lg">
+                <div class="flex items-start gap-4 mb-4">
+                  <.avatar
+                    src={ride.volunteer.profile_pic_location}
+                    alt="Volunteer Profile"
+                    size="lg"
+                  />
+                  <div class="flex-1">
+                    <p class="font-medium text-base-content text-lg">
+                      {ride.volunteer.email}
+                    </p>
+                    <p class="text-sm text-base-content/60">
+                      {ride.volunteer.phone}
+                    </p>
+                  </div>
+                </div>
                 <div class="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <p class="text-sm font-medium text-base-content/60">Volunteer Contact</p>
-                    <p class="font-medium text-base-content">{ride.volunteer.email}</p>
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-base-content/60">Phone</p>
-                    <p class="font-medium text-base-content">{ride.volunteer.phone}</p>
-                  </div>
                   <div>
                     <p class="text-sm font-medium text-base-content/60">License Plate</p>
                     <p class="font-medium text-base-content">
@@ -301,7 +308,7 @@ defmodule CarlosassistWeb.RideComponent do
                       {ride.volunteer.volunteer_car || "Not provided"}
                     </p>
                   </div>
-                  <div :if={ride.volunteer.volunteer_bio}>
+                  <div :if={ride.volunteer.volunteer_bio} class="md:col-span-2">
                     <p class="text-sm font-medium text-base-content/60">Bio</p>
                     <p class="text-sm text-base-content/80">
                       {ride.volunteer.volunteer_bio}
@@ -329,11 +336,22 @@ defmodule CarlosassistWeb.RideComponent do
                 >
                   <div class="flex justify-between items-start">
                     <div class="flex-1">
-                      <div class="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <p class="text-sm font-medium text-base-content/60">Volunteer Contact</p>
-                          <p class="font-medium text-base-content">{request.volunteer_user.email}</p>
+                      <div class="flex items-start gap-4 mb-4">
+                        <.avatar
+                          src={request.volunteer_user.profile_pic_location}
+                          alt="Volunteer Profile"
+                          size="lg"
+                        />
+                        <div class="flex-1">
+                          <p class="font-medium text-base-content text-lg">
+                            {request.volunteer_user.email}
+                          </p>
+                          <p class="text-sm text-base-content/60">
+                            {request.volunteer_user.phone}
+                          </p>
                         </div>
+                      </div>
+                      <div class="grid md:grid-cols-2 gap-4">
                         <div>
                           <p class="text-sm font-medium text-base-content/60">License Plate</p>
                           <p class="font-medium text-base-content">
@@ -346,7 +364,7 @@ defmodule CarlosassistWeb.RideComponent do
                             {request.volunteer_user.volunteer_car}
                           </p>
                         </div>
-                        <div :if={request.volunteer_user.volunteer_bio}>
+                        <div :if={request.volunteer_user.volunteer_bio} class="md:col-span-2">
                           <p class="text-sm font-medium text-base-content/60">Bio</p>
                           <p class="text-sm text-base-content/80">
                             {request.volunteer_user.volunteer_bio}

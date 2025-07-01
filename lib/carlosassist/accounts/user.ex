@@ -23,6 +23,7 @@ defmodule Carlosassist.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
+    field :profile_pic_location, :string
 
     # Volunteer-specific fields
     field :volunteer_license_plate, :string
@@ -53,12 +54,18 @@ defmodule Carlosassist.Accounts.User do
       :role,
       :volunteer_license_plate,
       :volunteer_car,
-      :volunteer_bio
+      :volunteer_bio,
+      :profile_pic_location
     ])
     |> validate_email(opts)
     |> validate_phone()
     |> validate_role()
     |> validate_volunteer_fields()
+    |> validate_profile_pic_location()
+  end
+
+  defp validate_profile_pic_location(changeset) do
+    changeset
   end
 
   defp validate_email(changeset, opts) do
