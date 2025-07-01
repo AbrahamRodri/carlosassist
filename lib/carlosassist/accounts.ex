@@ -81,6 +81,21 @@ defmodule Carlosassist.Accounts do
   end
 
   @doc """
+  Returns an `%Ecto.Changeset{}` for tracking user changes during registration.
+
+  ## Examples
+
+      iex> change_user(%User{})
+      %Ecto.Changeset{data: %User{}}
+
+  """
+  def change_user(%User{} = user, attrs \\ %{}, opts \\ []) do
+    User.registration_changeset(user, attrs, opts)
+  end
+
+  ## User updates
+
+  @doc """
   Updates a user with the given attributes.
 
   ## Examples
@@ -94,7 +109,7 @@ defmodule Carlosassist.Accounts do
   """
   def update_user(%User{} = user, attrs) do
     user
-    |> User.registration_changeset(attrs)
+    |> User.update_changeset(attrs)
     |> Repo.update()
   end
 
@@ -103,17 +118,14 @@ defmodule Carlosassist.Accounts do
   @doc """
   Returns an `%Ecto.Changeset{}` for changing the user email.
 
-  See `Carlosassist.Accounts.User.email_changeset/3` for a list of supported options.
-
   ## Examples
 
       iex> change_user_email(user)
       %Ecto.Changeset{data: %User{}}
 
   """
-  def change_user(user, attrs \\ %{}, opts \\ []) do
-    user
-    |> User.registration_changeset(attrs, opts)
+  def change_user_email(user, attrs \\ %{}, opts \\ []) do
+    User.email_changeset(user, attrs, opts)
   end
 
   @doc """
@@ -134,7 +146,7 @@ defmodule Carlosassist.Accounts do
   end
 
   defp user_email_multi(user, email, context) do
-    changeset = User.registration_changeset(user, %{email: email})
+    changeset = User.email_changeset(user, %{email: email})
 
     Ecto.Multi.new()
     |> Ecto.Multi.update(:user, changeset)
@@ -164,7 +176,7 @@ defmodule Carlosassist.Accounts do
   Returns a user changeset for tracking phone changes.
   """
   def change_user_phone(user, attrs \\ %{}) do
-    User.registration_changeset(user, attrs)
+    User.phone_changeset(user, attrs)
   end
 
   @doc """
@@ -181,7 +193,61 @@ defmodule Carlosassist.Accounts do
   """
   def update_user_phone(user, attrs) do
     user
-    |> User.registration_changeset(attrs)
+    |> User.phone_changeset(attrs)
+    |> Repo.update()
+  end
+
+  ## Volunteer information management
+
+  @doc """
+  Returns a user changeset for tracking volunteer information changes.
+  """
+  def change_user_volunteer_info(user, attrs \\ %{}) do
+    User.volunteer_info_changeset(user, attrs)
+  end
+
+  @doc """
+  Updates the user volunteer information.
+
+  ## Examples
+
+      iex> update_user_volunteer_info(user, %{volunteer_car: "Red Honda Civic"})
+      {:ok, %User{}}
+
+      iex> update_user_volunteer_info(user, %{volunteer_license_plate: ""})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user_volunteer_info(user, attrs) do
+    user
+    |> User.volunteer_info_changeset(attrs)
+    |> Repo.update()
+  end
+
+  ## Profile picture management
+
+  @doc """
+  Returns a user changeset for tracking profile picture changes.
+  """
+  def change_user_profile_pic(user, attrs \\ %{}) do
+    User.profile_pic_changeset(user, attrs)
+  end
+
+  @doc """
+  Updates the user profile picture.
+
+  ## Examples
+
+      iex> update_user_profile_pic(user, %{profile_pic_location: "/uploads/profile_pics/image.jpg"})
+      {:ok, %User{}}
+
+      iex> update_user_profile_pic(user, %{profile_pic_location: "invalid"})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user_profile_pic(user, attrs) do
+    user
+    |> User.profile_pic_changeset(attrs)
     |> Repo.update()
   end
 
@@ -224,18 +290,6 @@ defmodule Carlosassist.Accounts do
       {:ok, user, expired_tokens} -> {:ok, user, expired_tokens}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
-  end
-
-  ## Profile picture management
-
-  def change_user_profile_pic(user, attrs \\ %{}) do
-    User.registration_changeset(user, attrs)
-  end
-
-  def update_user_profile_pic(user, attrs) do
-    user
-    |> User.registration_changeset(attrs)
-    |> Repo.update()
   end
 
   ## Session management

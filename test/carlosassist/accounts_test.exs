@@ -109,7 +109,7 @@ defmodule Carlosassist.AccountsTest do
   describe "change_user_email/3" do
     test "returns a user changeset" do
       assert %Ecto.Changeset{} = changeset = Accounts.change_user_email(%User{})
-      assert changeset.required == [:role, :email]
+      assert changeset.required == [:email]
     end
   end
 

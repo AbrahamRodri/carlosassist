@@ -35,10 +35,13 @@ defmodule Carlosassist.Accounts.User do
     timestamps(type: :utc_datetime)
   end
 
-  @doc """
-  A user changeset for registering or updating user information.
+  ## Registration Changesets
 
-  It requires the email to change otherwise an error is added.
+  @doc """
+  A user changeset specifically for user registration.
+
+  This is used only when creating new user accounts and includes
+  all required fields for initial account setup.
 
   ## Options
 
@@ -57,18 +60,115 @@ defmodule Carlosassist.Accounts.User do
       :volunteer_bio,
       :profile_pic_location
     ])
-    |> validate_email(opts)
+    |> validate_email_for_registration(opts)
     |> validate_phone()
     |> validate_role()
     |> validate_volunteer_fields()
     |> validate_profile_pic_location()
   end
 
-  defp validate_profile_pic_location(changeset) do
-    changeset
+  ## Update Changesets
+
+  @doc """
+  A user changeset for updating basic user information.
+
+  This allows updating email, phone, role, and volunteer fields
+  but includes proper validation for updates (not registration).
+  """
+  def update_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [
+      :email,
+      :phone,
+      :role,
+      :volunteer_license_plate,
+      :volunteer_car,
+      :volunteer_bio,
+      :profile_pic_location
+    ])
+    |> validate_email_for_update(opts)
+    |> validate_phone()
+    |> validate_role()
+    |> validate_volunteer_fields()
+    |> validate_profile_pic_location()
   end
 
-  defp validate_email(changeset, opts) do
+  @doc """
+  A user changeset specifically for updating email addresses.
+
+  This includes validation to ensure the email actually changes
+  and is suitable for email update workflows.
+  """
+  def email_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:email])
+    |> validate_email_for_update(opts)
+    |> validate_email_changed()
+  end
+
+  @doc """
+  A user changeset specifically for updating phone numbers.
+  """
+  def phone_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:phone])
+    |> validate_phone()
+  end
+
+  @doc """
+  A user changeset specifically for updating volunteer information.
+
+  This is only applicable to users with the "volunteer" role.
+  """
+  def volunteer_info_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:volunteer_license_plate, :volunteer_car, :volunteer_bio])
+    |> validate_volunteer_fields()
+  end
+
+  @doc """
+  A user changeset specifically for updating profile pictures.
+  """
+  def profile_pic_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:profile_pic_location])
+    |> validate_profile_pic_location()
+  end
+
+  ## Password Changesets
+
+  @doc """
+  A user changeset for changing the password.
+
+  It is important to validate the length of the password, as long passwords may
+  be very expensive to hash for certain algorithms.
+
+  ## Options
+
+    * `:hash_password` - Hashes the password so it can be stored securely
+      in the database and ensures the password field is cleared to prevent
+      leaks in the logs. If password hashing is not needed and clearing the
+      password field is not desired (like when using this changeset for
+      validations on a LiveView form), this option can be set to `false`.
+      Defaults to `true`.
+  """
+  def password_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:password])
+    |> validate_confirmation(:password, message: "does not match password")
+    |> validate_password(opts)
+  end
+
+  ## Validation Functions
+
+  defp validate_profile_pic_location(changeset) do
+    changeset
+    |> validate_format(:profile_pic_location, ~r/\.(jpg|jpeg|png|webp)$/i,
+      message: "must be a valid image file (jpg, jpeg, png, webp)"
+    )
+  end
+
+  defp validate_email_for_registration(changeset, opts) do
     changeset =
       changeset
       |> validate_required([:email])
@@ -81,7 +181,24 @@ defmodule Carlosassist.Accounts.User do
       changeset
       |> unsafe_validate_unique(:email, Carlosassist.Repo)
       |> unique_constraint(:email)
-      |> validate_email_changed()
+    else
+      changeset
+    end
+  end
+
+  defp validate_email_for_update(changeset, opts) do
+    changeset =
+      changeset
+      |> validate_required([:email])
+      |> validate_format(:email, ~r/^[^@,;\s]+@[^@,;\s]+$/,
+        message: "must have the @ sign and no spaces"
+      )
+      |> validate_length(:email, max: 160)
+
+    if Keyword.get(opts, :validate_email, true) do
+      changeset
+      |> unsafe_validate_unique(:email, Carlosassist.Repo)
+      |> unique_constraint(:email)
     else
       changeset
     end
@@ -157,28 +274,6 @@ defmodule Carlosassist.Accounts.User do
     end
   end
 
-  @doc """
-  A user changeset for changing the password.
-
-  It is important to validate the length of the password, as long passwords may
-  be very expensive to hash for certain algorithms.
-
-  ## Options
-
-    * `:hash_password` - Hashes the password so it can be stored securely
-      in the database and ensures the password field is cleared to prevent
-      leaks in the logs. If password hashing is not needed and clearing the
-      password field is not desired (like when using this changeset for
-      validations on a LiveView form), this option can be set to `false`.
-      Defaults to `true`.
-  """
-  def password_changeset(user, attrs, opts \\ []) do
-    user
-    |> cast(attrs, [:password])
-    |> validate_confirmation(:password, message: "does not match password")
-    |> validate_password(opts)
-  end
-
   defp validate_password(changeset, opts) do
     changeset
     |> validate_required([:password])
@@ -206,6 +301,8 @@ defmodule Carlosassist.Accounts.User do
       changeset
     end
   end
+
+  ## Utility Changesets
 
   @doc """
   Confirms the account by setting `confirmed_at`.

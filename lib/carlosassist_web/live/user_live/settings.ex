@@ -206,14 +206,14 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
-    email_changeset = Accounts.change_user(user, %{}, validate_email: false)
+    email_changeset = Accounts.change_user_email(user, %{}, validate_email: false)
     password_changeset = Accounts.change_user_password(user, %{}, hash_password: false)
     phone_changeset = Accounts.change_user_phone(user, %{})
     profile_pic_changeset = Accounts.change_user_profile_pic(user, %{})
 
     volunteer_changeset =
       if user.role == "volunteer" do
-        Accounts.change_user(user, %{}, validate_email: false)
+        Accounts.change_user_volunteer_info(user, %{})
       else
         nil
       end
@@ -240,7 +240,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
     email_form =
       socket.assigns.current_scope.user
-      |> Accounts.change_user(user_params, validate_email: false)
+      |> Accounts.change_user_email(user_params, validate_email: false)
       |> Map.put(:action, :validate)
       |> to_form()
 
@@ -252,7 +252,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
     user = socket.assigns.current_scope.user
     true = Accounts.sudo_mode?(user)
 
-    case Accounts.change_user(user, user_params) do
+    case Accounts.change_user_email(user, user_params) do
       %{valid?: true} = changeset ->
         Accounts.deliver_user_update_email_instructions(
           Ecto.Changeset.apply_action!(changeset, :insert),
@@ -299,7 +299,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
     volunteer_form =
       socket.assigns.current_scope.user
-      |> Accounts.change_user(user_params, validate_email: false)
+      |> Accounts.change_user_volunteer_info(user_params)
       |> Map.put(:action, :validate)
       |> to_form()
 
@@ -311,7 +311,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
     user = socket.assigns.current_scope.user
     true = Accounts.sudo_mode?(user)
 
-    case Accounts.update_user(user, user_params) do
+    case Accounts.update_user_volunteer_info(user, user_params) do
       {:ok, updated_user} ->
         # Update the current_scope with new user data
         updated_scope = %{socket.assigns.current_scope | user: updated_user}
