@@ -1,0 +1,26 @@
+<div class="max-w-6xl mx-auto p-6">
+  <.header>
+    Volunteer Dashboard
+    <:subtitle>View and request to help with rides</:subtitle>
+  </.header>
+  
+<!-- My Requests Section -->
+  <div class="mt-8">
+    <h2 class="text-xl font-semibold mb-4">My Requests</h2>
+    <CarlosassistWeb.UI.VolunteerComponents.volunteer_requests_section requests={@my_requests} />
+  </div>
+  
+<!-- Available Rides Section -->
+  <div class="mt-8">
+    <h2 class="text-xl font-semibold mb-4">Available Rides</h2>
+    <CarlosassistWeb.UI.VolunteerComponents.available_rides_section rides={@pending_rides} />
+  </div>
+  
+<!-- Request Modal -->
+  <CarlosassistWeb.UI.VolunteerComponents.volunteer_request_modal
+    :if={@show_request_modal}
+    selected_ride={@selected_ride}
+    request_message={@request_message}
+    rides={@pending_rides}
+  />
+</div>

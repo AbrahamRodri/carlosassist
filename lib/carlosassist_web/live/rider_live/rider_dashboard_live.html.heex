@@ -1,0 +1,14 @@
+<div class="container mx-auto p-6">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold">My Rides</h1>
+    <button :if={!@show_form} phx-click="show_form" class="btn btn-primary">
+      Post New Ride
+    </button>
+  </div>
+  
+<!-- New Ride Form -->
+  <.new_ride_form :if={@show_form} form={@form} />
+  
+<!-- Rides List -->
+  <.rides_list rides={@rides} />
+</div>
