@@ -1,0 +1,180 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <.header class="text-center">
+    Account Settings
+    <:subtitle>Manage your account email address and password settings</:subtitle>
+  </.header>
+
+  <div class="mb-6 p-4 bg-base-200 rounded-lg">
+    <h3 class="text-lg font-semibold mb-2">Account Information</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <span class="text-sm font-medium text-gray-600">Email:</span>
+        <p class="text-base">{@current_scope.user.email}</p>
+      </div>
+      <div>
+        <span class="text-sm font-medium text-gray-600">Phone:</span>
+        <p class="text-base">{@current_scope.user.phone}</p>
+      </div>
+      <div>
+        <span class="text-sm font-medium text-gray-600">Role:</span>
+        <p class="text-base capitalize">{@current_scope.user.role}</p>
+      </div>
+      <div>
+        <span class="text-sm font-medium text-gray-600">Profile Picture:</span>
+        <div class="mt-2">
+          <.avatar
+            src={@current_scope.user.profile_pic_location}
+            alt="Profile Picture"
+            size="2xl"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<!-- Profile Picture Upload Section -->
+  <div class="mb-6">
+    <h3 class="text-lg font-semibold mb-4">Profile Picture</h3>
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <.form
+          for={@profile_pic_form}
+          id="profile_pic_form"
+          phx-submit="update_profile_pic"
+          phx-change="validate_profile_pic"
+          multipart={true}
+        >
+          <.live_file_input upload={@uploads.profile_pic} class="mt-1" />
+
+          <%= for entry <- @uploads.profile_pic.entries do %>
+            <div class="mt-2">
+              <%= if entry.progress > 0 do %>
+                <div class="progress-bar">
+                  <span style={"width: #{entry.progress}%"}>
+                    {entry.progress}%
+                  </span>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+          <div class="card-actions justify-end">
+            <.button variant="primary" phx-disable-with="Uploading...">
+              Update Profile Picture
+            </.button>
+          </div>
+        </.form>
+      </div>
+    </div>
+  </div>
+  
+<!-- Volunteer Information Section -->
+  <div :if={@current_scope.user.role == "volunteer"} class="mb-6">
+    <h3 class="text-lg font-semibold mb-4">Volunteer Information</h3>
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <.form
+          for={@volunteer_form}
+          id="volunteer_form"
+          phx-submit="update_volunteer_info"
+          phx-change="validate_volunteer_info"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <.input
+              field={@volunteer_form[:volunteer_license_plate]}
+              type="text"
+              label="License Plate Number"
+              required
+            />
+            <.input
+              field={@volunteer_form[:volunteer_car]}
+              type="text"
+              label="Car Make/Model/Color"
+              required
+            />
+
+            <div class="md:col-span-2">
+              <.input
+                field={@volunteer_form[:volunteer_bio]}
+                type="textarea"
+                label="Bio / Notes"
+                placeholder="Tell riders about yourself, your experience, etc."
+              />
+            </div>
+          </div>
+          <div class="card-actions justify-end mt-4">
+            <.button variant="primary" phx-disable-with="Updating...">
+              Update Volunteer Info
+            </.button>
+          </div>
+        </.form>
+      </div>
+    </div>
+  </div>
+
+  <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
+    <.input
+      field={@email_form[:email]}
+      type="email"
+      label="Email"
+      autocomplete="username"
+      required
+    />
+    <.button variant="primary" phx-disable-with="Changing...">Change Email</.button>
+  </.form>
+
+  <div class="divider" />
+
+  <.form for={@phone_form} id="phone_form" phx-submit="update_phone" phx-change="validate_phone">
+    <.input
+      field={@phone_form[:phone]}
+      type="tel"
+      label="Phone Number"
+      autocomplete="tel"
+      required
+    />
+    <.button variant="primary" phx-disable-with="Changing...">Change Phone Number</.button>
+  </.form>
+
+  <div class="divider" />
+
+  <.form
+    for={@password_form}
+    id="password_form"
+    action={~p"/users/update-password"}
+    method="post"
+    phx-change="validate_password"
+    phx-submit="update_password"
+    phx-trigger-action={@trigger_submit}
+  >
+    <input
+      name={@password_form[:email].name}
+      type="hidden"
+      id="hidden_user_email"
+      autocomplete="username"
+      value={@current_email}
+    />
+    <input
+      name={@password_form[:phone].name}
+      type="hidden"
+      id="hidden_user_phone"
+      autocomplete="phone"
+      value={@current_phone}
+    />
+    <.input
+      field={@password_form[:password]}
+      type="password"
+      label="New password"
+      autocomplete="new-password"
+      required
+    />
+    <.input
+      field={@password_form[:password_confirmation]}
+      type="password"
+      label="Confirm new password"
+      autocomplete="new-password"
+    />
+    <.button variant="primary" phx-disable-with="Saving...">
+      Save Password
+    </.button>
+  </.form>
+</Layouts.app>

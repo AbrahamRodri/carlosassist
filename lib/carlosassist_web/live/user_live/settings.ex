@@ -5,192 +5,6 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
   alias Carlosassist.Accounts
 
-  def render(assigns) do
-    ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <.header class="text-center">
-        Account Settings
-        <:subtitle>Manage your account email address and password settings</:subtitle>
-      </.header>
-
-      <div class="mb-6 p-4 bg-base-200 rounded-lg">
-        <h3 class="text-lg font-semibold mb-2">Account Information</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <span class="text-sm font-medium text-gray-600">Email:</span>
-            <p class="text-base">{@current_scope.user.email}</p>
-          </div>
-          <div>
-            <span class="text-sm font-medium text-gray-600">Phone:</span>
-            <p class="text-base">{@current_scope.user.phone}</p>
-          </div>
-          <div>
-            <span class="text-sm font-medium text-gray-600">Role:</span>
-            <p class="text-base capitalize">{@current_scope.user.role}</p>
-          </div>
-          <div>
-            <span class="text-sm font-medium text-gray-600">Profile Picture:</span>
-            <div class="mt-2">
-              <.avatar
-                src={@current_scope.user.profile_pic_location}
-                alt="Profile Picture"
-                size="2xl"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-      
-    <!-- Profile Picture Upload Section -->
-      <div class="mb-6">
-        <h3 class="text-lg font-semibold mb-4">Profile Picture</h3>
-        <div class="card bg-base-100 shadow">
-          <div class="card-body">
-            <.form
-              for={@profile_pic_form}
-              id="profile_pic_form"
-              phx-submit="update_profile_pic"
-              phx-change="validate_profile_pic"
-              multipart={true}
-            >
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Choose new profile picture
-                </label>
-                <input
-                  type="file"
-                  name="profile_pic"
-                  accept="image/*"
-                  class="file-input file-input-bordered w-full max-w-xs"
-                />
-                <p class="text-xs text-gray-500 mt-1">
-                  Supported formats: JPEG, PNG, WebP. Max size: 5MB
-                </p>
-              </div>
-              <div class="card-actions justify-end">
-                <.button variant="primary" phx-disable-with="Uploading...">
-                  Update Profile Picture
-                </.button>
-              </div>
-            </.form>
-          </div>
-        </div>
-      </div>
-      
-    <!-- Volunteer Information Section -->
-      <div :if={@current_scope.user.role == "volunteer"} class="mb-6">
-        <h3 class="text-lg font-semibold mb-4">Volunteer Information</h3>
-        <div class="card bg-base-100 shadow">
-          <div class="card-body">
-            <.form
-              for={@volunteer_form}
-              id="volunteer_form"
-              phx-submit="update_volunteer_info"
-              phx-change="validate_volunteer_info"
-            >
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <.input
-                  field={@volunteer_form[:volunteer_license_plate]}
-                  type="text"
-                  label="License Plate Number"
-                  required
-                />
-                <.input
-                  field={@volunteer_form[:volunteer_car]}
-                  type="text"
-                  label="Car Make/Model/Color"
-                  required
-                />
-
-                <div class="md:col-span-2">
-                  <.input
-                    field={@volunteer_form[:volunteer_bio]}
-                    type="textarea"
-                    label="Bio / Notes"
-                    placeholder="Tell riders about yourself, your experience, etc."
-                  />
-                </div>
-              </div>
-              <div class="card-actions justify-end mt-4">
-                <.button variant="primary" phx-disable-with="Updating...">
-                  Update Volunteer Info
-                </.button>
-              </div>
-            </.form>
-          </div>
-        </div>
-      </div>
-
-      <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
-        <.input
-          field={@email_form[:email]}
-          type="email"
-          label="Email"
-          autocomplete="username"
-          required
-        />
-        <.button variant="primary" phx-disable-with="Changing...">Change Email</.button>
-      </.form>
-
-      <div class="divider" />
-
-      <.form for={@phone_form} id="phone_form" phx-submit="update_phone" phx-change="validate_phone">
-        <.input
-          field={@phone_form[:phone]}
-          type="tel"
-          label="Phone Number"
-          autocomplete="tel"
-          required
-        />
-        <.button variant="primary" phx-disable-with="Changing...">Change Phone Number</.button>
-      </.form>
-
-      <div class="divider" />
-
-      <.form
-        for={@password_form}
-        id="password_form"
-        action={~p"/users/update-password"}
-        method="post"
-        phx-change="validate_password"
-        phx-submit="update_password"
-        phx-trigger-action={@trigger_submit}
-      >
-        <input
-          name={@password_form[:email].name}
-          type="hidden"
-          id="hidden_user_email"
-          autocomplete="username"
-          value={@current_email}
-        />
-        <input
-          name={@password_form[:phone].name}
-          type="hidden"
-          id="hidden_user_phone"
-          autocomplete="phone"
-          value={@current_phone}
-        />
-        <.input
-          field={@password_form[:password]}
-          type="password"
-          label="New password"
-          autocomplete="new-password"
-          required
-        />
-        <.input
-          field={@password_form[:password_confirmation]}
-          type="password"
-          label="Confirm new password"
-          autocomplete="new-password"
-        />
-        <.button variant="primary" phx-disable-with="Saving...">
-          Save Password
-        </.button>
-      </.form>
-    </Layouts.app>
-    """
-  end
-
   def mount(%{"token" => token}, _session, socket) do
     socket =
       case Accounts.update_user_email(socket.assigns.current_scope.user, token) do
@@ -229,6 +43,12 @@ defmodule CarlosassistWeb.UserLive.Settings do
       |> assign(
         :volunteer_form,
         if(volunteer_changeset, do: to_form(volunteer_changeset), else: nil)
+      )
+      |> allow_upload(
+        :profile_pic,
+        accept: ~w(.jpg .jpeg .png),
+        max_entries: 1,
+        max_file_size: 10_000_000
       )
       |> assign(:trigger_submit, false)
 
@@ -360,63 +180,33 @@ defmodule CarlosassistWeb.UserLive.Settings do
   end
 
   def handle_event("update_profile_pic", params, socket) do
+    profile_pic_location =
+      case consume_uploaded_entries(socket, :profile_pic, fn meta, entry ->
+             dest =
+               Path.join([
+                 "priv",
+                 "static",
+                 "uploads",
+                 "profile_pics",
+                 "#{entry.uuid}-#{entry.client_name}"
+               ])
+
+             File.cp!(meta.path, dest)
+             url_path = static_path(socket, "/uploads/profile_pics/#{Path.basename(dest)}")
+
+             {:ok, url_path}
+           end) do
+        # Take the first (and only) uploaded file
+        [path] -> path
+        # No file uploaded
+        [] -> nil
+      end
+
     user = socket.assigns.current_scope.user
-    true = Accounts.sudo_mode?(user)
+    user_params = Map.put(params, "profile_pic_location", profile_pic_location)
 
-    case params do
-      %{"profile_pic" => %Plug.Upload{} = upload} ->
-        case save_profile_picture(upload, user.id) do
-          {:ok, file_path} ->
-            case Accounts.update_user_profile_pic(user, %{profile_pic_location: file_path}) do
-              {:ok, updated_user} ->
-                updated_scope = %{socket.assigns.current_scope | user: updated_user}
+    Accounts.update_user_profile_pic(user, user_params)
 
-                {:noreply,
-                 socket
-                 |> assign(:current_scope, updated_scope)
-                 |> put_flash(:info, "Profile picture updated successfully.")}
-
-              {:error, changeset} ->
-                {:noreply, assign(socket, profile_pic_form: to_form(changeset))}
-            end
-
-          {:error, reason} ->
-            {:noreply, put_flash(socket, :error, "Failed to upload profile picture: #{reason}")}
-        end
-
-      _ ->
-        {:noreply, put_flash(socket, :error, "Please select a valid image file.")}
-    end
-  end
-
-  defp save_profile_picture(%Plug.Upload{} = upload, user_id) do
-    # Validate file type
-    case upload.content_type do
-      "image/" <> _ ->
-        # Generate unique filename
-        extension = Path.extname(upload.filename)
-
-        unique_filename =
-          "#{user_id}-#{System.unique_integer([:positive])}-#{Ecto.UUID.generate()}#{extension}"
-
-        # Ensure uploads directory exists
-        upload_dir = Path.join(["priv", "static", "uploads", "profile_pics"])
-        File.mkdir_p!(upload_dir)
-
-        # Save file
-        destination = Path.join(upload_dir, unique_filename)
-
-        case File.cp(upload.path, destination) do
-          :ok ->
-            # Return the web-accessible path
-            {:ok, "/uploads/profile_pics/#{unique_filename}"}
-
-          {:error, reason} ->
-            {:error, "Failed to save file: #{reason}"}
-        end
-
-      _ ->
-        {:error, "Invalid file type. Please upload an image file."}
-    end
+    {:noreply, socket}
   end
 end

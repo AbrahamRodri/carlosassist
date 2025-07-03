@@ -105,7 +105,6 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
     ~H"""
     <div
       class="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50"
-      phx-click="close_modal"
       phx-key="Escape"
       phx-window-keydown="close_modal"
     >

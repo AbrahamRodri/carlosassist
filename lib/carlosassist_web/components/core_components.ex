@@ -466,34 +466,51 @@ defmodule CarlosassistWeb.CoreComponents do
     |> JS.remove_class("overflow-hidden", to: "body")
   end
 
-  def avatar(assigns) do
-    assigns =
-      assigns
-      |> assign_new(:size, fn -> "md" end)
-      |> assign_new(:class, fn -> "" end)
-      |> assign_new(:alt, fn -> "Profile" end)
-      |> assign_new(:src, fn -> nil end)
+  @doc """
+  Renders an avatar with optional placeholder.
 
+  ## Examples
+
+      <.avatar src="/uploads/profile.jpg" alt="User Profile" />
+      <.avatar src="/uploads/profile.jpg" alt="User Profile" size="lg" />
+      <.avatar alt="User Profile" size="sm" />
+  """
+  attr :src, :string, default: nil, doc: "the source URL of the avatar image"
+  attr :alt, :string, default: "Profile", doc: "the alt text for the avatar image"
+
+  attr :size, :string,
+    default: "md",
+    values: ~w(xs sm md lg xl 2xl),
+    doc: "the size of the avatar"
+
+  attr :class, :string, default: "", doc: "additional CSS classes for the avatar container"
+  attr :rest, :global, doc: "arbitrary HTML attributes to add to the avatar container"
+
+  def avatar(assigns) do
     ~H"""
-    <div class={[
-      "avatar",
-      @class
-    ]}>
+    <div
+      class={[
+        "avatar",
+        @class
+      ]}
+      {@rest}
+    >
       <div class={[
         "rounded-full bg-base-300 overflow-hidden",
         avatar_size_class(@size)
       ]}>
-        <img :if={@src} src={@src} alt={@alt} class="w-full h-full object-cover" />
+        <img :if={@src && @src != ""} src={@src} alt={@alt} class="w-full h-full object-cover" />
         <div
-          :if={!@src}
+          :if={!@src || @src == ""}
           class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20"
         >
-          <span class={[
-            "text-primary font-medium",
-            avatar_icon_size_class(@size)
-          ]}>
-            👤
-          </span>
+          <.icon
+            name="hero-user"
+            class={[
+              "text-primary opacity-70",
+              avatar_icon_size_class(@size)
+            ]}
+          />
         </div>
       </div>
     </div>
@@ -508,13 +525,13 @@ defmodule CarlosassistWeb.CoreComponents do
   defp avatar_size_class("2xl"), do: "w-24 h-24"
   defp avatar_size_class(_), do: "w-12 h-12"
 
-  defp avatar_icon_size_class("xs"), do: "text-sm"
-  defp avatar_icon_size_class("sm"), do: "text-base"
-  defp avatar_icon_size_class("md"), do: "text-lg"
-  defp avatar_icon_size_class("lg"), do: "text-xl"
-  defp avatar_icon_size_class("xl"), do: "text-2xl"
-  defp avatar_icon_size_class("2xl"), do: "text-3xl"
-  defp avatar_icon_size_class(_), do: "text-lg"
+  defp avatar_icon_size_class("xs"), do: "size-4"
+  defp avatar_icon_size_class("sm"), do: "size-5"
+  defp avatar_icon_size_class("md"), do: "size-6"
+  defp avatar_icon_size_class("lg"), do: "size-8"
+  defp avatar_icon_size_class("xl"), do: "size-10"
+  defp avatar_icon_size_class("2xl"), do: "size-12"
+  defp avatar_icon_size_class(_), do: "size-6"
 
   defp hide_modal_transition do
     {"transition-all ease-in duration-200", "opacity-100 translate-y-0 sm:scale-100",
