@@ -38,6 +38,58 @@ defmodule CarlosassistWeb.RiderDashboardLive do
     {:noreply, assign(socket, :form, to_form(changeset))}
   end
 
+  def handle_event("update_coordinates", %{"type" => type, "address" => address, "lat" => lat, "lng" => lng}, socket) do
+    current_params = socket.assigns.form.params || %{}
+    
+    updated_params = case type do
+      "pickup" ->
+        Map.merge(current_params, %{
+          "pickup_address" => address,
+          "pickup_lat" => lat,
+          "pickup_long" => lng
+        })
+      "destination" ->
+        Map.merge(current_params, %{
+          "destination_address" => address,
+          "destination_lat" => lat,
+          "destination_long" => lng
+        })
+    end
+    
+    changeset =
+      %Ride{}
+      |> Rides.change_ride(updated_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :form, to_form(changeset))}
+  end
+
+  def handle_event("clear_coordinates", %{"type" => type}, socket) do
+    current_params = socket.assigns.form.params || %{}
+    
+    updated_params = case type do
+      "pickup" ->
+        Map.merge(current_params, %{
+          "pickup_address" => "",
+          "pickup_lat" => nil,
+          "pickup_long" => nil
+        })
+      "destination" ->
+        Map.merge(current_params, %{
+          "destination_address" => "",
+          "destination_lat" => nil,
+          "destination_long" => nil
+        })
+    end
+    
+    changeset =
+      %Ride{}
+      |> Rides.change_ride(updated_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :form, to_form(changeset))}
+  end
+
   def handle_event("save", %{"ride" => ride_params}, socket) do
     case Rides.create_ride(ride_params, socket.assigns.current_scope) do
       {:ok, ride} ->
@@ -131,21 +183,66 @@ defmodule CarlosassistWeb.RiderDashboardLive do
         </div>
 
         <.form for={@form} phx-submit="save" phx-change="validate">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <.input
-              field={@form[:pickup_location]}
-              type="text"
-              label="Pickup Location"
-              placeholder="Where should they pick you up?"
-              required
-            />
-            <.input
-              field={@form[:destination]}
-              type="text"
-              label="Destination"
-              placeholder="Where are you going?"
-              required
-            />
+          <!-- Pickup Location Section -->
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-4 text-primary">📍 Pickup Location</h3>
+            <div class="bg-base-200/50 p-4 rounded-lg space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <.input
+                  field={@form[:pickup_name]}
+                  type="text"
+                  label="Nickname (What volunteers will see)"
+                  placeholder="e.g., Home, Work, Doctor's Office"
+                  required
+                />
+                <.input
+                  field={@form[:pickup_address]}
+                  type="text"
+                  label="Actual Address (Private)"
+                  placeholder="123 Main Street, City, State"
+                  class="location-search"
+                  phx-hook="LocationSearch"
+                  data-location-type="pickup"
+                />
+              </div>
+              <div class="text-sm text-base-content/60">
+                <p class="flex items-center gap-2">
+                  <span class="text-success">🔒</span>
+                  Your exact address will only be shared with the volunteer after they're accepted
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Destination Section -->
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-4 text-primary">🎯 Destination</h3>
+            <div class="bg-base-200/50 p-4 rounded-lg space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <.input
+                  field={@form[:destination_name]}
+                  type="text"
+                  label="Nickname (What volunteers will see)"
+                  placeholder="e.g., Hospital, Grocery Store, Appointment"
+                  required
+                />
+                <.input
+                  field={@form[:destination_address]}
+                  type="text"
+                  label="Actual Address (Private)"
+                  placeholder="456 Oak Avenue, City, State"
+                  class="location-search"
+                  phx-hook="LocationSearch"
+                  data-location-type="destination"
+                />
+              </div>
+              <div class="text-sm text-base-content/60">
+                <p class="flex items-center gap-2">
+                  <span class="text-success">🔒</span>
+                  Your exact address will only be shared with the volunteer after they're accepted
+                </p>
+              </div>
+            </div>
           </div>
 
           <.input
@@ -202,7 +299,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
         <div class="flex justify-between items-start">
           <div class="flex-1">
             <h3 class="card-title text-lg">
-              {@ride.pickup_location} → {@ride.destination}
+              {@ride.pickup_name} → {@ride.destination_name}
             </h3>
             <div class="flex items-center gap-4 text-sm text-base-content/60 mt-2">
               <span class="flex items-center gap-1">

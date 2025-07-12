@@ -2,6 +2,8 @@
    https://tailwindcss.com/docs/configuration */
 
 @import "tailwindcss";
+@import "mapbox-gl/dist/mapbox-gl.css";
+@import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 @source "../css";
 @source "../js";
 @source "../../lib/carlosassist_web";
@@ -124,3 +126,82 @@
 }
 
 /* This file is for your main application CSS */
+
+/* Mapbox Geocoder Styling */
+.mapbox-geocoder-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.mapboxgl-ctrl-geocoder {
+  width: 100% !important;
+  max-width: none !important;
+  font-size: 0.875rem !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid hsl(var(--bc) / 0.2) !important;
+  background-color: hsl(var(--b1)) !important;
+  color: hsl(var(--bc)) !important;
+  transition: border-color 0.2s ease !important;
+}
+
+.mapboxgl-ctrl-geocoder:focus-within {
+  border-color: hsl(var(--p)) !important;
+  outline: 2px solid hsl(var(--p) / 0.2) !important;
+  outline-offset: 2px !important;
+}
+
+.mapboxgl-ctrl-geocoder input {
+  background-color: transparent !important;
+  color: hsl(var(--bc)) !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.875rem !important;
+}
+
+.mapboxgl-ctrl-geocoder input::placeholder {
+  color: hsl(var(--bc) / 0.6) !important;
+}
+
+.mapboxgl-ctrl-geocoder .suggestions {
+  background-color: hsl(var(--b1)) !important;
+  border: 1px solid hsl(var(--bc) / 0.2) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  margin-top: 0.25rem !important;
+}
+
+.mapboxgl-ctrl-geocoder .suggestions > li {
+  border-bottom: 1px solid hsl(var(--bc) / 0.1) !important;
+  color: hsl(var(--bc)) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.mapboxgl-ctrl-geocoder .suggestions > li:hover,
+.mapboxgl-ctrl-geocoder .suggestions > li.active {
+  background-color: hsl(var(--p) / 0.1) !important;
+  color: hsl(var(--pc)) !important;
+}
+
+.mapboxgl-ctrl-geocoder .suggestions > li:last-child {
+  border-bottom: none !important;
+}
+
+.mapboxgl-ctrl-geocoder .geocoder-icon {
+  fill: hsl(var(--bc) / 0.6) !important;
+}
+
+.mapboxgl-ctrl-geocoder .geocoder-icon-loading {
+  fill: hsl(var(--p)) !important;
+}
+
+.mapboxgl-ctrl-geocoder .geocoder-icon-close {
+  fill: hsl(var(--bc) / 0.6) !important;
+}
+
+.mapboxgl-ctrl-geocoder .geocoder-icon-close:hover {
+  fill: hsl(var(--er)) !important;
+}
+
+/* Hide mapbox logo in geocoder */
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-logo {
+  display: none !important;
+}

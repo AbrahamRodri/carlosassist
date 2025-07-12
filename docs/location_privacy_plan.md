@@ -15,7 +15,7 @@ This document outlines the implementation plan for the location privacy system i
 ### 1.1 Database Migration
 ```elixir
 # Key fields to add to rides table:
-- pickup_name (string)          # Public name like "Home"
+- pickup_name (string)          # Public name like "Home" 
 - pickup_address (string)       # Private full address
 - pickup_lat (decimal)         # For mapping
 - pickup_long (decimal)        # For mapping

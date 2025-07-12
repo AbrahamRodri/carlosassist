@@ -3,8 +3,8 @@ defmodule Carlosassist.Repo.Migrations.CreateRides do
 
   def change do
     create table(:rides) do
-      add :pickup_location, :string
-      add :destination, :string
+      add :pickup_name, :string
+      add :destination_name, :string
       add :description, :text
       add :status, :string, default: "pending"
       add :ride_date, :utc_datetime

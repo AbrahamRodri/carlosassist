@@ -1,6 +1,7 @@
 defmodule CarlosassistWeb.UI.VolunteerComponents do
   use Phoenix.Component
   import CarlosassistWeb.CoreComponents
+  import CarlosassistWeb.UI.MapComponents
   use CarlosassistWeb, :verified_routes
 
   @doc """
@@ -33,7 +34,7 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
           <div class="flex-1">
             <h3 class="font-medium">Ride Request</h3>
             <p class="text-sm text-base-content/60">
-              From: {@request.ride.pickup_location} to {@request.ride.destination}
+              From: {@request.ride.pickup_name} to {@request.ride.destination_name}
             </p>
             <p class="text-sm text-base-content/60">
               Date: {Calendar.strftime(@request.ride.ride_date, "%B %d, %Y at %I:%M %p")}
@@ -189,6 +190,25 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
             <div class="font-medium">{@request.ride.user.phone}</div>
           </div>
         </div>
+        
+        <!-- Exact Location Details (Only Shown After Acceptance) -->
+        <div class="mt-4 p-3 bg-success/5 border border-success/10 rounded">
+          <h4 class="text-sm font-semibold text-success mb-2">📍 Exact Locations (Now Available)</h4>
+          <div class="grid grid-cols-1 gap-3 text-sm mb-4">
+            <div>
+              <span class="text-base-content/60 font-medium">Pickup:</span>
+              <div class="font-medium">{@request.ride.pickup_address || @request.ride.pickup_name}</div>
+            </div>
+            <div>
+              <span class="text-base-content/60 font-medium">Destination:</span>
+              <div class="font-medium">{@request.ride.destination_address || @request.ride.destination_name}</div>
+            </div>
+          </div>
+          <!-- Exact Location Map -->
+          <div class="mt-3">
+            <.exact_location_map ride={@request.ride} class="h-48" />
+          </div>
+        </div>
         <div class="mt-3 flex gap-2">
           <.link navigate={~p"/dashboard/inbox"} class="btn btn-primary btn-sm">
             💬 Chat with Rider
@@ -214,14 +234,24 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
 
   defp ride_details(assigns) do
     ~H"""
+    <!-- Privacy Notice for Volunteers -->
+    <div class="bg-info/10 border border-info/20 p-3 rounded-lg mb-4">
+      <p class="text-sm text-info flex items-center gap-2">
+        <span class="text-lg">🔒</span>
+        <strong>Privacy Protected:</strong> Exact addresses will be shared only after the rider accepts your volunteer request.
+      </p>
+    </div>
+
     <div class="grid md:grid-cols-2 gap-4 mb-4">
       <div>
         <p class="text-sm font-medium text-base-content/60">Pickup Location</p>
-        <p class="text-base-content">{@ride.pickup_location}</p>
+        <p class="text-base-content font-medium">{@ride.pickup_name}</p>
+        <p class="text-xs text-base-content/50">General Area (3-mile radius)</p>
       </div>
       <div>
         <p class="text-sm font-medium text-base-content/60">Destination</p>
-        <p class="text-base-content">{@ride.destination}</p>
+        <p class="text-base-content font-medium">{@ride.destination_name}</p>
+        <p class="text-xs text-base-content/50">General Area (3-mile radius)</p>
       </div>
     </div>
 
@@ -236,6 +266,12 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
       <p class="text-sm font-medium text-base-content/60">Description</p>
       <p class="text-base-content">{@ride.description}</p>
     </div>
+
+    <!-- Privacy Radius Map Preview -->
+    <div class="mb-4">
+      <p class="text-sm font-medium text-base-content/60 mb-2">Area Preview</p>
+      <.privacy_radius_map ride={@ride} location_type={:pickup} class="h-32" />
+    </div>
     """
   end
 
@@ -245,7 +281,7 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
       <% selected_ride = Enum.find(@rides, fn ride -> ride.id == @selected_ride end) %>
       <div :if={selected_ride} class="bg-base-200 p-4 rounded-lg">
         <p class="font-medium">
-          {selected_ride.pickup_location} → {selected_ride.destination}
+          {selected_ride.pickup_name} → {selected_ride.destination_name}
         </p>
         <p class="text-sm text-base-content/60">
           {Calendar.strftime(selected_ride.ride_date, "%B %d, %Y at %I:%M %p")}

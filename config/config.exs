@@ -73,6 +73,11 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# Mapbox configuration
+config :carlosassist, :mapbox,
+  public_key: System.get_env("MAPBOX_PUBLIC_KEY"),
+  private_key: System.get_env("MAPBOX_PRIVATE_KEY")
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

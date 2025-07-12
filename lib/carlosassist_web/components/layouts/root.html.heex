@@ -7,6 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
+    <meta name="mapbox-token" content={Application.get_env(:carlosassist, :mapbox)[:public_key]} />
     <.live_title default="CarlosAssist">
       {assigns[:page_title]}
     </.live_title>
