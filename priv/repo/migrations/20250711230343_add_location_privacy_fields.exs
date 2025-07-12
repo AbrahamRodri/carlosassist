@@ -10,7 +10,6 @@ defmodule Carlosassist.Repo.Migrations.AddLocationPrivacyFields do
       add :destination_address, :string
       add :destination_lat, :decimal, precision: 10, scale: 6
       add :destination_long, :decimal, precision: 10, scale: 6
-
     end
 
     # Add indexes for coordinate queries
@@ -18,4 +17,3 @@ defmodule Carlosassist.Repo.Migrations.AddLocationPrivacyFields do
     create index(:rides, [:destination_lat, :destination_long])
   end
 end
-``
