@@ -137,8 +137,8 @@ Hooks.PrivacyRadiusMap = {
     })
 
     map.on('load', () => {
-      // Calculate 3-mile radius circle
-      const radiusMeters = 3 * 1609.344 // 3 miles in meters
+      // Calculate 0.5-mile radius circle
+      const radiusMeters = 0.5 * 1609.344 // 0.5 mile in meters
       const options = { steps: 64, units: 'meters' }
       
       // Create circle using turf.js-like calculation
@@ -160,7 +160,7 @@ Hooks.PrivacyRadiusMap = {
         type: 'fill',
         source: 'privacy-radius',
         paint: {
-          'fill-color': '#3b82f6',
+          'fill-color': '#059669',
           'fill-opacity': 0.2
         }
       })
@@ -171,7 +171,7 @@ Hooks.PrivacyRadiusMap = {
         type: 'line',
         source: 'privacy-radius',
         paint: {
-          'line-color': '#3b82f6',
+          'line-color': '#059669',
           'line-width': 2
         }
       })
@@ -262,7 +262,7 @@ Hooks.ExactLocationMap = {
       .setLngLat([pickupLng, pickupLat])
       .setPopup(new mapboxgl.Popup().setHTML(`
         <div class="p-2">
-          <strong>📍 Pickup</strong><br>
+          <strong>Pickup</strong><br>
           ${this.el.dataset.pickupName}<br>
           <small>${this.el.dataset.pickupAddress}</small>
         </div>
@@ -274,7 +274,7 @@ Hooks.ExactLocationMap = {
       .setLngLat([destLng, destLat])
       .setPopup(new mapboxgl.Popup().setHTML(`
         <div class="p-2">
-          <strong>🎯 Destination</strong><br>
+          <strong>Destination</strong><br>
           ${this.el.dataset.destinationName}<br>
           <small>${this.el.dataset.destinationAddress}</small>
         </div>

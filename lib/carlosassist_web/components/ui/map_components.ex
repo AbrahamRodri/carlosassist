@@ -1,16 +1,17 @@
 defmodule CarlosassistWeb.UI.MapComponents do
   use Phoenix.Component
   alias Carlosassist.LocationPrivacy
+  import CarlosassistWeb.CoreComponents
 
   @doc """
   Renders a privacy radius map for volunteers.
 
-  Shows a 3-mile radius circle around the actual location
+  Shows a 1-mile radius circle around the actual location
   without revealing the exact coordinates.
   """
   attr :ride, :map, required: true
   attr :location_type, :atom, required: true, values: [:pickup, :destination]
-  attr :class, :string, default: "h-64 rounded-lg"
+  attr :class, :string, default: "h-80 rounded-lg"
 
   def privacy_radius_map(assigns) do
     # Generate unique ID for each map instance
@@ -35,10 +36,17 @@ defmodule CarlosassistWeb.UI.MapComponents do
       </div>
       
     <!-- Map Controls -->
-      <div class="absolute top-2 right-2 bg-base-100/90 backdrop-blur-sm rounded-lg p-2 text-xs">
-        <div class="flex items-center gap-1 text-info">
-          <span class="w-3 h-3 bg-info/30 border-2 border-info rounded-full"></span>
-          <span>3-mile privacy area</span>
+      <div class="absolute top-2 right-2 bg-base-100/90 backdrop-blur-sm rounded-lg p-3 text-xs space-y-1">
+        <div class="flex items-center gap-2 text-primary font-medium">
+          <span class="w-3 h-3 bg-primary/30 border-2 border-primary rounded-full"></span>
+          <span>0.5-mile privacy area</span>
+        </div>
+        <div class="text-base-content/70 font-medium">
+          <%= if @location_type == :pickup do %>
+            <.icon name="hero-map-pin" class="w-3 h-3 inline" /> Pickup Location
+          <% else %>
+            <.icon name="hero-flag" class="w-3 h-3 inline" /> Destination
+          <% end %>
         </div>
       </div>
     </div>
@@ -51,7 +59,7 @@ defmodule CarlosassistWeb.UI.MapComponents do
   Shows precise locations with markers for pickup and destination.
   """
   attr :ride, :map, required: true
-  attr :class, :string, default: "h-64 rounded-lg"
+  attr :class, :string, default: "h-80 rounded-lg"
 
   def exact_location_map(assigns) do
     # Generate unique ID for each map instance
@@ -98,7 +106,7 @@ defmodule CarlosassistWeb.UI.MapComponents do
   attr :ride, :map, required: true
   attr :current_user, :map, required: true
   attr :location_type, :atom, default: :both, values: [:pickup, :destination, :both]
-  attr :class, :string, default: "h-64 rounded-lg"
+  attr :class, :string, default: "h-80 rounded-lg"
 
   def smart_location_map(assigns) do
     can_see_exact = LocationPrivacy.can_see_exact_location?(assigns.ride, assigns.current_user)
@@ -110,7 +118,7 @@ defmodule CarlosassistWeb.UI.MapComponents do
         <!-- Exact Location Map for Authorized Users -->
         <div class="space-y-2">
           <div class="flex items-center gap-2 text-success">
-            <span class="text-lg">🔓</span>
+            <.icon name="hero-lock-open" class="w-5 h-5" />
             <span class="font-medium">Exact Locations</span>
             <span class="text-sm text-success/80">(You have access)</span>
           </div>
@@ -119,10 +127,10 @@ defmodule CarlosassistWeb.UI.MapComponents do
       <% else %>
         <!-- Privacy Radius Maps for Non-Authorized Users -->
         <div class="space-y-4">
-          <div class="flex items-center gap-2 text-info">
-            <span class="text-lg">🔒</span>
+          <div class="flex items-center gap-2 text-primary">
+            <.icon name="hero-lock-closed" class="w-5 h-5" />
             <span class="font-medium">Privacy Protected Areas</span>
-            <span class="text-sm text-info/80">(3-mile radius)</span>
+            <span class="text-sm text-primary/80">(0.5-mile radius)</span>
           </div>
 
           <%= if @location_type in [:pickup, :both] do %>
@@ -130,7 +138,7 @@ defmodule CarlosassistWeb.UI.MapComponents do
               <h4 class="text-sm font-medium text-base-content/80 mb-2">
                 Pickup Area: {@ride.pickup_name}
               </h4>
-              <.privacy_radius_map ride={@ride} location_type={:pickup} class={@class} />
+              <.privacy_radius_map ride={@ride} location_type={:pickup} class="h-80 rounded-lg" />
             </div>
           <% end %>
 
@@ -139,7 +147,7 @@ defmodule CarlosassistWeb.UI.MapComponents do
               <h4 class="text-sm font-medium text-base-content/80 mb-2">
                 Destination Area: {@ride.destination_name}
               </h4>
-              <.privacy_radius_map ride={@ride} location_type={:destination} class={@class} />
+              <.privacy_radius_map ride={@ride} location_type={:destination} class="h-80 rounded-lg" />
             </div>
           <% end %>
         </div>
@@ -170,9 +178,11 @@ defmodule CarlosassistWeb.UI.MapComponents do
       <!-- Pickup Card -->
       <div class="card bg-base-100 border border-base-300 p-4">
         <div class="flex items-start justify-between mb-2">
-          <h3 class="font-medium text-base-content">📍 Pickup</h3>
+          <h3 class="font-medium text-base-content flex items-center gap-2">
+            <.icon name="hero-map-pin" class="w-4 h-4" /> Pickup
+          </h3>
           <%= if @pickup_info.privacy_protected do %>
-            <span class="badge badge-info badge-sm">Protected</span>
+            <span class="badge badge-primary badge-sm">Protected</span>
           <% else %>
             <span class="badge badge-success badge-sm">Exact</span>
           <% end %>
@@ -190,7 +200,7 @@ defmodule CarlosassistWeb.UI.MapComponents do
               <p class="text-sm">{@pickup_info.address}</p>
             </div>
           <% else %>
-            <p class="text-xs text-info">
+            <p class="text-xs text-primary">
               Exact address will be shared after volunteer acceptance
             </p>
           <% end %>
@@ -200,9 +210,11 @@ defmodule CarlosassistWeb.UI.MapComponents do
     <!-- Destination Card -->
       <div class="card bg-base-100 border border-base-300 p-4">
         <div class="flex items-start justify-between mb-2">
-          <h3 class="font-medium text-base-content">🎯 Destination</h3>
+          <h3 class="font-medium text-base-content flex items-center gap-2">
+            <.icon name="hero-flag" class="w-4 h-4" /> Destination
+          </h3>
           <%= if @destination_info.privacy_protected do %>
-            <span class="badge badge-info badge-sm">Protected</span>
+            <span class="badge badge-primary badge-sm">Protected</span>
           <% else %>
             <span class="badge badge-success badge-sm">Exact</span>
           <% end %>
@@ -220,7 +232,7 @@ defmodule CarlosassistWeb.UI.MapComponents do
               <p class="text-sm">{@destination_info.address}</p>
             </div>
           <% else %>
-            <p class="text-xs text-info">
+            <p class="text-xs text-primary">
               Exact address will be shared after volunteer acceptance
             </p>
           <% end %>

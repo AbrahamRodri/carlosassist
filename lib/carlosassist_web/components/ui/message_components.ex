@@ -45,7 +45,7 @@ defmodule CarlosassistWeb.UI.MessageComponents do
                   </h3>
                   <p class="text-sm text-base-content/60">
                     <.user_role_badge user_id={@current_user.id} conversation={@conversation} />
-                    {@conversation.ride.pickup_location} → {@conversation.ride.destination}
+                    {@conversation.ride.pickup_name} → {@conversation.ride.destination_name}
                   </p>
                 </div>
                 <time class="text-xs text-base-content/50">
@@ -166,7 +166,7 @@ defmodule CarlosassistWeb.UI.MessageComponents do
           <h1 class="font-semibold text-lg">{@other_user.email}</h1>
           <p class="text-sm text-base-content/60">
             <.user_role_badge user_id={@current_user.id} conversation={@conversation} />
-            {@conversation.ride.pickup_location} → {@conversation.ride.destination}
+            {@conversation.ride.pickup_name} → {@conversation.ride.destination_name}
           </p>
         </div>
         <div class="text-right text-sm text-base-content/60">

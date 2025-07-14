@@ -174,7 +174,10 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
   defp accepted_request_info(assigns) do
     ~H"""
     <div class="mt-3 p-3 bg-success/10 border border-success/20 rounded">
-      <p class="text-sm font-medium text-success">🎉 Great news! Your help was accepted!</p>
+      <p class="text-sm font-medium text-success flex items-center gap-2">
+        <.icon name="hero-check-circle" class="w-4 h-4" />
+        Great news! Your help was accepted!
+      </p>
       <p class="text-xs text-success/80 mt-1">
         The rider has confirmed you as their volunteer for this ride.
       </p>
@@ -193,7 +196,10 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
         
         <!-- Exact Location Details (Only Shown After Acceptance) -->
         <div class="mt-4 p-3 bg-success/5 border border-success/10 rounded">
-          <h4 class="text-sm font-semibold text-success mb-2">📍 Exact Locations (Now Available)</h4>
+          <h4 class="text-sm font-semibold text-success mb-2 flex items-center gap-2">
+            <.icon name="hero-map-pin" class="w-4 h-4" />
+            Exact Locations (Now Available)
+          </h4>
           <div class="grid grid-cols-1 gap-3 text-sm mb-4">
             <div>
               <span class="text-base-content/60 font-medium">Pickup:</span>
@@ -206,12 +212,13 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
           </div>
           <!-- Exact Location Map -->
           <div class="mt-3">
-            <.exact_location_map ride={@request.ride} class="h-48" />
+            <.exact_location_map ride={@request.ride} class="h-64" />
           </div>
         </div>
         <div class="mt-3 flex gap-2">
-          <.link navigate={~p"/dashboard/inbox"} class="btn btn-primary btn-sm">
-            💬 Chat with Rider
+          <.link navigate={~p"/dashboard/inbox"} class="btn btn-primary btn-sm flex items-center gap-2">
+            <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" />
+            Chat with Rider
           </.link>
         </div>
         <p class="text-xs text-success/80 mt-2">
@@ -235,9 +242,9 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
   defp ride_details(assigns) do
     ~H"""
     <!-- Privacy Notice for Volunteers -->
-    <div class="bg-info/10 border border-info/20 p-3 rounded-lg mb-4">
-      <p class="text-sm text-info flex items-center gap-2">
-        <span class="text-lg">🔒</span>
+    <div class="bg-base-200 border border-base-300 p-3 rounded-lg mb-4">
+      <p class="text-sm text-base-content/70 flex items-center gap-2">
+        <.icon name="hero-lock-closed" class="w-4 h-4 text-base-content/50" />
         <strong>Privacy Protected:</strong> Exact addresses will be shared only after the rider accepts your volunteer request.
       </p>
     </div>
@@ -246,12 +253,12 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
       <div>
         <p class="text-sm font-medium text-base-content/60">Pickup Location</p>
         <p class="text-base-content font-medium">{@ride.pickup_name}</p>
-        <p class="text-xs text-base-content/50">General Area (3-mile radius)</p>
+        <p class="text-xs text-base-content/50">General Area (0.5-mile radius)</p>
       </div>
       <div>
         <p class="text-sm font-medium text-base-content/60">Destination</p>
         <p class="text-base-content font-medium">{@ride.destination_name}</p>
-        <p class="text-xs text-base-content/50">General Area (3-mile radius)</p>
+        <p class="text-xs text-base-content/50">General Area (0.5-mile radius)</p>
       </div>
     </div>
 
@@ -270,7 +277,7 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
     <!-- Privacy Radius Map Preview -->
     <div class="mb-4">
       <p class="text-sm font-medium text-base-content/60 mb-2">Area Preview</p>
-      <.privacy_radius_map ride={@ride} location_type={:pickup} class="h-32" />
+      <.privacy_radius_map ride={@ride} location_type={:pickup} class="h-64" />
     </div>
     """
   end
