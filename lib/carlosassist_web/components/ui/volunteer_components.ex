@@ -35,9 +35,9 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
             <.request_status_badge status={@request.status} />
             <div class="flex items-center gap-1">
               <button 
-                :if={@request.status == "accepted"}
+                :if={@request.status == "accepted" && @request.ride.conversation}
                 class="btn btn-primary btn-xs"
-                onclick="window.location.href='/dashboard/inbox'"
+                onclick={"window.location.href='/dashboard/chat/#{@request.ride.conversation.id}'"}
               >
                 <.icon name="hero-chat-bubble-left-right" class="w-3 h-3" />
                 Chat
@@ -61,17 +61,26 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
             </div>
           </div>
           
-          <p class="font-medium text-sm leading-tight mb-1">
-            {@request.ride.pickup_name}
-          </p>
-          <p class="font-medium text-sm leading-tight mb-2 flex items-center gap-1">
-            <.icon name="hero-arrow-right" class="w-3 h-3 text-base-content/40" />
-            {@request.ride.destination_name}
-          </p>
-          
-          <p class="text-xs text-base-content/60">
-            {Calendar.strftime(@request.ride.ride_date, "%b %d, %I:%M %p")}
-          </p>
+          <div 
+            class="cursor-pointer hover:bg-base-200/50 -m-1 p-1 rounded"
+            phx-click="show_request_details"
+            phx-value-request_id={@request.id}
+          >
+            <p class="font-medium text-sm leading-tight mb-1">
+              {@request.ride.pickup_name}
+            </p>
+            <p class="font-medium text-sm leading-tight mb-2 flex items-center gap-1">
+              <.icon name="hero-arrow-right" class="w-3 h-3 text-base-content/40" />
+              {@request.ride.destination_name}
+            </p>
+            
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-base-content/60">
+                {Calendar.strftime(@request.ride.ride_date, "%b %d, %I:%M %p")}
+              </p>
+              <.icon name="hero-chevron-right" class="w-3 h-3 text-base-content/40" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -345,7 +354,11 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
           </div>
         </div>
         <div class="mt-3 flex gap-2">
-          <.link navigate={~p"/dashboard/inbox"} class="btn btn-primary btn-sm flex items-center gap-2">
+          <.link 
+            :if={@request.ride.conversation}
+            navigate={~p"/dashboard/chat/#{@request.ride.conversation.id}"} 
+            class="btn btn-primary btn-sm flex items-center gap-2"
+          >
             <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" />
             Chat with Rider
           </.link>
@@ -422,6 +435,182 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
         <p class="text-sm text-base-content/60">
           {Calendar.strftime(selected_ride.ride_date, "%B %d, %Y at %I:%M %p")}
         </p>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders the request details modal for volunteer's own requests.
+  """
+  attr :request, :map, required: true
+
+  def volunteer_request_details_modal(assigns) do
+    ~H"""
+    <div
+      class="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50"
+      phx-key="Escape"
+      phx-window-keydown="hide_request_details"
+    >
+      <div
+        class="relative top-8 mx-auto p-6 border w-full max-w-4xl shadow-lg rounded-lg bg-base-100 m-4"
+        phx-click-away="hide_request_details"
+      >
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <.avatar src={@request.ride.user.profile_pic_location} alt="Rider Profile" size="md" />
+            </div>
+            <div>
+              <h2 class="text-xl font-semibold text-base-content">
+                My Volunteer Request
+              </h2>
+              <.request_status_badge status={@request.status} />
+            </div>
+          </div>
+          <button 
+            phx-click="hide_request_details" 
+            class="btn btn-ghost btn-sm p-2 hover:bg-base-200 rounded-lg"
+          >
+            <.icon name="hero-x-mark" class="w-5 h-5" />
+          </button>
+        </div>
+
+        <!-- Request Status Information -->
+        <div class="mb-6">
+          <div :if={@request.status == "pending"} class="bg-warning/10 border border-warning/20 p-4 rounded-lg">
+            <p class="text-sm text-warning flex items-center gap-2 font-medium">
+              <.icon name="hero-clock" class="w-4 h-4" />
+              Request Pending
+            </p>
+            <p class="text-xs text-warning/80 mt-1">
+              Waiting for the rider to review your volunteer request.
+            </p>
+          </div>
+          
+          <div :if={@request.status == "accepted"} class="bg-success/10 border border-success/20 p-4 rounded-lg">
+            <p class="text-sm text-success flex items-center gap-2 font-medium">
+              <.icon name="hero-check-circle" class="w-4 h-4" />
+              Request Accepted!
+            </p>
+            <p class="text-xs text-success/80 mt-1">
+              Great! The rider has chosen you as their volunteer.
+            </p>
+          </div>
+          
+          <div :if={@request.status == "rejected"} class="bg-error/10 border border-error/20 p-4 rounded-lg">
+            <p class="text-sm text-error flex items-center gap-2 font-medium">
+              <.icon name="hero-x-circle" class="w-4 h-4" />
+              Request Not Selected
+            </p>
+            <p class="text-xs text-error/80 mt-1">
+              This request was not selected, but thank you for offering to help!
+            </p>
+          </div>
+        </div>
+
+        <!-- Ride Information -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+                <.icon name="hero-map-pin" class="w-4 h-4" /> Pickup Location
+              </h3>
+              <p class="font-semibold text-base-content">{@request.ride.pickup_name}</p>
+              <p :if={@request.status == "accepted" && @request.ride.pickup_address} class="text-sm text-base-content/70">
+                {@request.ride.pickup_address}
+              </p>
+              <p :if={@request.status != "accepted"} class="text-xs text-base-content/50">
+                General Area (exact address shared after acceptance)
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+                <.icon name="hero-flag" class="w-4 h-4" /> Destination
+              </h3>
+              <p class="font-semibold text-base-content">{@request.ride.destination_name}</p>
+              <p :if={@request.status == "accepted" && @request.ride.destination_address} class="text-sm text-base-content/70">
+                {@request.ride.destination_address}
+              </p>
+              <p :if={@request.status != "accepted"} class="text-xs text-base-content/50">
+                General Area (exact address shared after acceptance)
+              </p>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+                <.icon name="hero-clock" class="w-4 h-4" /> Date & Time
+              </h3>
+              <p class="font-semibold text-base-content">
+                {Calendar.strftime(@request.ride.ride_date, "%A, %B %d, %Y")}
+              </p>
+              <p class="text-sm text-base-content/70">
+                {Calendar.strftime(@request.ride.ride_date, "%I:%M %p")}
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+                <.icon name="hero-user" class="w-4 h-4" /> Rider Contact
+              </h3>
+              <p class="font-semibold text-base-content">{@request.ride.user.email}</p>
+              <p class="text-sm text-base-content/70">{@request.ride.user.phone}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Your Message -->
+        <div :if={@request.message && @request.message != ""} class="mb-6">
+          <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+            <.icon name="hero-document-text" class="w-4 h-4" /> Your Message
+          </h3>
+          <p class="text-sm text-base-content bg-base-200 p-4 rounded-lg italic">
+            "{@request.message}"
+          </p>
+        </div>
+
+        <!-- Ride Description -->
+        <div :if={@request.ride.description && @request.ride.description != ""} class="mb-6">
+          <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+            <.icon name="hero-chat-bubble-bottom-center-text" class="w-4 h-4" /> Rider's Notes
+          </h3>
+          <p class="text-sm text-base-content bg-base-200 p-4 rounded-lg">
+            {@request.ride.description}
+          </p>
+        </div>
+
+        <!-- Map (for accepted requests) -->
+        <div :if={@request.status == "accepted"} class="mb-6">
+          <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+            <.icon name="hero-map" class="w-4 h-4" /> Exact Locations
+          </h3>
+          <.exact_location_map ride={@request.ride} class="h-64 rounded-lg" />
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-between items-center pt-6 border-t">
+          <button 
+            phx-click="hide_request_details"
+            class="btn btn-ghost"
+          >
+            Close
+          </button>
+          
+          <div class="flex items-center gap-2">
+            <.link 
+              :if={@request.status == "accepted" && @request.ride.conversation}
+              navigate={~p"/dashboard/chat/#{@request.ride.conversation.id}"} 
+              class="btn btn-primary flex items-center gap-2"
+            >
+              <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" />
+              Chat with Rider
+            </.link>
+          </div>
+        </div>
       </div>
     </div>
     """

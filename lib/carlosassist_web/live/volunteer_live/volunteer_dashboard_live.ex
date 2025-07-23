@@ -12,14 +12,23 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
       |> Enum.map(& &1.ride_id)
       |> MapSet.new()
 
-    Enum.filter(all_pending_rides, fn ride ->
+    all_pending_rides
+    |> Enum.filter(fn ride ->
       not MapSet.member?(requested_ride_ids, ride.id)
+    end)
+    |> Enum.map(fn ride ->
+      conversation = Carlosassist.Messages.get_conversation_by_ride(ride.id)
+      Map.put(ride, :conversation, conversation)
     end)
   end
 
   def mount(_params, _session, socket) do
     current_user = socket.assigns.current_scope.user
     my_requests = Rides.list_volunteer_requests_for_user(current_user.id)
+    |> Enum.map(fn request ->
+      conversation = Carlosassist.Messages.get_conversation_by_ride(request.ride_id)
+      %{request | ride: Map.put(request.ride, :conversation, conversation)}
+    end)
     available_rides = get_available_rides_for_volunteer(current_user.id)
 
     {:ok,
@@ -29,7 +38,9 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
      |> assign(:show_request_modal, false)
      |> assign(:selected_ride, nil)
      |> assign(:request_message, "")
-     |> assign(:current_ride_index, 0)}
+     |> assign(:current_ride_index, 0)
+     |> assign(:show_request_details, false)
+     |> assign(:detailed_request, nil)}
   end
 
   def handle_event("request_ride", %{"ride_id" => ride_id}, socket) do
@@ -109,6 +120,22 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
 
   def handle_event("navigate_rides", _params, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("show_request_details", %{"request_id" => request_id}, socket) do
+    request = Enum.find(socket.assigns.my_requests, &(&1.id == String.to_integer(request_id)))
+    
+    {:noreply,
+     socket
+     |> assign(:show_request_details, true)
+     |> assign(:detailed_request, request)}
+  end
+
+  def handle_event("hide_request_details", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_request_details, false)
+     |> assign(:detailed_request, nil)}
   end
 
   # The render function is now handled by the corresponding .html.heex template

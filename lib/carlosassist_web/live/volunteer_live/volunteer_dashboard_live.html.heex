@@ -51,4 +51,10 @@
     request_message={@request_message}
     rides={@pending_rides}
   />
+  
+  <!-- Request Details Modal -->
+  <CarlosassistWeb.UI.VolunteerComponents.volunteer_request_details_modal
+    :if={@show_request_details && @detailed_request}
+    request={@detailed_request}
+  />
 </div>

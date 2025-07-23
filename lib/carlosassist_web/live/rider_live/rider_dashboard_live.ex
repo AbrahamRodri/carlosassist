@@ -289,11 +289,14 @@ defmodule CarlosassistWeb.RiderDashboardLive do
   # Private helper functions
   defp load_rides(socket) do
     rides = Rides.list_rides_for_user(socket.assigns.current_scope)
-    # Get volunteer requests for each ride
+    # Get volunteer requests for each ride and conversation info
     rides_with_requests =
       Enum.map(rides, fn ride ->
         volunteer_requests = Rides.list_volunteer_requests_for_ride(ride.id)
-        Map.put(ride, :volunteer_requests, volunteer_requests)
+        conversation = Carlosassist.Messages.get_conversation_by_ride(ride.id)
+        ride
+        |> Map.put(:volunteer_requests, volunteer_requests)
+        |> Map.put(:conversation, conversation)
       end)
 
     assign(socket, :rides, rides_with_requests)
@@ -789,8 +792,8 @@ defmodule CarlosassistWeb.RiderDashboardLive do
             
             <!-- Chat button for confirmed rides -->
             <button 
-              :if={@ride.status == "confirmed"}
-              onclick="window.location.href='/dashboard/inbox'"
+              :if={@ride.status == "confirmed" && @ride.conversation}
+              onclick={"window.location.href='/dashboard/chat/#{@ride.conversation.id}'"}
               class="btn btn-primary btn-xs"
             >
               <.icon name="hero-chat-bubble-left-right" class="w-3 h-3" />
@@ -948,7 +951,8 @@ defmodule CarlosassistWeb.RiderDashboardLive do
                   </p>
                 </div>
                 <.link
-                  navigate={~p"/dashboard/inbox"}
+                  :if={@ride.conversation}
+                  navigate={~p"/dashboard/chat/#{@ride.conversation.id}"}
                   class="btn btn-primary btn-sm flex items-center gap-2"
                 >
                   <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" />
