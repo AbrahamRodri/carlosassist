@@ -15,6 +15,9 @@ defmodule CarlosassistWeb.RiderDashboardLive do
      |> assign(:show_form, false)
      |> assign(:wizard_step, 1)
      |> assign(:wizard_data, %{})
+     |> assign(:volunteer_indices, %{})
+     |> assign(:show_ride_details, false)
+     |> assign(:selected_ride, nil)
      |> load_rides()}
   end
 
@@ -233,6 +236,52 @@ defmodule CarlosassistWeb.RiderDashboardLive do
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Could not reject volunteer request.")}
     end
+  end
+
+  def handle_event("next_volunteer", %{"ride_id" => ride_id}, socket) do
+    ride_id = String.to_integer(ride_id)
+    current_indices = socket.assigns.volunteer_indices
+    current_index = Map.get(current_indices, ride_id, 0)
+    
+    # Find the ride to get volunteer count
+    ride = Enum.find(socket.assigns.rides, &(&1.id == ride_id))
+    volunteer_count = if ride && ride.volunteer_requests, do: length(ride.volunteer_requests), else: 0
+    
+    new_index = if current_index + 1 >= volunteer_count, do: 0, else: current_index + 1
+    updated_indices = Map.put(current_indices, ride_id, new_index)
+    
+    {:noreply, assign(socket, :volunteer_indices, updated_indices)}
+  end
+
+  def handle_event("previous_volunteer", %{"ride_id" => ride_id}, socket) do
+    ride_id = String.to_integer(ride_id)
+    current_indices = socket.assigns.volunteer_indices
+    current_index = Map.get(current_indices, ride_id, 0)
+    
+    # Find the ride to get volunteer count
+    ride = Enum.find(socket.assigns.rides, &(&1.id == ride_id))
+    volunteer_count = if ride && ride.volunteer_requests, do: length(ride.volunteer_requests), else: 0
+    
+    new_index = if current_index - 1 < 0, do: max(0, volunteer_count - 1), else: current_index - 1
+    updated_indices = Map.put(current_indices, ride_id, new_index)
+    
+    {:noreply, assign(socket, :volunteer_indices, updated_indices)}
+  end
+
+  def handle_event("show_ride_details", %{"ride_id" => ride_id}, socket) do
+    ride = Enum.find(socket.assigns.rides, &(&1.id == String.to_integer(ride_id)))
+    
+    {:noreply,
+     socket
+     |> assign(:show_ride_details, true)
+     |> assign(:selected_ride, ride)}
+  end
+
+  def handle_event("hide_ride_details", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_ride_details, false)
+     |> assign(:selected_ride, nil)}
   end
 
   # The render function is now handled by the corresponding .html.heex template
@@ -601,10 +650,22 @@ defmodule CarlosassistWeb.RiderDashboardLive do
   end
 
   defp rides_list(assigns) do
+    # Group rides by status
+    grouped_rides = Enum.group_by(assigns.rides, & &1.status)
+    pending_rides = Map.get(grouped_rides, "pending", [])
+    confirmed_rides = Map.get(grouped_rides, "confirmed", [])
+    completed_rides = Map.get(grouped_rides, "completed", [])
+    cancelled_rides = Map.get(grouped_rides, "cancelled", [])
+
+    assigns = assign(assigns, :pending_rides, pending_rides)
+    assigns = assign(assigns, :confirmed_rides, confirmed_rides) 
+    assigns = assign(assigns, :completed_rides, completed_rides)
+    assigns = assign(assigns, :cancelled_rides, cancelled_rides)
+
     ~H"""
-    <div :if={@rides == []} class="text-center py-16">
-      <div class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
-        <.icon name="hero-truck" class="w-12 h-12 text-base-content/40" />
+    <div :if={@rides == []} class="text-center py-12">
+      <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+        <.icon name="hero-truck" class="w-8 h-8 text-primary" />
       </div>
       <h3 class="text-lg font-semibold text-base-content mb-2">No rides yet</h3>
       <p class="text-base-content/70 mb-8">
@@ -617,123 +678,168 @@ defmodule CarlosassistWeb.RiderDashboardLive do
         <.icon name="hero-plus" class="w-5 h-5" /> Request Your First Ride
       </button>
     </div>
+    
     <div :if={@rides != []} class="space-y-6">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-semibold text-base-content">Your Rides</h2>
-        <span class="text-sm text-base-content/60">{length(@rides)} total</span>
+      <!-- Pending Rides -->
+      <div :if={@pending_rides != []}>
+        <div class="flex items-center gap-2 mb-3">
+          <.icon name="hero-clock" class="w-4 h-4 text-warning" />
+          <h3 class="text-sm font-semibold text-warning">Pending Rides</h3>
+          <span class="text-xs text-base-content/60">({length(@pending_rides)})</span>
+        </div>
+        <div class="space-y-3">
+          <.compact_ride_card 
+            :for={ride <- @pending_rides} 
+            ride={ride} 
+            volunteer_indices={@volunteer_indices}
+          />
+        </div>
       </div>
-      <div class="grid gap-4">
-        <.ride_card :for={ride <- @rides} ride={ride} />
+      
+      <!-- Confirmed Rides -->
+      <div :if={@confirmed_rides != []}>
+        <div class="flex items-center gap-2 mb-3">
+          <.icon name="hero-check-circle" class="w-4 h-4 text-success" />
+          <h3 class="text-sm font-semibold text-success">Confirmed Rides</h3>
+          <span class="text-xs text-base-content/60">({length(@confirmed_rides)})</span>
+        </div>
+        <div class="space-y-3">
+          <.compact_ride_card 
+            :for={ride <- @confirmed_rides} 
+            ride={ride} 
+            volunteer_indices={@volunteer_indices}
+          />
+        </div>
+      </div>
+      
+      <!-- Completed Rides -->
+      <div :if={@completed_rides != []}>
+        <div class="flex items-center gap-2 mb-3">
+          <.icon name="hero-check-badge" class="w-4 h-4 text-primary" />
+          <h3 class="text-sm font-semibold text-primary">Completed Rides</h3>
+          <span class="text-xs text-base-content/60">({length(@completed_rides)})</span>
+        </div>
+        <div class="space-y-3">
+          <.compact_ride_card 
+            :for={ride <- @completed_rides} 
+            ride={ride} 
+            volunteer_indices={@volunteer_indices}
+          />
+        </div>
+      </div>
+      
+      <!-- Cancelled Rides -->
+      <div :if={@cancelled_rides != []}>
+        <div class="flex items-center gap-2 mb-3">
+          <.icon name="hero-x-circle" class="w-4 h-4 text-error" />
+          <h3 class="text-sm font-semibold text-error">Cancelled Rides</h3>
+          <span class="text-xs text-base-content/60">({length(@cancelled_rides)})</span>
+        </div>
+        <div class="space-y-3">
+          <.compact_ride_card 
+            :for={ride <- @cancelled_rides} 
+            ride={ride} 
+            volunteer_indices={@volunteer_indices}
+          />
+        </div>
       </div>
     </div>
     """
   end
 
-  defp ride_card(assigns) do
+  defp compact_ride_card(assigns) do
     ~H"""
-    <div class="card-modern transition-all duration-200 hover:scale-[1.01]">
-      <div class="p-6">
-        <div class="flex justify-between items-start mb-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-3 mb-3">
-              <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                <.icon name="hero-truck" class="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 class="text-base font-semibold text-base-content">
+    <div class="bg-base-100 border rounded-lg hover:shadow-md transition-shadow">
+      <div class="p-4">
+        <!-- Main ride info - always visible -->
+        <div class="flex items-center justify-between">
+          <div 
+            class="flex items-center gap-3 flex-1 cursor-pointer hover:bg-base-200/50 -m-2 p-2 rounded"
+            phx-click="show_ride_details"
+            phx-value-ride_id={@ride.id}
+          >
+            <div class="flex-shrink-0">
+              <.icon name="hero-truck" class="w-5 h-5 text-primary" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <p class="font-medium text-sm truncate">
                   {@ride.pickup_name} → {@ride.destination_name}
-                </h3>
-                <span class={"inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium " <> status_badge_class(@ride.status)}>
+                </p>
+                <span class={"inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium " <> status_badge_class(@ride.status)}>
                   {format_status(@ride.status)}
                 </span>
               </div>
+              <p class="text-xs text-base-content/60 flex items-center gap-1">
+                <.icon name="hero-clock" class="w-3 h-3" />
+                {Calendar.strftime(@ride.ride_date, "%b %d, %I:%M %p")}
+              </p>
             </div>
-
-            <div class="space-y-1 text-sm text-base-content/70">
-              <div class="flex items-center gap-2">
-                <.icon name="hero-clock" class="w-4 h-4" />
-                <span>{Calendar.strftime(@ride.ride_date, "%A, %B %d, %Y at %I:%M %p")}</span>
-              </div>
+            <div class="flex-shrink-0">
+              <.icon name="hero-chevron-right" class="w-4 h-4 text-base-content/40" />
             </div>
-
-            <p
-              :if={@ride.description && @ride.description != ""}
-              class="mt-3 text-sm text-base-content/70 bg-base-200 p-3 rounded-lg"
-            >
-              {@ride.description}
-            </p>
           </div>
-
-          <div class="ml-4">
+          
+          <div class="flex items-center gap-2 ml-4">
+            <!-- Volunteer count indicator -->
+            <div :if={@ride.status == "pending" && @ride.volunteer_requests && length(@ride.volunteer_requests) > 0} class="flex items-center gap-1 text-xs text-primary">
+              <.icon name="hero-hand-raised" class="w-4 h-4" />
+              {length(@ride.volunteer_requests)}
+            </div>
+            
+            <!-- Chat button for confirmed rides -->
+            <button 
+              :if={@ride.status == "confirmed"}
+              onclick="window.location.href='/dashboard/inbox'"
+              class="btn btn-primary btn-xs"
+            >
+              <.icon name="hero-chat-bubble-left-right" class="w-3 h-3" />
+              Chat
+            </button>
+            
+            <!-- Delete button -->
             <button
               phx-click="delete"
               phx-value-id={@ride.id}
               data-confirm="Are you sure you want to delete this ride request?"
-              class="btn btn-ghost btn-sm p-2 hover:bg-error/10 hover:text-error rounded-lg"
+              class="btn btn-ghost btn-xs p-1 hover:bg-error/10 hover:text-error"
             >
-              <.icon name="hero-trash" class="w-4 h-4" />
+              <.icon name="hero-trash" class="w-3 h-3" />
             </button>
           </div>
         </div>
         
-    <!-- Assigned Volunteer Section (for confirmed rides) -->
-        <div
-          :if={@ride.status == "confirmed" && @ride.volunteer}
-          class="mt-8 border-t-4 border-success pt-6"
-        >
-          <h4 class="text-lg font-semibold mb-4 text-success flex items-center gap-3">
-            <.icon name="hero-check-circle" class="w-6 h-6" />
-            <span>Your Volunteer</span>
-          </h4>
-          <div class="bg-success/10 border-2 border-success/30 p-6 rounded-lg">
-            <div class="flex items-start gap-6 mb-6">
-              <.avatar src={@ride.volunteer.profile_pic_location} alt="Volunteer Profile" size="xl" />
-              <div class="flex-1">
-                <p class="font-semibold text-base text-base-content mb-1">
-                  {@ride.volunteer.email}
-                </p>
-                <p class="text-sm text-base-content/70">
-                  <.icon name="hero-phone" class="w-4 h-4" />
-                  {@ride.volunteer.phone}
-                </p>
-              </div>
-            </div>
-            <.volunteer_details volunteer={@ride.volunteer} />
-            <div class="mt-6">
-              <.link
-                navigate={~p"/dashboard/inbox"}
-                class="btn btn btn-primary btn-modern px-6 flex items-center gap-2"
-              >
-                <.icon name="hero-chat-bubble-left-right" class="w-5 h-5" /> Chat with Your Volunteer
-              </.link>
-            </div>
-          </div>
+        <!-- Description if present -->
+        <div :if={@ride.description && @ride.description != ""} class="mt-3 pt-3 border-t border-base-300">
+          <p class="text-xs text-base-content/70 bg-base-200 p-2 rounded">
+            {@ride.description}
+          </p>
         </div>
         
-    <!-- Volunteer Requests Section (for pending rides) -->
-        <div
-          :if={
-            @ride.status == "pending" && @ride.volunteer_requests &&
-              length(@ride.volunteer_requests) > 0
-          }
-          class="mt-8 border-t-4 border-primary pt-6"
-        >
-          <h4 class="text-lg font-semibold mb-4 text-primary flex items-center gap-3">
-            <.icon name="hero-hand-raised" class="w-6 h-6" />
-            <span>Volunteers Want to Help ({length(@ride.volunteer_requests)})</span>
-          </h4>
-          <div class="space-y-6">
-            <.volunteer_request_card
-              :for={request <- @ride.volunteer_requests}
-              request={request}
-              ride={@ride}
-            />
+        <!-- Volunteer section for pending rides -->
+        <div :if={@ride.status == "pending" && @ride.volunteer_requests && length(@ride.volunteer_requests) > 0} class="mt-4 pt-4 border-t border-primary/20">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm font-medium text-primary">Volunteers Available</p>
+            <span class="text-xs text-base-content/60">
+              {length(@ride.volunteer_requests)} waiting
+            </span>
           </div>
+          <.volunteer_browser 
+            requests={@ride.volunteer_requests}
+            current_index={Map.get(@volunteer_indices, @ride.id, 0)}
+            ride_id={@ride.id}
+          />
         </div>
-
-        <div class="mt-6 text-center">
-          <div class="text-sm text-base-content/60">
-            Posted {time_ago(@ride.inserted_at)}
+        
+        <!-- Confirmed volunteer info -->
+        <div :if={@ride.status == "confirmed" && @ride.volunteer} class="mt-4 pt-4 border-t border-success/20">
+          <div class="flex items-center gap-3">
+            <.avatar src={@ride.volunteer.profile_pic_location} alt="Volunteer" size="sm" />
+            <div class="flex-1">
+              <p class="text-sm font-medium text-success">Confirmed Volunteer</p>
+              <p class="text-xs text-base-content/60">{@ride.volunteer.email}</p>
+            </div>
+            <.icon name="hero-check-circle" class="w-5 h-5 text-success" />
           </div>
         </div>
       </div>
@@ -741,55 +847,241 @@ defmodule CarlosassistWeb.RiderDashboardLive do
     """
   end
 
-  defp volunteer_request_card(assigns) do
+
+
+  defp ride_details_modal(assigns) do
     ~H"""
-    <div class="bg-primary/10 border-2 border-primary/20 p-6 rounded-lg">
-      <div class="flex justify-between items-start">
-        <div class="flex-1">
-          <div class="flex items-start gap-6 mb-6">
-            <.avatar
-              src={@request.volunteer_user.profile_pic_location}
-              alt="Volunteer Profile"
-              size="xl"
-            />
-            <div class="flex-1">
-              <p class="font-semibold text-base text-base-content mb-1">
-                {@request.volunteer_user.email}
+    <div
+      class="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50"
+      phx-key="Escape"
+      phx-window-keydown="hide_ride_details"
+    >
+      <div
+        class="relative top-8 mx-auto p-6 border w-full max-w-4xl shadow-lg rounded-lg bg-base-100 m-4"
+        phx-click-away="hide_ride_details"
+      >
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <.icon name="hero-truck" class="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h2 class="text-xl font-semibold text-base-content">
+                Ride Details
+              </h2>
+              <span class={"inline-flex items-center px-3 py-1 rounded-full text-sm font-medium " <> status_badge_class(@ride.status)}>
+                {format_status(@ride.status)}
+              </span>
+            </div>
+          </div>
+          <button 
+            phx-click="hide_ride_details" 
+            class="btn btn-ghost btn-sm p-2 hover:bg-base-200 rounded-lg"
+          >
+            <.icon name="hero-x-mark" class="w-5 h-5" />
+          </button>
+        </div>
+
+        <!-- Ride Information -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+                <.icon name="hero-map-pin" class="w-4 h-4" /> Pickup Location
+              </h3>
+              <p class="font-semibold text-base-content">{@ride.pickup_name}</p>
+              <p class="text-sm text-base-content/70">{@ride.pickup_address}</p>
+            </div>
+            
+            <div>
+              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+                <.icon name="hero-flag" class="w-4 h-4" /> Destination
+              </h3>
+              <p class="font-semibold text-base-content">{@ride.destination_name}</p>
+              <p class="text-sm text-base-content/70">{@ride.destination_address}</p>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+                <.icon name="hero-clock" class="w-4 h-4" /> Date & Time
+              </h3>
+              <p class="font-semibold text-base-content">
+                {Calendar.strftime(@ride.ride_date, "%A, %B %d, %Y")}
               </p>
               <p class="text-sm text-base-content/70">
-                <.icon name="hero-phone" class="w-4 h-4" />
-                {@request.volunteer_user.phone}
+                {Calendar.strftime(@ride.ride_date, "%I:%M %p")}
+              </p>
+            </div>
+            
+            <div :if={@ride.description && @ride.description != ""}>
+              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
+                <.icon name="hero-document-text" class="w-4 h-4" /> Special Notes
+              </h3>
+              <p class="text-sm text-base-content bg-base-200 p-3 rounded-lg">
+                {@ride.description}
               </p>
             </div>
           </div>
-          <.volunteer_details volunteer={@request.volunteer_user} />
-          <div :if={@request.message} class="mt-6">
-            <p class="text-sm font-medium text-base-content/70 mb-2 flex items-center gap-2">
-              <.icon name="hero-chat-bubble-bottom-center-text" class="w-5 h-5" />
-              Message from Volunteer:
+        </div>
+
+        <!-- Status-specific sections -->
+        <div class="space-y-6">
+          <!-- Confirmed Volunteer (for confirmed rides) -->
+          <div :if={@ride.status == "confirmed" && @ride.volunteer} class="border-t pt-6">
+            <h3 class="text-lg font-semibold mb-4 text-success flex items-center gap-3">
+              <.icon name="hero-check-circle" class="w-5 h-5" />
+              Your Confirmed Volunteer
+            </h3>
+            <div class="bg-success/10 border border-success/20 p-6 rounded-lg">
+              <div class="flex items-start gap-4 mb-4">
+                <.avatar src={@ride.volunteer.profile_pic_location} alt="Volunteer Profile" size="lg" />
+                <div class="flex-1">
+                  <p class="font-semibold text-base text-base-content mb-1">
+                    {@ride.volunteer.email}
+                  </p>
+                  <p class="text-sm text-base-content/70 flex items-center gap-1">
+                    <.icon name="hero-phone" class="w-4 h-4" />
+                    {@ride.volunteer.phone}
+                  </p>
+                </div>
+                <.link
+                  navigate={~p"/dashboard/inbox"}
+                  class="btn btn-primary btn-sm flex items-center gap-2"
+                >
+                  <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" />
+                  Chat
+                </.link>
+              </div>
+              <.volunteer_details volunteer={@ride.volunteer} />
+            </div>
+          </div>
+
+          <!-- Volunteer Requests (for pending rides) -->
+          <div :if={@ride.status == "pending" && @ride.volunteer_requests && length(@ride.volunteer_requests) > 0} class="border-t pt-6">
+            <h3 class="text-lg font-semibold mb-4 text-primary flex items-center gap-3">
+              <.icon name="hero-hand-raised" class="w-5 h-5" />
+              Volunteers Available ({length(@ride.volunteer_requests)})
+            </h3>
+            <.volunteer_browser 
+              requests={@ride.volunteer_requests}
+              current_index={Map.get(@volunteer_indices, @ride.id, 0)}
+              ride_id={@ride.id}
+            />
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-between items-center mt-8 pt-6 border-t">
+          <button
+            phx-click="delete"
+            phx-value-id={@ride.id}
+            data-confirm="Are you sure you want to delete this ride request?"
+            class="btn btn-error btn-outline btn-sm flex items-center gap-2"
+          >
+            <.icon name="hero-trash" class="w-4 h-4" />
+            Delete Ride
+          </button>
+          
+          <button 
+            phx-click="hide_ride_details"
+            class="btn btn-primary"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp volunteer_browser(assigns) do
+    ~H"""
+    <div :if={@requests == []} class="text-center py-8 text-base-content/60 italic">
+      No volunteer requests yet. Your ride will be visible to volunteers once posted.
+    </div>
+    <div :if={@requests != []} class="max-w-2xl mx-auto">
+      <% current_request = Enum.at(@requests, @current_index) %>
+      
+      <!-- Progress indicator -->
+      <div class="flex justify-center items-center mb-6">
+        <span class="text-sm text-base-content/60 bg-base-200 px-3 py-1 rounded-full">
+          Volunteer <%= @current_index + 1 %> of <%= length(@requests) %>
+        </span>
+      </div>
+      
+      <!-- Single volunteer card -->
+      <div class="bg-primary/10 border-2 border-primary/20 p-6 rounded-lg">
+        <div class="flex items-start gap-6 mb-6">
+          <.avatar
+            src={current_request.volunteer_user.profile_pic_location}
+            alt="Volunteer Profile"
+            size="xl"
+          />
+          <div class="flex-1">
+            <p class="font-semibold text-lg text-base-content mb-1">
+              {current_request.volunteer_user.email}
             </p>
-            <p class="text-lg bg-base-200 p-4 rounded-lg border-2 border-base-300 italic">
-              "{@request.message}"
+            <p class="text-sm text-base-content/70 flex items-center gap-1">
+              <.icon name="hero-phone" class="w-4 h-4" />
+              {current_request.volunteer_user.phone}
             </p>
           </div>
         </div>
-        <div class="flex flex-col gap-3 ml-6">
-          <button
-            phx-click="accept_volunteer"
-            phx-value-request_id={@request.id}
-            phx-value-ride_id={@ride.id}
-            class="btn btn-success btn-modern px-6 flex items-center gap-2"
-            data-confirm="Accept this volunteer? This will confirm your ride and other volunteers will be notified."
+        
+        <.volunteer_details volunteer={current_request.volunteer_user} />
+        
+        <div :if={current_request.message} class="mt-6">
+          <p class="text-sm font-medium text-base-content/70 mb-2 flex items-center gap-2">
+            <.icon name="hero-chat-bubble-bottom-center-text" class="w-5 h-5" />
+            Message from Volunteer:
+          </p>
+          <p class="text-base bg-base-200 p-4 rounded-lg border-2 border-base-300 italic">
+            "{current_request.message}"
+          </p>
+        </div>
+        
+        <!-- Navigation and action buttons -->
+        <div class="flex justify-between items-center mt-6 pt-4 border-t border-primary/20">
+          <button 
+            phx-click="previous_volunteer" 
+            phx-value-ride_id={@ride_id}
+            class="btn btn-ghost btn-sm"
+            disabled={length(@requests) <= 1}
           >
-            <.icon name="hero-check" class="w-4 h-4" /> Accept
+            <.icon name="hero-chevron-left" class="w-4 h-4" />
+            Previous
           </button>
-          <button
-            phx-click="reject_volunteer"
-            phx-value-request_id={@request.id}
-            class="btn btn-error btn-outline btn-modern px-6 flex items-center gap-2"
-          >
-            <.icon name="hero-x-mark" class="w-4 h-4" /> Decline
-          </button>
+          
+          <div class="flex gap-3">
+            <button 
+              phx-click="next_volunteer" 
+              phx-value-ride_id={@ride_id}
+              class="btn btn-outline btn-sm"
+              disabled={length(@requests) <= 1}
+            >
+              <.icon name="hero-chevron-right" class="w-4 h-4" />
+              Skip
+            </button>
+            <button
+              phx-click="reject_volunteer"
+              phx-value-request_id={current_request.id}
+              class="btn btn-error btn-outline btn-sm px-4 flex items-center gap-2"
+            >
+              <.icon name="hero-x-mark" class="w-4 h-4" /> Pass
+            </button>
+            <button
+              phx-click="accept_volunteer"
+              phx-value-request_id={current_request.id}
+              phx-value-ride_id={@ride_id}
+              class="btn btn-success btn-sm px-4 flex items-center gap-2"
+              data-confirm="Accept this volunteer? This will confirm your ride and other volunteers will be notified."
+            >
+              <.icon name="hero-heart" class="w-5 h-5" /> Accept
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -840,17 +1132,6 @@ defmodule CarlosassistWeb.RiderDashboardLive do
   defp format_status("cancelled"), do: "Cancelled"
   defp format_status(status), do: String.capitalize(status)
 
-  defp time_ago(datetime) do
-    now = DateTime.utc_now()
-    diff = DateTime.diff(now, datetime, :second)
-
-    cond do
-      diff < 60 -> "just now"
-      diff < 3600 -> "#{div(diff, 60)} minutes ago"
-      diff < 86400 -> "#{div(diff, 3600)} hours ago"
-      true -> "#{div(diff, 86400)} days ago"
-    end
-  end
 
   defp format_datetime(""), do: ""
 
