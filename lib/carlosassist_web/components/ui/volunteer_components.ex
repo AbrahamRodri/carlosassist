@@ -11,11 +11,69 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
 
   def volunteer_requests_section(assigns) do
     ~H"""
-    <div :if={@requests == []} class="text-base-content/60 italic">
+    <div :if={@requests == []} class="text-base-content/60 italic text-center py-8">
       You haven't requested any rides yet.
     </div>
-    <div :if={@requests != []} class="grid gap-4">
-      <.volunteer_request_card :for={request <- @requests} request={request} />
+    <div :if={@requests != []} class="grid gap-3">
+      <.simplified_volunteer_request_card :for={request <- @requests} request={request} />
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a simplified volunteer request card with minimal information.
+  """
+  attr :request, :map, required: true
+
+  def simplified_volunteer_request_card(assigns) do
+    ~H"""
+    <div class="p-3 bg-base-100 rounded-lg border hover:shadow-md transition-shadow">
+      <div class="flex items-start gap-2 mb-2">
+        <.avatar src={@request.ride.user.profile_pic_location} alt="Rider" size="sm" />
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <.request_status_badge status={@request.status} />
+            <div class="flex items-center gap-1">
+              <button 
+                :if={@request.status == "accepted"}
+                class="btn btn-primary btn-xs"
+                onclick="window.location.href='/dashboard/inbox'"
+              >
+                <.icon name="hero-chat-bubble-left-right" class="w-3 h-3" />
+                Chat
+              </button>
+              
+              <.icon 
+                :if={@request.status == "pending"} 
+                name="hero-clock" 
+                class="w-4 h-4 text-warning" 
+              />
+              <.icon 
+                :if={@request.status == "accepted"} 
+                name="hero-check-circle" 
+                class="w-4 h-4 text-success" 
+              />
+              <.icon 
+                :if={@request.status == "rejected"} 
+                name="hero-x-circle" 
+                class="w-4 h-4 text-error" 
+              />
+            </div>
+          </div>
+          
+          <p class="font-medium text-sm leading-tight mb-1">
+            {@request.ride.pickup_name}
+          </p>
+          <p class="font-medium text-sm leading-tight mb-2 flex items-center gap-1">
+            <.icon name="hero-arrow-right" class="w-3 h-3 text-base-content/40" />
+            {@request.ride.destination_name}
+          </p>
+          
+          <p class="text-xs text-base-content/60">
+            {Calendar.strftime(@request.ride.ride_date, "%b %d, %I:%M %p")}
+          </p>
+        </div>
+      </div>
     </div>
     """
   end
@@ -64,6 +122,77 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
     </div>
     <div :if={@rides != []} class="grid gap-6">
       <.available_ride_card :for={ride <- @rides} ride={ride} />
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a single ride browser with Tinder-style navigation.
+  """
+  attr :rides, :list, required: true
+  attr :current_index, :integer, required: true
+
+  def single_ride_browser(assigns) do
+    ~H"""
+    <div :if={@rides == []} class="text-base-content/60 italic text-center py-12">
+      No rides available at the moment.
+    </div>
+    <div :if={@rides != []} class="max-w-2xl mx-auto">
+      <% current_ride = Enum.at(@rides, @current_index) %>
+      
+      <!-- Progress indicator -->
+      <div class="flex justify-center items-center mb-6">
+        <span class="text-sm text-base-content/60 bg-base-200 px-3 py-1 rounded-full">
+          Showing <%= @current_index + 1 %> of <%= length(@rides) %> rides
+        </span>
+      </div>
+      
+      <!-- Single ride card -->
+      <div class="card bg-base-100 p-6 rounded-lg shadow-lg border">
+        <div class="flex justify-between items-start mb-4">
+          <div class="flex items-start gap-4 flex-1">
+            <.avatar src={current_ride.user.profile_pic_location} alt="Rider Profile" size="xl" />
+            <div class="flex-1">
+              <h3 class="text-xl font-semibold">Ride Request</h3>
+              <p class="text-base-content/60">{current_ride.user.email}</p>
+              <p class="text-sm text-base-content/60">{current_ride.user.phone}</p>
+            </div>
+          </div>
+        </div>
+
+        <.ride_details ride={current_ride} />
+        
+        <!-- Navigation buttons -->
+        <div class="flex justify-between items-center mt-6 pt-4 border-t border-base-300">
+          <button 
+            phx-click="previous_ride" 
+            class="btn btn-ghost btn-sm"
+            disabled={length(@rides) <= 1}
+          >
+            <.icon name="hero-chevron-left" class="w-4 h-4" />
+            Previous
+          </button>
+          
+          <div class="flex gap-3">
+            <button 
+              phx-click="next_ride" 
+              class="btn btn-outline btn-sm"
+              disabled={length(@rides) <= 1}
+            >
+              <.icon name="hero-chevron-right" class="w-4 h-4" />
+              Skip
+            </button>
+            <button 
+              phx-click="request_ride" 
+              phx-value-ride_id={current_ride.id} 
+              class="btn btn-primary"
+            >
+              <.icon name="hero-heart" class="w-5 h-5" />
+              Request to Help
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     """
   end

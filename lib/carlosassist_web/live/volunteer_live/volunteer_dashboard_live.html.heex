@@ -1,22 +1,50 @@
-<div class="max-w-6xl mx-auto p-6">
-  <.header>
-    Volunteer Dashboard
-    <:subtitle>View and request to help with rides</:subtitle>
-  </.header>
-  
-<!-- My Requests Section -->
-  <div class="mt-8">
-    <h2 class="text-xl font-semibold mb-4">My Requests</h2>
-    <CarlosassistWeb.UI.VolunteerComponents.volunteer_requests_section requests={@my_requests} />
+<div class="min-h-screen bg-base-200/50">
+  <!-- Header -->
+  <div class="bg-base-100 shadow-sm border-b">
+    <div class="max-w-6xl mx-auto p-6">
+      <.header>
+        Volunteer Dashboard
+        <:subtitle>Manage your requests and discover new rides to help with</:subtitle>
+      </.header>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto p-6 grid lg:grid-cols-3 gap-8">
+    
+    <!-- My Requests Section - Sidebar -->
+    <div class="lg:col-span-1">
+      <div class="bg-base-100 rounded-xl shadow-sm border p-6 sticky top-6">
+        <div class="flex items-center gap-2 mb-6">
+          <.icon name="hero-clipboard-document-list" class="w-5 h-5 text-primary" />
+          <h2 class="text-lg font-semibold">My Requests</h2>
+        </div>
+        
+        <div>
+          <CarlosassistWeb.UI.VolunteerComponents.volunteer_requests_section requests={@my_requests} />
+        </div>
+      </div>
+    </div>
+    
+    <!-- Available Rides Section - Main Content -->
+    <div class="lg:col-span-2" phx-window-keydown="navigate_rides">
+      <div class="bg-base-100 rounded-xl shadow-sm border p-6">
+        <div class="flex items-center gap-2 mb-6">
+          <.icon name="hero-magnifying-glass" class="w-5 h-5 text-primary" />
+          <h2 class="text-lg font-semibold">Discover Rides</h2>
+          <div class="ml-auto text-sm text-base-content/60">
+            Use ← → keys to navigate
+          </div>
+        </div>
+        
+        <CarlosassistWeb.UI.VolunteerComponents.single_ride_browser 
+          rides={@pending_rides} 
+          current_index={@current_ride_index} 
+        />
+      </div>
+    </div>
   </div>
   
-<!-- Available Rides Section -->
-  <div class="mt-8">
-    <h2 class="text-xl font-semibold mb-4">Available Rides</h2>
-    <CarlosassistWeb.UI.VolunteerComponents.available_rides_section rides={@pending_rides} />
-  </div>
-  
-<!-- Request Modal -->
+  <!-- Request Modal -->
   <CarlosassistWeb.UI.VolunteerComponents.volunteer_request_modal
     :if={@show_request_modal}
     selected_ride={@selected_ride}

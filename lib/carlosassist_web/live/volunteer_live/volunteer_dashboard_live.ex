@@ -28,7 +28,8 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
      |> assign(:my_requests, my_requests)
      |> assign(:show_request_modal, false)
      |> assign(:selected_ride, nil)
-     |> assign(:request_message, "")}
+     |> assign(:request_message, "")
+     |> assign(:current_ride_index, 0)}
   end
 
   def handle_event("request_ride", %{"ride_id" => ride_id}, socket) do
@@ -59,13 +60,18 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
            message: message
          }) do
       {:ok, _request} ->
+        updated_rides = get_available_rides_for_volunteer(current_user.id)
+        # Adjust current_ride_index if needed after removing a ride
+        new_index = min(socket.assigns.current_ride_index, max(0, length(updated_rides) - 1))
+        
         {:noreply,
          socket
          |> put_flash(:info, "Your request has been sent to the rider!")
          |> assign(:show_request_modal, false)
          |> assign(:selected_ride, nil)
          |> assign(:my_requests, Rides.list_volunteer_requests_for_user(current_user.id))
-         |> assign(:pending_rides, get_available_rides_for_volunteer(current_user.id))}
+         |> assign(:pending_rides, updated_rides)
+         |> assign(:current_ride_index, new_index)}
 
       {:error, changeset} ->
         error_message =
@@ -75,6 +81,34 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
 
         {:noreply, put_flash(socket, :error, "Error: #{error_message}")}
     end
+  end
+
+  def handle_event("next_ride", _params, socket) do
+    rides = socket.assigns.pending_rides
+    current_index = socket.assigns.current_ride_index
+    new_index = if current_index + 1 >= length(rides), do: 0, else: current_index + 1
+    
+    {:noreply, assign(socket, :current_ride_index, new_index)}
+  end
+
+  def handle_event("previous_ride", _params, socket) do
+    rides = socket.assigns.pending_rides
+    current_index = socket.assigns.current_ride_index
+    new_index = if current_index - 1 < 0, do: max(0, length(rides) - 1), else: current_index - 1
+    
+    {:noreply, assign(socket, :current_ride_index, new_index)}
+  end
+
+  def handle_event("navigate_rides", %{"key" => "ArrowRight"}, socket) do
+    handle_event("next_ride", %{}, socket)
+  end
+
+  def handle_event("navigate_rides", %{"key" => "ArrowLeft"}, socket) do
+    handle_event("previous_ride", %{}, socket)
+  end
+
+  def handle_event("navigate_rides", _params, socket) do
+    {:noreply, socket}
   end
 
   # The render function is now handled by the corresponding .html.heex template
