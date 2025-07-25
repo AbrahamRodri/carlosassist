@@ -1,26 +1,27 @@
 <div class="min-h-screen bg-base-200/50">
   <!-- Header -->
   <div class="bg-base-100 shadow-sm border-b">
-    <div class="max-w-6xl mx-auto p-6">
-      <div class="flex items-center justify-between">
+    <div class="max-w-6xl mx-auto p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-semibold text-base-content mb-2">Rider Dashboard</h1>
-          <p class="text-base-content/70">Request and manage your transportation with volunteers</p>
+          <h1 class="text-xl sm:text-2xl font-semibold text-base-content mb-2">Rider Dashboard</h1>
+          <p class="text-sm sm:text-base text-base-content/70">Request and manage your transportation with volunteers</p>
         </div>
         
         <button 
           :if={!@show_form} 
           phx-click="show_form" 
-          class="btn btn-primary btn-modern px-6 py-3 flex items-center gap-2"
+          class="btn btn-primary btn-modern px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-center gap-2 w-full sm:w-auto"
         >
-          <.icon name="hero-plus" class="w-5 h-5" />
-          Request New Ride
+          <.icon name="hero-plus" class="w-4 h-4 sm:w-5 sm:h-5" />
+          <span class="hidden xs:inline">Request New Ride</span>
+          <span class="xs:hidden">New Ride</span>
         </button>
       </div>
     </div>
   </div>
 
-  <div class="max-w-6xl mx-auto p-6">
+  <div class="max-w-6xl mx-auto p-4 sm:p-6">
     <!-- New Ride Form -->
     <.new_ride_form 
       :if={@show_form} 
@@ -30,11 +31,13 @@
     />
     
     <!-- Rides List -->
-    <div :if={!@show_form} class="bg-base-100 rounded-xl shadow-sm border p-6">
-      <div class="flex items-center gap-2 mb-6">
-        <.icon name="hero-truck" class="w-5 h-5 text-primary" />
-        <h2 class="text-lg font-semibold">My Rides</h2>
-        <div class="ml-auto text-sm text-base-content/60">
+    <div :if={!@show_form} class="bg-base-100 rounded-xl shadow-sm border p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6">
+        <div class="flex items-center gap-2">
+          <.icon name="hero-truck" class="w-5 h-5 text-primary" />
+          <h2 class="text-lg font-semibold">My Rides</h2>
+        </div>
+        <div class="text-sm text-base-content/60 sm:ml-auto">
           {length(@rides)} total rides
         </div>
       </div>

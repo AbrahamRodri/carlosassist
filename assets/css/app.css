@@ -26,18 +26,18 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-  --color-base-100: oklch(15% 0.01 180);
-  --color-base-200: oklch(12% 0.008 180);
-  --color-base-300: oklch(9% 0.006 180);
-  --color-base-content: oklch(95% 0.02 150);
+  --color-base-100: oklch(22% 0.003 180);
+  --color-base-200: oklch(18% 0.002 180);
+  --color-base-300: oklch(14% 0.002 180);
+  --color-base-content: oklch(95% 0.002 180);
   --color-primary: oklch(55% 0.08 150);
   --color-primary-content: oklch(98% 0.01 150);
   --color-secondary: oklch(50% 0.06 140);
   --color-secondary-content: oklch(98% 0.01 140);
   --color-accent: oklch(60% 0.1 160);
   --color-accent-content: oklch(98% 0.01 160);
-  --color-neutral: oklch(25% 0.02 180);
-  --color-neutral-content: oklch(90% 0.01 150);
+  --color-neutral: oklch(26% 0.003 180);
+  --color-neutral-content: oklch(90% 0.002 180);
   --color-info: oklch(55% 0.12 200);
   --color-info-content: oklch(98% 0.01 200);
   --color-success: oklch(60% 0.1 140);
@@ -81,13 +81,13 @@
   --color-warning-content: oklch(20% 0.02 60);
   --color-error: oklch(60% 0.2 20);
   --color-error-content: oklch(98% 0.01 20);
-  --radius-selector: 0.75rem;
-  --radius-field: 0.75rem;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
   --radius-box: 1rem;
-  --size-selector: 0.125rem;
-  --size-field: 0.125rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
   --border: 1px;
-  --depth: 1;
+  --depth: 2;
   --noise: 0;
 }
 
@@ -109,9 +109,9 @@
 
 .sage-gradient-dark {
   background: linear-gradient(135deg,
-    oklch(15% 0.01 180) 0%,
-    oklch(18% 0.015 150) 50%,
-    oklch(12% 0.008 140) 100%);
+    oklch(22% 0.003 180) 0%,
+    oklch(25% 0.004 180) 50%,
+    oklch(19% 0.002 180) 100%);
 }
 
 /* Modern card styles */

@@ -172,32 +172,35 @@ defmodule CarlosassistWeb.UI.VolunteerComponents do
         <.ride_details ride={current_ride} />
         
         <!-- Navigation buttons -->
-        <div class="flex justify-between items-center mt-6 pt-4 border-t border-base-300">
+        <div class="mt-6 pt-4 border-t border-base-300 space-y-3 sm:space-y-0 sm:flex sm:justify-between sm:items-center">
           <button 
             phx-click="previous_ride" 
-            class="btn btn-ghost btn-sm"
+            class="btn btn-ghost btn-sm w-full sm:w-auto"
             disabled={length(@rides) <= 1}
           >
             <.icon name="hero-chevron-left" class="w-4 h-4" />
-            Previous
+            <span class="hidden sm:inline">Previous</span>
+            <span class="sm:hidden">← Prev</span>
           </button>
           
-          <div class="flex gap-3">
+          <div class="flex gap-2 sm:gap-3">
             <button 
               phx-click="next_ride" 
-              class="btn btn-outline btn-sm"
+              class="btn btn-outline btn-sm flex-1 sm:flex-none"
               disabled={length(@rides) <= 1}
             >
               <.icon name="hero-chevron-right" class="w-4 h-4" />
-              Skip
+              <span class="hidden sm:inline">Skip</span>
+              <span class="sm:hidden">Skip</span>
             </button>
             <button 
               phx-click="request_ride" 
               phx-value-ride_id={current_ride.id} 
-              class="btn btn-primary"
+              class="btn btn-primary btn-sm flex-1 sm:flex-none"
             >
-              <.icon name="hero-heart" class="w-5 h-5" />
-              Request to Help
+              <.icon name="hero-heart" class="w-4 h-4 sm:w-5 sm:h-5" />
+              <span class="hidden sm:inline">Request to Help</span>
+              <span class="sm:hidden">Request</span>
             </button>
           </div>
         </div>

@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-base-200/50">
   <!-- Header -->
   <div class="bg-base-100 shadow-sm border-b">
-    <div class="max-w-6xl mx-auto p-6">
+    <div class="max-w-6xl mx-auto p-4 sm:p-6">
       <.header>
         Volunteer Dashboard
         <:subtitle>Manage your requests and discover new rides to help with</:subtitle>
@@ -9,11 +9,11 @@
     </div>
   </div>
 
-  <div class="max-w-6xl mx-auto p-6 grid lg:grid-cols-3 gap-8">
+  <div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
     
     <!-- My Requests Section - Sidebar -->
     <div class="lg:col-span-1">
-      <div class="bg-base-100 rounded-xl shadow-sm border p-6 sticky top-6">
+      <div class="bg-base-100 rounded-xl shadow-sm border p-4 sm:p-6 lg:sticky lg:top-6">
         <div class="flex items-center gap-2 mb-6">
           <.icon name="hero-clipboard-document-list" class="w-5 h-5 text-primary" />
           <h2 class="text-lg font-semibold">My Requests</h2>
@@ -27,7 +27,7 @@
     
     <!-- Available Rides Section - Main Content -->
     <div class="lg:col-span-2" phx-window-keydown="navigate_rides">
-      <div class="bg-base-100 rounded-xl shadow-sm border p-6">
+      <div class="bg-base-100 rounded-xl shadow-sm border p-4 sm:p-6">
         <div class="flex items-center gap-2 mb-6">
           <.icon name="hero-magnifying-glass" class="w-5 h-5 text-primary" />
           <h2 class="text-lg font-semibold">Discover Rides</h2>

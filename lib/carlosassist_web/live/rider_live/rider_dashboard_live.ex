@@ -755,7 +755,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
     <div class="bg-base-100 border rounded-lg hover:shadow-md transition-shadow">
       <div class="p-4">
         <!-- Main ride info - always visible -->
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
           <div 
             class="flex items-center gap-3 flex-1 cursor-pointer hover:bg-base-200/50 -m-2 p-2 rounded"
             phx-click="show_ride_details"
@@ -765,8 +765,8 @@ defmodule CarlosassistWeb.RiderDashboardLive do
               <.icon name="hero-truck" class="w-5 h-5 text-primary" />
             </div>
             <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <p class="font-medium text-sm truncate">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                <p class="font-medium text-sm">
                   {@ride.pickup_name} → {@ride.destination_name}
                 </p>
                 <span class={"inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium " <> status_badge_class(@ride.status)}>
@@ -778,12 +778,12 @@ defmodule CarlosassistWeb.RiderDashboardLive do
                 {Calendar.strftime(@ride.ride_date, "%b %d, %I:%M %p")}
               </p>
             </div>
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 hidden sm:block">
               <.icon name="hero-chevron-right" class="w-4 h-4 text-base-content/40" />
             </div>
           </div>
           
-          <div class="flex items-center gap-2 ml-4">
+          <div class="flex items-center justify-between sm:justify-start gap-2 sm:ml-4">
             <!-- Volunteer count indicator -->
             <div :if={@ride.status == "pending" && @ride.volunteer_requests && length(@ride.volunteer_requests) > 0} class="flex items-center gap-1 text-xs text-primary">
               <.icon name="hero-hand-raised" class="w-4 h-4" />
@@ -794,10 +794,10 @@ defmodule CarlosassistWeb.RiderDashboardLive do
             <button 
               :if={@ride.status == "confirmed" && @ride.conversation}
               onclick={"window.location.href='/dashboard/chat/#{@ride.conversation.id}'"}
-              class="btn btn-primary btn-xs"
+              class="btn btn-primary btn-xs flex-1 sm:flex-none"
             >
               <.icon name="hero-chat-bubble-left-right" class="w-3 h-3" />
-              Chat
+              <span class="hidden xs:inline ml-1">Chat</span>
             </button>
             
             <!-- Delete button -->
@@ -805,7 +805,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
               phx-click="delete"
               phx-value-id={@ride.id}
               data-confirm="Are you sure you want to delete this ride request?"
-              class="btn btn-ghost btn-xs p-1 hover:bg-error/10 hover:text-error"
+              class="btn btn-ghost btn-xs p-2 hover:bg-error/10 hover:text-error flex-shrink-0"
             >
               <.icon name="hero-trash" class="w-3 h-3" />
             </button>
