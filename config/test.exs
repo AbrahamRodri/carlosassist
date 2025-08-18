@@ -9,10 +9,7 @@ config :bcrypt_elixir, :log_rounds, 1
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :carlosassist, Carlosassist.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "carlosassist_test#{System.get_env("MIX_TEST_PARTITION")}",
+  database: Path.expand("../carlosassist_test#{System.get_env("MIX_TEST_PARTITION")}.db", Path.dirname(__ENV__.file)),
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
