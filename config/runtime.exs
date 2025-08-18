@@ -50,6 +50,11 @@ if config_env() == :prod do
 
   config :carlosassist, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  # Mapbox configuration
+  config :carlosassist, :mapbox,
+    public_key: System.get_env("MAPBOX_PUBLIC_KEY"),
+    private_key: System.get_env("MAPBOX_PRIVATE_KEY")
+
   config :carlosassist, CarlosassistWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
