@@ -1,4 +1,10 @@
 defmodule CarlosassistWeb.VolunteerDashboardLive do
+  @moduledoc """
+  Volunteer home (`/dashboard/volunteer`): browse open rides one-at-a-time
+  (carousel style), send an offer with a message, and track my offers. Rides the
+  volunteer already offered on are filtered out. Not PubSub-subscribed — the board
+  refreshes only on reload. Template: volunteer_dashboard_live.html.heex.
+  """
   use CarlosassistWeb, :live_view
 
   alias Carlosassist.Rides

@@ -85,6 +85,12 @@ defmodule Carlosassist.AccountsTest do
       assert is_nil(user.confirmed_at)
       assert is_nil(user.password)
     end
+
+    test "rejects the admin role (no self-service privilege escalation)" do
+      {:error, changeset} = Accounts.register_user(valid_user_attributes(role: "admin"))
+
+      assert "must be either volunteer or rider" in errors_on(changeset).role
+    end
   end
 
   describe "sudo_mode?/2" do

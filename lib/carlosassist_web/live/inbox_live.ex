@@ -1,4 +1,8 @@
 defmodule CarlosassistWeb.InboxLive do
+  @moduledoc """
+  Conversation list for the current user (`/dashboard/inbox`). Static on mount —
+  no PubSub; new messages appear only on refresh.
+  """
   use CarlosassistWeb, :live_view
 
   alias Carlosassist.Messages

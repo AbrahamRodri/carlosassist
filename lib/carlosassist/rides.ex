@@ -1,6 +1,12 @@
 defmodule Carlosassist.Rides do
   @moduledoc """
-  The Rides context.
+  The Rides context: ride requests and the volunteer matching flow.
+
+  Lifecycle: pending → confirmed → completed | cancelled. Volunteers offer via
+  `VolunteerRequest`; `accept_volunteer_request/3` confirms the ride, rejects the
+  other offers, and opens the chat conversation. Mutations take the caller's
+  `user_scope` and enforce ride ownership, returning
+  `{:error, :unauthorized | :invalid_status | :not_found}` when checks fail.
   """
 
   import Ecto.Query, warn: false
@@ -100,19 +106,40 @@ defmodule Carlosassist.Rides do
   end
 
   @doc """
-  Deletes a ride.
+  Deletes a ride, along with its volunteer requests.
+
+  Only the ride's owner may delete it, and only while it is still `"pending"`
+  (once a volunteer is attached, use `cancel_ride/2` so history is kept).
 
   ## Examples
 
-      iex> delete_ride(ride)
+      iex> delete_ride(ride, owner_scope)
       {:ok, %Ride{}}
 
-      iex> delete_ride(ride)
-      {:error, %Ecto.Changeset{}}
+      iex> delete_ride(ride, other_scope)
+      {:error, :unauthorized}
 
   """
-  def delete_ride(%Ride{} = ride) do
-    Repo.delete(ride)
+  def delete_ride(%Ride{} = ride, user_scope) do
+    cond do
+      ride.user_id != user_scope.user.id ->
+        {:error, :unauthorized}
+
+      ride.status != "pending" ->
+        {:error, :invalid_status}
+
+      true ->
+        Repo.transaction(fn ->
+          VolunteerRequest
+          |> where([vr], vr.ride_id == ^ride.id)
+          |> Repo.delete_all()
+
+          case Repo.delete(ride) do
+            {:ok, deleted} -> deleted
+            {:error, changeset} -> Repo.rollback(changeset)
+          end
+        end)
+    end
   end
 
   @doc """
@@ -163,55 +190,85 @@ defmodule Carlosassist.Rides do
 
   @doc """
   Accepts a volunteer request and assigns the volunteer to the ride.
+
+  Only the ride's owner (via `user_scope`) may accept, the request must belong
+  to that ride, and both must still be pending. Confirms the ride, rejects the
+  other pending requests, and opens the chat conversation.
+
+  Returns `{:ok, {accepted_request, updated_ride}}` or
+  `{:error, :unauthorized | :not_found | :invalid_status}`.
   """
-  def accept_volunteer_request(volunteer_request_id, ride_id) do
+  def accept_volunteer_request(volunteer_request_id, ride_id, user_scope) do
     Repo.transaction(fn ->
-      volunteer_request = Repo.get!(VolunteerRequest, volunteer_request_id)
+      ride =
+        Ride
+        |> where([r], r.id == ^ride_id and r.user_id == ^user_scope.user.id)
+        |> Repo.one()
 
-      # Update the accepted volunteer request status
-      {:ok, accepted_request} =
-        volunteer_request
-        |> VolunteerRequest.changeset(%{status: "accepted"})
-        |> Repo.update()
+      volunteer_request = Repo.get(VolunteerRequest, volunteer_request_id)
 
-      # Assign volunteer to ride and update status to confirmed
-      ride = Repo.get!(Ride, ride_id) |> Repo.preload(:user)
+      cond do
+        is_nil(ride) ->
+          Repo.rollback(:unauthorized)
 
-      {:ok, updated_ride} =
-        ride
-        |> Ride.changeset(%{
-          volunteer_id: volunteer_request.volunteer_user_id,
-          status: "confirmed"
-        })
-        |> Repo.update()
+        is_nil(volunteer_request) or volunteer_request.ride_id != ride.id ->
+          Repo.rollback(:not_found)
 
-      # Create a conversation between rider and volunteer
-      {:ok, _conversation} =
-        Messages.create_conversation(%{
-          ride_id: ride_id,
-          rider_user_id: ride.user_id,
-          volunteer_user_id: volunteer_request.volunteer_user_id,
-          status: "active"
-        })
+        ride.status != "pending" or volunteer_request.status != "pending" ->
+          Repo.rollback(:invalid_status)
 
-      # Reject all other pending requests for this ride
-      VolunteerRequest
-      |> where([vr], vr.ride_id == ^ride_id and vr.status == "pending")
-      |> Repo.update_all(set: [status: "rejected"])
+        true ->
+          {:ok, accepted_request} =
+            volunteer_request
+            |> VolunteerRequest.changeset(%{status: "accepted"})
+            |> Repo.update()
 
-      {accepted_request, updated_ride}
+          {:ok, updated_ride} =
+            ride
+            |> Ride.changeset(%{
+              volunteer_id: volunteer_request.volunteer_user_id,
+              status: "confirmed"
+            })
+            |> Repo.update()
+
+          {:ok, _conversation} =
+            Messages.create_conversation(%{
+              ride_id: ride.id,
+              rider_user_id: ride.user_id,
+              volunteer_user_id: volunteer_request.volunteer_user_id,
+              status: "active"
+            })
+
+          # Reject all other pending requests for this ride
+          VolunteerRequest
+          |> where([vr], vr.ride_id == ^ride.id and vr.status == "pending")
+          |> Repo.update_all(set: [status: "rejected"])
+
+          {accepted_request, updated_ride}
+      end
     end)
   end
 
   @doc """
-  Rejects a volunteer request.
+  Rejects a volunteer request. Only the owner of the ride the request targets
+  may reject it.
   """
-  def reject_volunteer_request(volunteer_request_id) do
-    volunteer_request = Repo.get!(VolunteerRequest, volunteer_request_id)
+  def reject_volunteer_request(volunteer_request_id, user_scope) do
+    volunteer_request =
+      VolunteerRequest
+      |> join(:inner, [vr], r in Ride, on: r.id == vr.ride_id)
+      |> where([vr, r], vr.id == ^volunteer_request_id and r.user_id == ^user_scope.user.id)
+      |> Repo.one()
 
-    volunteer_request
-    |> VolunteerRequest.changeset(%{status: "rejected"})
-    |> Repo.update()
+    case volunteer_request do
+      nil ->
+        {:error, :unauthorized}
+
+      volunteer_request ->
+        volunteer_request
+        |> VolunteerRequest.changeset(%{status: "rejected"})
+        |> Repo.update()
+    end
   end
 
   @doc """
@@ -226,29 +283,74 @@ defmodule Carlosassist.Rides do
   end
 
   @doc """
-  Completes a ride and closes the associated conversation.
+  Completes a confirmed ride and closes the associated conversation.
+  Only the ride's owner may complete it.
   """
-  def complete_ride(ride_id) do
+  def complete_ride(ride_id, user_scope) do
     Repo.transaction(fn ->
-      # Update ride status to completed
-      ride = Repo.get!(Ride, ride_id)
+      ride = get_owned_ride(ride_id, user_scope)
 
-      {:ok, updated_ride} =
-        ride
-        |> Ride.changeset(%{status: "completed"})
-        |> Repo.update()
+      cond do
+        is_nil(ride) ->
+          Repo.rollback(:unauthorized)
 
-      # Close the conversation if it exists
-      case Messages.get_conversation_by_ride(ride_id) do
-        nil ->
-          # No conversation to close
-          :ok
+        ride.status != "confirmed" ->
+          Repo.rollback(:invalid_status)
 
-        conversation ->
-          Messages.close_conversation(conversation.id)
+        true ->
+          {:ok, updated_ride} =
+            ride
+            |> Ride.changeset(%{status: "completed"})
+            |> Repo.update()
+
+          close_ride_conversation(ride.id)
+          updated_ride
       end
-
-      updated_ride
     end)
+  end
+
+  @doc """
+  Cancels a pending or confirmed ride: rejects outstanding volunteer requests,
+  closes the conversation if one exists, and keeps the ride as history.
+  Only the ride's owner may cancel.
+  """
+  def cancel_ride(ride_id, user_scope) do
+    Repo.transaction(fn ->
+      ride = get_owned_ride(ride_id, user_scope)
+
+      cond do
+        is_nil(ride) ->
+          Repo.rollback(:unauthorized)
+
+        ride.status not in ["pending", "confirmed"] ->
+          Repo.rollback(:invalid_status)
+
+        true ->
+          VolunteerRequest
+          |> where([vr], vr.ride_id == ^ride.id and vr.status == "pending")
+          |> Repo.update_all(set: [status: "rejected"])
+
+          {:ok, updated_ride} =
+            ride
+            |> Ride.changeset(%{status: "cancelled"})
+            |> Repo.update()
+
+          close_ride_conversation(ride.id)
+          updated_ride
+      end
+    end)
+  end
+
+  defp get_owned_ride(ride_id, user_scope) do
+    Ride
+    |> where([r], r.id == ^ride_id and r.user_id == ^user_scope.user.id)
+    |> Repo.one()
+  end
+
+  defp close_ride_conversation(ride_id) do
+    case Messages.get_conversation_by_ride(ride_id) do
+      nil -> :ok
+      conversation -> Messages.close_conversation(conversation.id)
+    end
   end
 end

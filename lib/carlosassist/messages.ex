@@ -1,6 +1,9 @@
 defmodule Carlosassist.Messages do
   @moduledoc """
-  The Messages context.
+  The Messages context: rider↔volunteer chat. Exactly one conversation per ride,
+  created when an offer is accepted and closed when the ride completes. Real-time
+  delivery via PubSub topic `"conversation:{id}"` (chat is the only live-updating
+  part of the app; dashboards are not).
   """
 
   import Ecto.Query, warn: false

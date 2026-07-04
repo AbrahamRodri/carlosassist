@@ -1,4 +1,11 @@
 defmodule CarlosassistWeb.RiderDashboardLive do
+  @moduledoc """
+  Rider home (`/dashboard/rider`): 4-step ride-request wizard (state in
+  `:wizard_data`, submitted as hidden inputs at step 4) plus the rider's rides
+  grouped by status, with volunteer-offer accept/reject. Not PubSub-subscribed —
+  new offers show up on refresh. Template: rider_dashboard_live.html.heex;
+  wizard/card markup lives in function components below.
+  """
   use CarlosassistWeb, :live_view
 
   alias Carlosassist.Rides
@@ -112,7 +119,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
       |> Rides.change_ride(updated_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, 
+    {:noreply,
      socket
      |> assign(:form, to_form(changeset))
      |> assign(:wizard_data, updated_wizard_data)}
@@ -157,7 +164,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
       |> Rides.change_ride(updated_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, 
+    {:noreply,
      socket
      |> assign(:form, to_form(changeset))
      |> assign(:wizard_data, updated_wizard_data)}
@@ -192,18 +199,20 @@ defmodule CarlosassistWeb.RiderDashboardLive do
   end
 
   def handle_event("delete", %{"id" => id}, socket) do
-    ride = Rides.get_ride!(id)
+    ride = Rides.get_ride_for_user!(id, socket.assigns.current_scope)
 
-    case Rides.delete_ride(ride) do
+    case Rides.delete_ride(ride, socket.assigns.current_scope) do
       {:ok, _ride} ->
         rides = Enum.filter(socket.assigns.rides, &(&1.id != String.to_integer(id)))
 
         {:noreply,
          socket
          |> put_flash(:info, "Ride deleted successfully!")
-         |> assign(:rides, rides)}
+         |> assign(:rides, rides)
+         |> assign(:show_ride_details, false)
+         |> assign(:selected_ride, nil)}
 
-      {:error, _changeset} ->
+      {:error, _reason} ->
         {:noreply, put_flash(socket, :error, "Could not delete ride.")}
     end
   end
@@ -213,7 +222,11 @@ defmodule CarlosassistWeb.RiderDashboardLive do
         %{"request_id" => request_id, "ride_id" => ride_id},
         socket
       ) do
-    case Rides.accept_volunteer_request(String.to_integer(request_id), String.to_integer(ride_id)) do
+    case Rides.accept_volunteer_request(
+           String.to_integer(request_id),
+           String.to_integer(ride_id),
+           socket.assigns.current_scope
+         ) do
       {:ok, {_accepted_request, _updated_ride}} ->
         {:noreply,
          socket
@@ -226,7 +239,10 @@ defmodule CarlosassistWeb.RiderDashboardLive do
   end
 
   def handle_event("reject_volunteer", %{"request_id" => request_id}, socket) do
-    case Rides.reject_volunteer_request(String.to_integer(request_id)) do
+    case Rides.reject_volunteer_request(
+           String.to_integer(request_id),
+           socket.assigns.current_scope
+         ) do
       {:ok, _rejected_request} ->
         {:noreply,
          socket
@@ -238,18 +254,50 @@ defmodule CarlosassistWeb.RiderDashboardLive do
     end
   end
 
+  def handle_event("complete_ride", %{"ride_id" => ride_id}, socket) do
+    case Rides.complete_ride(String.to_integer(ride_id), socket.assigns.current_scope) do
+      {:ok, _ride} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Ride marked as completed!")
+         |> assign(:show_ride_details, false)
+         |> assign(:selected_ride, nil)
+         |> load_rides()}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Could not complete this ride.")}
+    end
+  end
+
+  def handle_event("cancel_ride", %{"ride_id" => ride_id}, socket) do
+    case Rides.cancel_ride(String.to_integer(ride_id), socket.assigns.current_scope) do
+      {:ok, _ride} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Ride cancelled.")
+         |> assign(:show_ride_details, false)
+         |> assign(:selected_ride, nil)
+         |> load_rides()}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Could not cancel this ride.")}
+    end
+  end
+
   def handle_event("next_volunteer", %{"ride_id" => ride_id}, socket) do
     ride_id = String.to_integer(ride_id)
     current_indices = socket.assigns.volunteer_indices
     current_index = Map.get(current_indices, ride_id, 0)
-    
+
     # Find the ride to get volunteer count
     ride = Enum.find(socket.assigns.rides, &(&1.id == ride_id))
-    volunteer_count = if ride && ride.volunteer_requests, do: length(ride.volunteer_requests), else: 0
-    
+
+    volunteer_count =
+      if ride && ride.volunteer_requests, do: length(ride.volunteer_requests), else: 0
+
     new_index = if current_index + 1 >= volunteer_count, do: 0, else: current_index + 1
     updated_indices = Map.put(current_indices, ride_id, new_index)
-    
+
     {:noreply, assign(socket, :volunteer_indices, updated_indices)}
   end
 
@@ -257,20 +305,22 @@ defmodule CarlosassistWeb.RiderDashboardLive do
     ride_id = String.to_integer(ride_id)
     current_indices = socket.assigns.volunteer_indices
     current_index = Map.get(current_indices, ride_id, 0)
-    
+
     # Find the ride to get volunteer count
     ride = Enum.find(socket.assigns.rides, &(&1.id == ride_id))
-    volunteer_count = if ride && ride.volunteer_requests, do: length(ride.volunteer_requests), else: 0
-    
+
+    volunteer_count =
+      if ride && ride.volunteer_requests, do: length(ride.volunteer_requests), else: 0
+
     new_index = if current_index - 1 < 0, do: max(0, volunteer_count - 1), else: current_index - 1
     updated_indices = Map.put(current_indices, ride_id, new_index)
-    
+
     {:noreply, assign(socket, :volunteer_indices, updated_indices)}
   end
 
   def handle_event("show_ride_details", %{"ride_id" => ride_id}, socket) do
     ride = Enum.find(socket.assigns.rides, &(&1.id == String.to_integer(ride_id)))
-    
+
     {:noreply,
      socket
      |> assign(:show_ride_details, true)
@@ -294,6 +344,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
       Enum.map(rides, fn ride ->
         volunteer_requests = Rides.list_volunteer_requests_for_ride(ride.id)
         conversation = Carlosassist.Messages.get_conversation_by_ride(ride.id)
+
         ride
         |> Map.put(:volunteer_requests, volunteer_requests)
         |> Map.put(:conversation, conversation)
@@ -621,17 +672,49 @@ defmodule CarlosassistWeb.RiderDashboardLive do
 
       <.form for={@form} phx-submit="save">
         <!-- Include wizard data as hidden inputs -->
-        <input type="hidden" name="ride[pickup_name]" value={Map.get(@wizard_data, "pickup_name", "")} />
-        <input type="hidden" name="ride[pickup_address]" value={Map.get(@wizard_data, "pickup_address", "")} />
+        <input
+          type="hidden"
+          name="ride[pickup_name]"
+          value={Map.get(@wizard_data, "pickup_name", "")}
+        />
+        <input
+          type="hidden"
+          name="ride[pickup_address]"
+          value={Map.get(@wizard_data, "pickup_address", "")}
+        />
         <input type="hidden" name="ride[pickup_lat]" value={Map.get(@wizard_data, "pickup_lat", "")} />
-        <input type="hidden" name="ride[pickup_long]" value={Map.get(@wizard_data, "pickup_long", "")} />
-        <input type="hidden" name="ride[destination_name]" value={Map.get(@wizard_data, "destination_name", "")} />
-        <input type="hidden" name="ride[destination_address]" value={Map.get(@wizard_data, "destination_address", "")} />
-        <input type="hidden" name="ride[destination_lat]" value={Map.get(@wizard_data, "destination_lat", "")} />
-        <input type="hidden" name="ride[destination_long]" value={Map.get(@wizard_data, "destination_long", "")} />
+        <input
+          type="hidden"
+          name="ride[pickup_long]"
+          value={Map.get(@wizard_data, "pickup_long", "")}
+        />
+        <input
+          type="hidden"
+          name="ride[destination_name]"
+          value={Map.get(@wizard_data, "destination_name", "")}
+        />
+        <input
+          type="hidden"
+          name="ride[destination_address]"
+          value={Map.get(@wizard_data, "destination_address", "")}
+        />
+        <input
+          type="hidden"
+          name="ride[destination_lat]"
+          value={Map.get(@wizard_data, "destination_lat", "")}
+        />
+        <input
+          type="hidden"
+          name="ride[destination_long]"
+          value={Map.get(@wizard_data, "destination_long", "")}
+        />
         <input type="hidden" name="ride[ride_date]" value={Map.get(@wizard_data, "ride_date", "")} />
-        <input type="hidden" name="ride[description]" value={Map.get(@wizard_data, "description", "")} />
-        
+        <input
+          type="hidden"
+          name="ride[description]"
+          value={Map.get(@wizard_data, "description", "")}
+        />
+
         <div class="flex gap-3 pt-6">
           <button
             type="button"
@@ -661,7 +744,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
     cancelled_rides = Map.get(grouped_rides, "cancelled", [])
 
     assigns = assign(assigns, :pending_rides, pending_rides)
-    assigns = assign(assigns, :confirmed_rides, confirmed_rides) 
+    assigns = assign(assigns, :confirmed_rides, confirmed_rides)
     assigns = assign(assigns, :completed_rides, completed_rides)
     assigns = assign(assigns, :cancelled_rides, cancelled_rides)
 
@@ -681,7 +764,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
         <.icon name="hero-plus" class="w-5 h-5" /> Request Your First Ride
       </button>
     </div>
-    
+
     <div :if={@rides != []} class="space-y-6">
       <!-- Pending Rides -->
       <div :if={@pending_rides != []}>
@@ -691,15 +774,15 @@ defmodule CarlosassistWeb.RiderDashboardLive do
           <span class="text-xs text-base-content/60">({length(@pending_rides)})</span>
         </div>
         <div class="space-y-3">
-          <.compact_ride_card 
-            :for={ride <- @pending_rides} 
-            ride={ride} 
+          <.compact_ride_card
+            :for={ride <- @pending_rides}
+            ride={ride}
             volunteer_indices={@volunteer_indices}
           />
         </div>
       </div>
       
-      <!-- Confirmed Rides -->
+    <!-- Confirmed Rides -->
       <div :if={@confirmed_rides != []}>
         <div class="flex items-center gap-2 mb-3">
           <.icon name="hero-check-circle" class="w-4 h-4 text-success" />
@@ -707,15 +790,15 @@ defmodule CarlosassistWeb.RiderDashboardLive do
           <span class="text-xs text-base-content/60">({length(@confirmed_rides)})</span>
         </div>
         <div class="space-y-3">
-          <.compact_ride_card 
-            :for={ride <- @confirmed_rides} 
-            ride={ride} 
+          <.compact_ride_card
+            :for={ride <- @confirmed_rides}
+            ride={ride}
             volunteer_indices={@volunteer_indices}
           />
         </div>
       </div>
       
-      <!-- Completed Rides -->
+    <!-- Completed Rides -->
       <div :if={@completed_rides != []}>
         <div class="flex items-center gap-2 mb-3">
           <.icon name="hero-check-badge" class="w-4 h-4 text-primary" />
@@ -723,15 +806,15 @@ defmodule CarlosassistWeb.RiderDashboardLive do
           <span class="text-xs text-base-content/60">({length(@completed_rides)})</span>
         </div>
         <div class="space-y-3">
-          <.compact_ride_card 
-            :for={ride <- @completed_rides} 
-            ride={ride} 
+          <.compact_ride_card
+            :for={ride <- @completed_rides}
+            ride={ride}
             volunteer_indices={@volunteer_indices}
           />
         </div>
       </div>
       
-      <!-- Cancelled Rides -->
+    <!-- Cancelled Rides -->
       <div :if={@cancelled_rides != []}>
         <div class="flex items-center gap-2 mb-3">
           <.icon name="hero-x-circle" class="w-4 h-4 text-error" />
@@ -739,9 +822,9 @@ defmodule CarlosassistWeb.RiderDashboardLive do
           <span class="text-xs text-base-content/60">({length(@cancelled_rides)})</span>
         </div>
         <div class="space-y-3">
-          <.compact_ride_card 
-            :for={ride <- @cancelled_rides} 
-            ride={ride} 
+          <.compact_ride_card
+            :for={ride <- @cancelled_rides}
+            ride={ride}
             volunteer_indices={@volunteer_indices}
           />
         </div>
@@ -756,7 +839,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
       <div class="p-4">
         <!-- Main ride info - always visible -->
         <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div 
+          <div
             class="flex items-center gap-3 flex-1 cursor-pointer hover:bg-base-200/50 -m-2 p-2 rounded"
             phx-click="show_ride_details"
             phx-value-ride_id={@ride.id}
@@ -782,16 +865,22 @@ defmodule CarlosassistWeb.RiderDashboardLive do
               <.icon name="hero-chevron-right" class="w-4 h-4 text-base-content/40" />
             </div>
           </div>
-          
+
           <div class="flex items-center justify-between sm:justify-start gap-2 sm:ml-4">
             <!-- Volunteer count indicator -->
-            <div :if={@ride.status == "pending" && @ride.volunteer_requests && length(@ride.volunteer_requests) > 0} class="flex items-center gap-1 text-xs text-primary">
+            <div
+              :if={
+                @ride.status == "pending" && @ride.volunteer_requests &&
+                  length(@ride.volunteer_requests) > 0
+              }
+              class="flex items-center gap-1 text-xs text-primary"
+            >
               <.icon name="hero-hand-raised" class="w-4 h-4" />
               {length(@ride.volunteer_requests)}
             </div>
             
-            <!-- Chat button for confirmed rides -->
-            <button 
+    <!-- Chat button for confirmed rides -->
+            <button
               :if={@ride.status == "confirmed" && @ride.conversation}
               onclick={"window.location.href='/dashboard/chat/#{@ride.conversation.id}'"}
               class="btn btn-primary btn-xs flex-1 sm:flex-none"
@@ -800,8 +889,30 @@ defmodule CarlosassistWeb.RiderDashboardLive do
               <span class="hidden xs:inline ml-1">Chat</span>
             </button>
             
-            <!-- Delete button -->
+    <!-- Complete / cancel for confirmed rides -->
             <button
+              :if={@ride.status == "confirmed"}
+              phx-click="complete_ride"
+              phx-value-ride_id={@ride.id}
+              data-confirm="Mark this ride as completed?"
+              class="btn btn-success btn-xs flex-shrink-0"
+            >
+              <.icon name="hero-check" class="w-3 h-3" />
+              <span class="hidden xs:inline ml-1">Done</span>
+            </button>
+            <button
+              :if={@ride.status == "confirmed"}
+              phx-click="cancel_ride"
+              phx-value-ride_id={@ride.id}
+              data-confirm="Cancel this ride? Your volunteer will see it as cancelled."
+              class="btn btn-ghost btn-xs p-2 hover:bg-error/10 hover:text-error flex-shrink-0"
+            >
+              <.icon name="hero-x-circle" class="w-3 h-3" />
+            </button>
+            
+    <!-- Delete button (only before a volunteer is attached) -->
+            <button
+              :if={@ride.status == "pending"}
               phx-click="delete"
               phx-value-id={@ride.id}
               data-confirm="Are you sure you want to delete this ride request?"
@@ -812,30 +923,42 @@ defmodule CarlosassistWeb.RiderDashboardLive do
           </div>
         </div>
         
-        <!-- Description if present -->
-        <div :if={@ride.description && @ride.description != ""} class="mt-3 pt-3 border-t border-base-300">
+    <!-- Description if present -->
+        <div
+          :if={@ride.description && @ride.description != ""}
+          class="mt-3 pt-3 border-t border-base-300"
+        >
           <p class="text-xs text-base-content/70 bg-base-200 p-2 rounded">
             {@ride.description}
           </p>
         </div>
         
-        <!-- Volunteer section for pending rides -->
-        <div :if={@ride.status == "pending" && @ride.volunteer_requests && length(@ride.volunteer_requests) > 0} class="mt-4 pt-4 border-t border-primary/20">
+    <!-- Volunteer section for pending rides -->
+        <div
+          :if={
+            @ride.status == "pending" && @ride.volunteer_requests &&
+              length(@ride.volunteer_requests) > 0
+          }
+          class="mt-4 pt-4 border-t border-primary/20"
+        >
           <div class="flex items-center justify-between mb-3">
             <p class="text-sm font-medium text-primary">Volunteers Available</p>
             <span class="text-xs text-base-content/60">
               {length(@ride.volunteer_requests)} waiting
             </span>
           </div>
-          <.volunteer_browser 
+          <.volunteer_browser
             requests={@ride.volunteer_requests}
             current_index={Map.get(@volunteer_indices, @ride.id, 0)}
             ride_id={@ride.id}
           />
         </div>
         
-        <!-- Confirmed volunteer info -->
-        <div :if={@ride.status == "confirmed" && @ride.volunteer} class="mt-4 pt-4 border-t border-success/20">
+    <!-- Confirmed volunteer info -->
+        <div
+          :if={@ride.status == "confirmed" && @ride.volunteer}
+          class="mt-4 pt-4 border-t border-success/20"
+        >
           <div class="flex items-center gap-3">
             <.avatar src={@ride.volunteer.profile_pic_location} alt="Volunteer" size="sm" />
             <div class="flex-1">
@@ -849,8 +972,6 @@ defmodule CarlosassistWeb.RiderDashboardLive do
     </div>
     """
   end
-
-
 
   defp ride_details_modal(assigns) do
     ~H"""
@@ -878,15 +999,15 @@ defmodule CarlosassistWeb.RiderDashboardLive do
               </span>
             </div>
           </div>
-          <button 
-            phx-click="hide_ride_details" 
+          <button
+            phx-click="hide_ride_details"
             class="btn btn-ghost btn-sm p-2 hover:bg-base-200 rounded-lg"
           >
             <.icon name="hero-x-mark" class="w-5 h-5" />
           </button>
         </div>
-
-        <!-- Ride Information -->
+        
+    <!-- Ride Information -->
         <div class="grid md:grid-cols-2 gap-6 mb-8">
           <div class="space-y-4">
             <div>
@@ -896,7 +1017,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
               <p class="font-semibold text-base-content">{@ride.pickup_name}</p>
               <p class="text-sm text-base-content/70">{@ride.pickup_address}</p>
             </div>
-            
+
             <div>
               <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
                 <.icon name="hero-flag" class="w-4 h-4" /> Destination
@@ -905,7 +1026,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
               <p class="text-sm text-base-content/70">{@ride.destination_address}</p>
             </div>
           </div>
-          
+
           <div class="space-y-4">
             <div>
               <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
@@ -918,7 +1039,7 @@ defmodule CarlosassistWeb.RiderDashboardLive do
                 {Calendar.strftime(@ride.ride_date, "%I:%M %p")}
               </p>
             </div>
-            
+
             <div :if={@ride.description && @ride.description != ""}>
               <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
                 <.icon name="hero-document-text" class="w-4 h-4" /> Special Notes
@@ -929,14 +1050,13 @@ defmodule CarlosassistWeb.RiderDashboardLive do
             </div>
           </div>
         </div>
-
-        <!-- Status-specific sections -->
+        
+    <!-- Status-specific sections -->
         <div class="space-y-6">
           <!-- Confirmed Volunteer (for confirmed rides) -->
           <div :if={@ride.status == "confirmed" && @ride.volunteer} class="border-t pt-6">
             <h3 class="text-lg font-semibold mb-4 text-success flex items-center gap-3">
-              <.icon name="hero-check-circle" class="w-5 h-5" />
-              Your Confirmed Volunteer
+              <.icon name="hero-check-circle" class="w-5 h-5" /> Your Confirmed Volunteer
             </h3>
             <div class="bg-success/10 border border-success/20 p-6 rounded-lg">
               <div class="flex items-start gap-4 mb-4">
@@ -955,44 +1075,66 @@ defmodule CarlosassistWeb.RiderDashboardLive do
                   navigate={~p"/dashboard/chat/#{@ride.conversation.id}"}
                   class="btn btn-primary btn-sm flex items-center gap-2"
                 >
-                  <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" />
-                  Chat
+                  <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" /> Chat
                 </.link>
               </div>
               <.volunteer_details volunteer={@ride.volunteer} />
             </div>
           </div>
-
-          <!-- Volunteer Requests (for pending rides) -->
-          <div :if={@ride.status == "pending" && @ride.volunteer_requests && length(@ride.volunteer_requests) > 0} class="border-t pt-6">
+          
+    <!-- Volunteer Requests (for pending rides) -->
+          <div
+            :if={
+              @ride.status == "pending" && @ride.volunteer_requests &&
+                length(@ride.volunteer_requests) > 0
+            }
+            class="border-t pt-6"
+          >
             <h3 class="text-lg font-semibold mb-4 text-primary flex items-center gap-3">
               <.icon name="hero-hand-raised" class="w-5 h-5" />
               Volunteers Available ({length(@ride.volunteer_requests)})
             </h3>
-            <.volunteer_browser 
+            <.volunteer_browser
               requests={@ride.volunteer_requests}
               current_index={Map.get(@volunteer_indices, @ride.id, 0)}
               ride_id={@ride.id}
             />
           </div>
         </div>
-
-        <!-- Actions -->
+        
+    <!-- Actions -->
         <div class="flex justify-between items-center mt-8 pt-6 border-t">
-          <button
-            phx-click="delete"
-            phx-value-id={@ride.id}
-            data-confirm="Are you sure you want to delete this ride request?"
-            class="btn btn-error btn-outline btn-sm flex items-center gap-2"
-          >
-            <.icon name="hero-trash" class="w-4 h-4" />
-            Delete Ride
-          </button>
-          
-          <button 
-            phx-click="hide_ride_details"
-            class="btn btn-primary"
-          >
+          <div class="flex items-center gap-2">
+            <button
+              :if={@ride.status == "pending"}
+              phx-click="delete"
+              phx-value-id={@ride.id}
+              data-confirm="Are you sure you want to delete this ride request?"
+              class="btn btn-error btn-outline btn-sm flex items-center gap-2"
+            >
+              <.icon name="hero-trash" class="w-4 h-4" /> Delete Ride
+            </button>
+            <button
+              :if={@ride.status == "confirmed"}
+              phx-click="complete_ride"
+              phx-value-ride_id={@ride.id}
+              data-confirm="Mark this ride as completed?"
+              class="btn btn-success btn-sm flex items-center gap-2"
+            >
+              <.icon name="hero-check" class="w-4 h-4" /> Mark Completed
+            </button>
+            <button
+              :if={@ride.status == "confirmed"}
+              phx-click="cancel_ride"
+              phx-value-ride_id={@ride.id}
+              data-confirm="Cancel this ride? Your volunteer will see it as cancelled."
+              class="btn btn-error btn-outline btn-sm flex items-center gap-2"
+            >
+              <.icon name="hero-x-circle" class="w-4 h-4" /> Cancel Ride
+            </button>
+          </div>
+
+          <button phx-click="hide_ride_details" class="btn btn-primary">
             Close
           </button>
         </div>
@@ -1009,14 +1151,14 @@ defmodule CarlosassistWeb.RiderDashboardLive do
     <div :if={@requests != []} class="max-w-2xl mx-auto">
       <% current_request = Enum.at(@requests, @current_index) %>
       
-      <!-- Progress indicator -->
+    <!-- Progress indicator -->
       <div class="flex justify-center items-center mb-6">
         <span class="text-sm text-base-content/60 bg-base-200 px-3 py-1 rounded-full">
-          Volunteer <%= @current_index + 1 %> of <%= length(@requests) %>
+          Volunteer {@current_index + 1} of {length(@requests)}
         </span>
       </div>
       
-      <!-- Single volunteer card -->
+    <!-- Single volunteer card -->
       <div class="bg-primary/10 border-2 border-primary/20 p-6 rounded-lg">
         <div class="flex items-start gap-6 mb-6">
           <.avatar
@@ -1034,9 +1176,9 @@ defmodule CarlosassistWeb.RiderDashboardLive do
             </p>
           </div>
         </div>
-        
+
         <.volunteer_details volunteer={current_request.volunteer_user} />
-        
+
         <div :if={current_request.message} class="mt-6">
           <p class="text-sm font-medium text-base-content/70 mb-2 flex items-center gap-2">
             <.icon name="hero-chat-bubble-bottom-center-text" class="w-5 h-5" />
@@ -1047,27 +1189,25 @@ defmodule CarlosassistWeb.RiderDashboardLive do
           </p>
         </div>
         
-        <!-- Navigation and action buttons -->
+    <!-- Navigation and action buttons -->
         <div class="flex justify-between items-center mt-6 pt-4 border-t border-primary/20">
-          <button 
-            phx-click="previous_volunteer" 
+          <button
+            phx-click="previous_volunteer"
             phx-value-ride_id={@ride_id}
             class="btn btn-ghost btn-sm"
             disabled={length(@requests) <= 1}
           >
-            <.icon name="hero-chevron-left" class="w-4 h-4" />
-            Previous
+            <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
           </button>
-          
+
           <div class="flex gap-3">
-            <button 
-              phx-click="next_volunteer" 
+            <button
+              phx-click="next_volunteer"
               phx-value-ride_id={@ride_id}
               class="btn btn-outline btn-sm"
               disabled={length(@requests) <= 1}
             >
-              <.icon name="hero-chevron-right" class="w-4 h-4" />
-              Skip
+              <.icon name="hero-chevron-right" class="w-4 h-4" /> Skip
             </button>
             <button
               phx-click="reject_volunteer"
@@ -1135,7 +1275,6 @@ defmodule CarlosassistWeb.RiderDashboardLive do
   defp format_status("completed"), do: "Ride Completed"
   defp format_status("cancelled"), do: "Cancelled"
   defp format_status(status), do: String.capitalize(status)
-
 
   defp format_datetime(""), do: ""
 

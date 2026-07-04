@@ -1,37 +1,59 @@
 # CarlosAssist
 
-CarlosAssist is a community-driven ride coordination platform built to help people who need transportation connect with volunteers willing to give them a ride. Whether it's getting to medical appointments, grocery stores, or other essential destinations, CarlosAssist makes it easy to request and offer rides.
+CarlosAssist is a community ride-coordination platform: people who need transportation
+(medical appointments, groceries, Mass) post ride requests, and vetted volunteers in
+their community offer to drive them. Riders choose their volunteer and coordinate
+through built-in chat.
+
+The long-term goal is for a **church/parish to run this as an official ministry tool** —
+including letting homebound and elderly members sign up to receive Holy Communion at
+home, with Eucharistic ministers signing up to bring it to them. See
+[docs/CHURCH_READINESS_CHECKLIST.md](docs/CHURCH_READINESS_CHECKLIST.md) for the full
+roadmap and current gaps.
 
 ## How It Works
 
 **For Riders:**
-1. Create an account and request a ride by entering your pickup and destination addresses
-2. Volunteers in your area can see your request and offer to help
-3. Choose from available volunteers and confirm your ride
-4. Chat directly with your volunteer to coordinate pickup details
-5. Track your ride status from pending to completed
+1. Create an account and request a ride through a 4-step wizard (pickup, destination, date, review)
+2. Volunteers see your request — only location nicknames, never your exact address
+3. Browse the volunteers who offered and accept one; your address is revealed only to them
+4. Chat directly with your volunteer to coordinate details
 
 **For Volunteers:**
-1. Sign up as a volunteer and browse available ride requests in your area
-2. Submit a request to help a rider who needs transportation
-3. Once the rider accepts, use the built-in chat to coordinate details
-4. Complete the ride and help someone in your community
+1. Sign up as a volunteer (car + license plate required) and browse open ride requests
+2. Send an offer with a short message to the rider
+3. Once accepted, the exact addresses unlock and a chat opens with the rider
 
 ## Features
 
-- **User Authentication** - Email/password and magic link login
-- **Role-Based Dashboards** - Separate interfaces for riders and volunteers
-- **Ride Management** - Request rides, accept volunteer requests, track ride status
-- **Real-Time Chat** - LiveView-powered messaging between riders and volunteers
-- **Location Services** - Mapbox integration for addresses and mapping
-- **Profile Management** - User profiles with photo uploads
+- **Authentication** — email/password and magic-link login (Phoenix 1.8 scope-based auth)
+- **Role-based dashboards** — separate rider and volunteer interfaces; admin role passes both gates
+- **Ride lifecycle** — pending → confirmed → completed/cancelled, with volunteer offer/accept flow
+- **Location privacy** — exact addresses hidden behind friendly names until a match is made
+- **Real-time chat** — one conversation per ride, PubSub-backed
+- **Mapbox integration** — address autocomplete and geocoding
+- **Profile management** — phone, volunteer details, photo upload
+
+## Current Status
+
+Deployed to Fly.io (`carlosassist.fly.dev`). All P0 blockers from the
+[checklist](docs/CHURCH_READINESS_CHECKLIST.md) are fixed in code (prod mailer via
+Brevo, authorization checks, persistent uploads, ride completion/cancellation). Before
+the next deploy you must set the mail secrets — the app intentionally refuses to boot
+in prod without them:
+
+```bash
+fly secrets set BREVO_API_KEY=xkeysib-... MAIL_FROM_ADDRESS=you@example.com
+```
+
+(Free Brevo account → verify the sender address under Senders & Domains → create an
+API key under SMTP & API.)
 
 ## Requirements
 
-- Elixir 1.14+
-- Erlang/OTP 25+
+- Elixir 1.14+ / Erlang OTP 25+
 - SQLite3
-- Node.js (for asset compilation)
+- Node.js (asset compilation)
 
 ## Setup
 
@@ -54,7 +76,10 @@ CarlosAssist is a community-driven ride coordination platform built to help peop
    mix phx.server
    ```
 
-5. Visit [`localhost:4000`](http://localhost:4000) in your browser
+5. Visit [`localhost:4000`](http://localhost:4000)
+
+Seed demo users (rider@example.com / volunteer@example.com, password `password123`) with
+`mix run priv/repo/seeds.exs`. **Warning:** seeding deletes all existing users and rides.
 
 ## Development Commands
 
@@ -67,30 +92,39 @@ CarlosAssist is a community-driven ride coordination platform built to help peop
 | `mix ecto.reset` | Reset the database |
 | `mix assets.build` | Build CSS/JS assets |
 
+In dev, sent emails are viewable at [`/dev/mailbox`](http://localhost:4000/dev/mailbox).
+
 ## Project Structure
 
 ```
 lib/
-├── carlosassist/           # Business logic (contexts)
-│   ├── accounts.ex         # User management
-│   ├── rides.ex            # Ride requests & matching
-│   └── messages.ex         # Chat system
-└── carlosassist_web/       # Web layer
-    ├── live/               # LiveView modules
-    ├── controllers/        # HTTP controllers
-    └── components/         # Reusable UI components
+├── carlosassist/            # Business logic (contexts)
+│   ├── accounts.ex          # Users, auth, roles (rider/volunteer/admin)
+│   ├── rides.ex             # Ride requests, volunteer offers, matching
+│   ├── messages.ex          # Chat (one conversation per ride)
+│   └── location_privacy.ex  # Address-hiding rules pre/post match
+└── carlosassist_web/        # Web layer
+    ├── live/                # LiveViews (dashboards, chat, auth)
+    ├── controllers/         # Static pages, session controller
+    └── components/          # Core + UI components (map, volunteer, message)
+docs/                        # Roadmap & design docs
 ```
 
-## Production Deployment
+## Deployment (Fly.io)
 
-For production, set these environment variables:
-- `SECRET_KEY_BASE` - Phoenix secret key
-- `DATABASE_PATH` - Path to SQLite database file
-- `PHX_HOST` - Production hostname
-- `MAPBOX_PUBLIC_KEY` - Mapbox API public key
-- `MAPBOX_PRIVATE_KEY` - Mapbox API private key
+`fly.toml` targets the `carlosassist` app with a mounted volume for the SQLite database.
+Required secrets/env:
 
-See [Phoenix deployment guides](https://hexdocs.pm/phoenix/deployment.html) for more details.
+- `SECRET_KEY_BASE` — `mix phx.gen.secret`
+- `DATABASE_PATH` — SQLite file path on the mounted volume
+- `PHX_HOST` — production hostname
+- `MAPBOX_PUBLIC_KEY` / `MAPBOX_PRIVATE_KEY`
+- Mail adapter credentials — **not yet configured; see checklist P0**
+
+Release commands live in `rel/overlays/bin/`. `server` runs pending migrations on boot
+(the SQLite volume is only mounted on app machines, so a Fly `release_command` can't).
+`seed` is destructive (wipes users and rides) and refuses to run in a release unless
+`ALLOW_DESTRUCTIVE_SEED=true` is set.
 
 ## License
 

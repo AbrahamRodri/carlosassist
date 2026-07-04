@@ -1,4 +1,8 @@
 defmodule CarlosassistWeb.ChatLive do
+  @moduledoc """
+  Real-time chat for one ride's conversation (`/dashboard/chat/:id`). Subscribes to
+  PubSub `"conversation:{id}"`; access limited to the conversation's rider/volunteer.
+  """
   use CarlosassistWeb, :live_view
 
   alias Carlosassist.Messages

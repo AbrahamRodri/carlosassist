@@ -1,5 +1,12 @@
 # Location Privacy System Implementation Plan
 
+> **Status (2026-07):** Largely implemented — see `lib/carlosassist/location_privacy.ex`,
+> the ride wizard in `rider_dashboard_live.ex`, and the Mapbox hooks in `assets/js/`.
+> Still open: general-area naming is a hardcoded placeholder, privacy filtering is
+> enforced in templates rather than the context layer, and access logging was never
+> built. Open items are tracked in `CHURCH_READINESS_CHECKLIST.md`; this doc is kept
+> as historical design context.
+
 ## Overview
 This document outlines the implementation plan for the location privacy system in CarlosAssist. The system allows riders to enter locations with friendly names while keeping actual addresses private until a volunteer match is made.
 
