@@ -12,7 +12,17 @@
 
 alias Carlosassist.{Accounts, Rides, Repo}
 
-# Clear existing data
+# DESTRUCTIVE demo seed: wipes all users and rides, then creates test accounts with
+# known passwords. RELEASE_NAME is only set inside a release (i.e. prod), so the
+# guard below blocks accidental `bin/seed` runs against real data.
+if System.get_env("RELEASE_NAME") && System.get_env("ALLOW_DESTRUCTIVE_SEED") != "true" do
+  raise """
+  Refusing to run the destructive demo seed inside a release: it deletes ALL
+  users and rides. If you really mean to reset this environment, run it with
+  ALLOW_DESTRUCTIVE_SEED=true.
+  """
+end
+
 Repo.delete_all(Rides.Ride)
 Repo.delete_all(Accounts.User)
 
@@ -64,7 +74,8 @@ Repo.delete_all(Accounts.User)
     role: "volunteer",
     volunteer_car: "2020 Toyota Camry",
     volunteer_license_plate: "ABC123",
-    volunteer_bio: "Friendly volunteer with 5 years of experience helping seniors with transportation.",
+    volunteer_bio:
+      "Friendly volunteer with 5 years of experience helping seniors with transportation.",
     password: "password123",
     password_confirmation: "password123"
   })
@@ -81,7 +92,6 @@ Repo.delete_all(Accounts.User)
     password_confirmation: "password123"
   })
 
-
 # Create sample rides with location privacy fields
 {:ok, ride1} =
   Rides.create_ride(
@@ -94,7 +104,8 @@ Repo.delete_all(Accounts.User)
       destination_address: "456 Medical Dr, Austin, TX 78705",
       destination_lat: Decimal.new("30.2849"),
       destination_long: Decimal.new("-97.7341"),
-      description: "Need a ride to my weekly doctor's appointment. I have mobility issues and would appreciate help getting to the door.",
+      description:
+        "Need a ride to my weekly doctor's appointment. I have mobility issues and would appreciate help getting to the door.",
       ride_date: DateTime.add(DateTime.utc_now(), 2, :day),
       status: "pending"
     },
@@ -112,7 +123,8 @@ Repo.delete_all(Accounts.User)
       destination_address: "321 Shopping Blvd, Austin, TX 78704",
       destination_lat: Decimal.new("30.2400"),
       destination_long: Decimal.new("-97.7450"),
-      description: "Weekly grocery shopping trip. I usually take about 45 minutes inside the store.",
+      description:
+        "Weekly grocery shopping trip. I usually take about 45 minutes inside the store.",
       ride_date: DateTime.add(DateTime.utc_now(), 1, :day),
       status: "pending"
     },
@@ -130,7 +142,8 @@ Repo.delete_all(Accounts.User)
       destination_address: "777 Health St, Austin, TX 78703",
       destination_lat: Decimal.new("30.2750"),
       destination_long: Decimal.new("-97.7150"),
-      description: "Need to pick up prescription medication. Quick stop, should only take 10 minutes.",
+      description:
+        "Need to pick up prescription medication. Quick stop, should only take 10 minutes.",
       ride_date: DateTime.add(DateTime.utc_now(), 3, :day),
       status: "confirmed",
       volunteer_id: volunteer1.id
@@ -199,7 +212,8 @@ Repo.delete_all(Accounts.User)
   Rides.create_volunteer_request(%{
     ride_id: ride1.id,
     volunteer_user_id: volunteer1.id,
-    message: "I'd be happy to help with your doctor's appointment! I have experience with mobility assistance.",
+    message:
+      "I'd be happy to help with your doctor's appointment! I have experience with mobility assistance.",
     status: "pending"
   })
 

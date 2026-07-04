@@ -116,19 +116,8 @@ defmodule CarlosassistWeb.UserLive.Registration do
   def handle_event("save", %{"user" => user_params}, socket) do
     profile_pic_location =
       case consume_uploaded_entries(socket, :profile_pic, fn meta, entry ->
-             dest =
-               Path.join([
-                 "priv",
-                 "static",
-                 "uploads",
-                 "profile_pics",
-                 "#{entry.uuid}-#{entry.client_name}"
-               ])
-
-             File.cp!(meta.path, dest)
-             url_path = static_path(socket, "/uploads/profile_pics/#{Path.basename(dest)}")
-
-             {:ok, url_path}
+             {:ok,
+              Carlosassist.Uploads.store_profile_pic!(meta.path, entry.uuid, entry.client_name)}
            end) do
         # Take the first (and only) uploaded file
         [path] -> path

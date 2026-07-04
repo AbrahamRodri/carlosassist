@@ -40,9 +40,15 @@ config :carlosassist, CarlosassistWeb.Endpoint,
 # By default it uses the "Local" adapter which stores the emails
 # locally. You can see the emails in your browser, at "/dev/mailbox".
 #
-# For production it's recommended to configure a different adapter
-# at the `config/runtime.exs`.
+# Production uses the Brevo adapter, configured in `config/runtime.exs`.
 config :carlosassist, Carlosassist.Mailer, adapter: Swoosh.Adapters.Local
+
+# Sender identity for outgoing email (overridden via env in runtime.exs for prod)
+config :carlosassist, :mail_from, name: "CarlosAssist", address: "no-reply@localhost"
+
+# Where user uploads (profile pics) are stored; prod points this at the Fly
+# volume in runtime.exs. Served by CarlosassistWeb.UploadsController.
+config :carlosassist, :uploads_dir, Path.expand("../priv/static/uploads", __DIR__)
 
 # Configure esbuild (the version is required)
 config :esbuild,

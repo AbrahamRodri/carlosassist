@@ -2,4 +2,9 @@
 set -eu
 
 cd -P -- "$(dirname -- "$0")"
+
+# Migrate on boot: the SQLite file lives on the Fly volume, which is only
+# mounted on app machines (a fly.toml release_command would run without it).
+./carlosassist eval Carlosassist.Release.migrate
+
 PHX_SERVER=true exec ./carlosassist start

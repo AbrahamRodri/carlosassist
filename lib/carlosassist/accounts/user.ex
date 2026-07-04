@@ -10,6 +10,9 @@ defmodule Carlosassist.Accounts.User do
   - `"admin"` - Users with administrative privileges (can access both volunteer and rider functionality)
 
   The default role is `"rider"` as set in the database migration.
+
+  Only rider/volunteer can be chosen through user-facing changesets; admin is
+  granted manually (e.g. via iex: `Repo.update!(Ecto.Changeset.change(user, role: "admin"))`).
   """
 
   use Ecto.Schema
@@ -171,6 +174,8 @@ defmodule Carlosassist.Accounts.User do
   defp validate_email_for_registration(changeset, opts) do
     changeset =
       changeset
+      # Stored lowercase: SQLite comparisons are case-sensitive (no citext)
+      |> update_change(:email, &String.downcase/1)
       |> validate_required([:email])
       |> validate_format(:email, ~r/^[^@,;\s]+@[^@,;\s]+$/,
         message: "must have the @ sign and no spaces"
@@ -189,6 +194,8 @@ defmodule Carlosassist.Accounts.User do
   defp validate_email_for_update(changeset, opts) do
     changeset =
       changeset
+      # Stored lowercase: SQLite comparisons are case-sensitive (no citext)
+      |> update_change(:email, &String.downcase/1)
       |> validate_required([:email])
       |> validate_format(:email, ~r/^[^@,;\s]+@[^@,;\s]+$/,
         message: "must have the @ sign and no spaces"
@@ -250,11 +257,13 @@ defmodule Carlosassist.Accounts.User do
     end
   end
 
+  # Deliberately excludes "admin": these changesets take user-supplied params,
+  # so allowing it would let anyone self-register as admin.
   defp validate_role(changeset) do
     changeset
     |> validate_required([:role])
-    |> validate_inclusion(:role, ["volunteer", "rider", "admin"],
-      message: "must be either volunteer, rider, or admin"
+    |> validate_inclusion(:role, ["volunteer", "rider"],
+      message: "must be either volunteer or rider"
     )
   end
 

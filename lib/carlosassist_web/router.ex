@@ -21,6 +21,8 @@ defmodule CarlosassistWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    # Uploaded profile pics live outside priv/static (Fly volume in prod)
+    get "/uploads/profile_pics/:filename", UploadsController, :profile_pic
   end
 
   # Other scopes may use custom stacks.

@@ -39,3 +39,8 @@ CLAUDE.md
 .env
 docs/location_privacy_plan.md
 
+
+# SQLite databases (dev/test artifacts)
+*.db
+*.db-shm
+*.db-wal

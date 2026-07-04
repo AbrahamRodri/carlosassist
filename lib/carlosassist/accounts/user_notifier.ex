@@ -1,4 +1,9 @@
 defmodule Carlosassist.Accounts.UserNotifier do
+  @moduledoc """
+  Auth emails (magic link, confirmation, email change). Sender comes from the
+  `:carlosassist, :mail_from` config (env-driven in prod); the prod adapter is
+  Brevo, configured in config/runtime.exs.
+  """
   import Swoosh.Email
 
   alias Carlosassist.Mailer
@@ -9,13 +14,18 @@ defmodule Carlosassist.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"Carlosassist", "contact@example.com"})
+      |> from(from_address())
       |> subject(subject)
       |> text_body(body)
 
     with {:ok, _metadata} <- Mailer.deliver(email) do
       {:ok, email}
     end
+  end
+
+  defp from_address do
+    config = Application.fetch_env!(:carlosassist, :mail_from)
+    {Keyword.get(config, :name, "CarlosAssist"), Keyword.fetch!(config, :address)}
   end
 
   @doc """
