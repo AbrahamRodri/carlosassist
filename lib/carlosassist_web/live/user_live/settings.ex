@@ -1,8 +1,6 @@
 defmodule CarlosassistWeb.UserLive.Settings do
   use CarlosassistWeb, :live_view
 
-  on_mount {CarlosassistWeb.UserAuth, :require_sudo_mode}
-
   alias Carlosassist.Accounts
 
   def mount(%{"token" => token}, _session, socket) do
@@ -23,6 +21,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
     email_changeset = Accounts.change_user_email(user, %{}, validate_email: false)
     password_changeset = Accounts.change_user_password(user, %{}, hash_password: false)
     phone_changeset = Accounts.change_user_phone(user, %{})
+    name_changeset = Accounts.change_user_name(user, %{})
     profile_pic_changeset = Accounts.change_user_profile_pic(user, %{})
 
     volunteer_changeset =
@@ -38,6 +37,7 @@ defmodule CarlosassistWeb.UserLive.Settings do
       |> assign(:current_phone, user.phone)
       |> assign(:email_form, to_form(email_changeset))
       |> assign(:phone_form, to_form(phone_changeset))
+      |> assign(:name_form, to_form(name_changeset))
       |> assign(:password_form, to_form(password_changeset))
       |> assign(:profile_pic_form, to_form(profile_pic_changeset))
       |> assign(
@@ -70,7 +70,6 @@ defmodule CarlosassistWeb.UserLive.Settings do
   def handle_event("update_email", params, socket) do
     %{"user" => user_params} = params
     user = socket.assigns.current_scope.user
-    true = Accounts.sudo_mode?(user)
 
     case Accounts.change_user_email(user, user_params) do
       %{valid?: true} = changeset ->
@@ -103,7 +102,6 @@ defmodule CarlosassistWeb.UserLive.Settings do
   def handle_event("update_password", params, socket) do
     %{"user" => user_params} = params
     user = socket.assigns.current_scope.user
-    true = Accounts.sudo_mode?(user)
 
     case Accounts.change_user_password(user, user_params) do
       %{valid?: true} = changeset ->
@@ -129,7 +127,6 @@ defmodule CarlosassistWeb.UserLive.Settings do
   def handle_event("update_volunteer_info", params, socket) do
     %{"user" => user_params} = params
     user = socket.assigns.current_scope.user
-    true = Accounts.sudo_mode?(user)
 
     case Accounts.update_user_volunteer_info(user, user_params) do
       {:ok, updated_user} ->
@@ -161,7 +158,6 @@ defmodule CarlosassistWeb.UserLive.Settings do
   def handle_event("update_phone", params, socket) do
     %{"user" => user_params} = params
     user = socket.assigns.current_scope.user
-    true = Accounts.sudo_mode?(user)
 
     case Accounts.update_user_phone(user, user_params) do
       {:ok, user} ->
@@ -172,6 +168,36 @@ defmodule CarlosassistWeb.UserLive.Settings do
 
       {:error, changeset} ->
         {:noreply, assign(socket, phone_form: to_form(changeset))}
+    end
+  end
+
+  def handle_event("validate_name", params, socket) do
+    %{"user" => user_params} = params
+
+    name_form =
+      socket.assigns.current_scope.user
+      |> Accounts.change_user_name(user_params)
+      |> Map.put(:action, :validate)
+      |> to_form()
+
+    {:noreply, assign(socket, name_form: name_form)}
+  end
+
+  def handle_event("update_name", params, socket) do
+    %{"user" => user_params} = params
+    user = socket.assigns.current_scope.user
+
+    case Accounts.update_user_name(user, user_params) do
+      {:ok, updated_user} ->
+        updated_scope = %{socket.assigns.current_scope | user: updated_user}
+
+        {:noreply,
+         socket
+         |> assign(:current_scope, updated_scope)
+         |> put_flash(:info, "Your name has been updated.")}
+
+      {:error, changeset} ->
+        {:noreply, assign(socket, name_form: to_form(changeset, action: :insert))}
     end
   end
 

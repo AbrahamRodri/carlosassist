@@ -6,49 +6,64 @@ defmodule CarlosassistWeb.UserLive.Confirmation do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm">
-        <.header class="text-center">Welcome {@user.email}</.header>
+      <div class="mx-auto max-w-lg text-center">
+        <h1 class="text-3xl sm:text-4xl text-base-content mb-2">
+          Welcome, {Carlosassist.Accounts.User.first_name(@user)}!
+        </h1>
+        <span class="gold-rule mx-auto my-4"></span>
+        <p class="text-lg text-base-content/75 mb-8">
+          <%= if @user.confirmed_at do %>
+            Press the button below and you'll be signed in.
+          <% else %>
+            One last step — press the button below to finish setting up your account.
+          <% end %>
+        </p>
 
-        <.form
-          :if={!@user.confirmed_at}
-          for={@form}
-          id="confirmation_form"
-          phx-submit="submit"
-          action={~p"/users/log-in?_action=confirmed"}
-          phx-trigger-action={@trigger_submit}
-        >
-          <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
-          <.input
-            :if={!@current_scope}
-            field={@form[:remember_me]}
-            type="checkbox"
-            label="Keep me logged in"
-          />
-          <.button variant="primary" phx-disable-with="Confirming..." class="w-full">
-            Confirm my account
-          </.button>
-        </.form>
+        <div class="parish-card p-6 sm:p-8">
+          <.form
+            :if={!@user.confirmed_at}
+            for={@form}
+            id="confirmation_form"
+            phx-submit="submit"
+            action={~p"/users/log-in?_action=confirmed"}
+            phx-trigger-action={@trigger_submit}
+          >
+            <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
+            <.input
+              :if={!@current_scope}
+              field={@form[:remember_me]}
+              type="checkbox"
+              label="Keep me signed in on this device"
+            />
+            <.button variant="primary" phx-disable-with="One moment..." class="w-full btn-lg">
+              Finish signing up
+            </.button>
+          </.form>
 
-        <.form
-          :if={@user.confirmed_at}
-          for={@form}
-          id="login_form"
-          phx-submit="submit"
-          action={~p"/users/log-in"}
-          phx-trigger-action={@trigger_submit}
-        >
-          <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
-          <.input
-            :if={!@current_scope}
-            field={@form[:remember_me]}
-            type="checkbox"
-            label="Keep me logged in"
-          />
-          <.button variant="primary" phx-disable-with="Logging in..." class="w-full">Log in</.button>
-        </.form>
+          <.form
+            :if={@user.confirmed_at}
+            for={@form}
+            id="login_form"
+            phx-submit="submit"
+            action={~p"/users/log-in"}
+            phx-trigger-action={@trigger_submit}
+          >
+            <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
+            <.input
+              :if={!@current_scope}
+              field={@form[:remember_me]}
+              type="checkbox"
+              label="Keep me signed in on this device"
+            />
+            <.button variant="primary" phx-disable-with="One moment..." class="w-full btn-lg">
+              Sign me in
+            </.button>
+          </.form>
+        </div>
 
-        <p :if={!@user.confirmed_at} class="alert alert-outline mt-8">
-          Tip: If you prefer passwords, you can enable them in the user settings.
+        <p :if={!@user.confirmed_at} class="mt-6 text-base text-base-content/70">
+          Tip: if you'd rather sign in with a password, you can set one up later
+          under <strong>My Account</strong>.
         </p>
       </div>
     </Layouts.app>

@@ -1,14 +1,11 @@
 <!DOCTYPE html>
-<html
-  lang="en"
-  class="[[data-theme=light]_&]:sage-gradient-light [[data-theme=dark]_&]:sage-gradient-dark"
->
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <meta name="mapbox-token" content={Application.get_env(:carlosassist, :mapbox)[:public_key]} />
-    <.live_title default="CarlosAssist">
+    <.live_title default="CarlosAssist — Rides from your parish community">
       {assigns[:page_title]}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
@@ -31,85 +28,74 @@
       })();
     </script>
   </head>
-  <body class="min-h-screen transition-colors duration-300">
-    <!-- Modern Navigation Header -->
-    <header class="sticky top-0 z-50 backdrop-blur-md bg-base-100/80 border-b border-base-300/50">
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <!-- Logo/Brand -->
-          <div class="flex items-center">
-            <.link navigate={~p"/"} class="flex items-center space-x-3 group">
-              <div class="w-8 h-8 bg-primary rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                <span class="text-primary-content font-bold text-sm">C</span>
-              </div>
-              <span class="text-xl font-semibold text-base-content">CarlosAssist</span>
-            </.link>
-          </div>
-          
-<!-- Navigation Actions -->
-          <div class="flex items-center space-x-4">
-            <!-- Theme Toggle (hidden on mobile) -->
-            <div class="hidden sm:block">
-              <Layouts.theme_toggle />
-            </div>
-            
-<!-- User Menu -->
-            <div class="flex items-center space-x-2">
-              <%= if @current_scope do %>
-                <div class="hidden sm:flex items-center space-x-3">
-                  <%!-- <div class="text-right">
-                    <div class="text-sm font-medium text-base-content">
-                      {@current_scope.user.email}
-                    </div>
-                    <div class="text-sm text-base-content/70 capitalize">
-                      {@current_scope.user.role}
-                    </div>
-                  </div> --%>
-                  <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                    <span class="text-primary text-sm font-medium">
-                      <.avatar
-                        src={@current_scope.user.profile_pic_location}
-                        alt="Profile Picture"
-                        size="xs"
-                      />
-                    </span>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-1 sm:space-x-2">
-                  <.link navigate={~p"/dashboard/inbox"} class="btn btn-ghost btn-xs sm:btn-sm">
-                    <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Chat</span>
+  <body class="min-h-screen flex flex-col bg-base-100">
+    <header class="bg-base-100 border-b-2 border-base-300">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-3">
+        <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <!-- Brand -->
+          <.link navigate={~p"/"} class="flex items-center gap-3">
+            <Layouts.brand_mark class="w-9 h-10" />
+            <span class="font-display text-2xl font-semibold text-base-content">
+              CarlosAssist
+            </span>
+          </.link>
+
+          <!-- Navigation: every action labeled with words, on every screen size -->
+          <nav aria-label="Main menu">
+            <%= if @current_scope do %>
+              <ul class="flex flex-wrap items-center gap-2">
+                <li>
+                  <.link
+                    navigate={
+                      if @current_scope.user.role == "volunteer",
+                        do: ~p"/dashboard/volunteer",
+                        else: ~p"/dashboard/rider"
+                    }
+                    class="btn btn-ghost"
+                  >
+                    <.icon name="hero-home" class="w-5 h-5" />
+                    {if @current_scope.user.role == "volunteer", do: "Rides Board", else: "My Rides"}
                   </.link>
-                  <.link href={~p"/users/settings"} class="btn btn-ghost btn-xs sm:btn-sm">
-                    <.icon name="hero-cog-6-tooth" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Settings</span>
+                </li>
+                <li>
+                  <.link navigate={~p"/dashboard/inbox"} class="btn btn-ghost">
+                    <.icon name="hero-chat-bubble-left-right" class="w-5 h-5" /> Messages
                   </.link>
-                  <.link href={~p"/users/log-out"} method="delete" class="btn btn-outline btn-xs sm:btn-sm">
-                    <.icon name="hero-arrow-right-start-on-rectangle" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Log out</span>
+                </li>
+                <li>
+                  <.link href={~p"/users/settings"} class="btn btn-ghost">
+                    <.icon name="hero-user-circle" class="w-5 h-5" /> My Account
                   </.link>
-                </div>
-              <% else %>
-                <div class="flex items-center space-x-1 sm:space-x-2">
-                  <.link href={~p"/users/log-in"} class="btn btn-ghost btn-xs sm:btn-sm">
-                    <.icon name="hero-arrow-left-end-on-rectangle" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Log in</span>
+                </li>
+                <li>
+                  <.link href={~p"/users/log-out"} method="delete" class="btn btn-outline">
+                    Sign Out
                   </.link>
-                  <.link href={~p"/users/register"} class="btn btn-primary btn-xs sm:btn-sm">
-                    <.icon name="hero-user-plus" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Register</span>
+                </li>
+              </ul>
+            <% else %>
+              <ul class="flex flex-wrap items-center gap-2">
+                <li>
+                  <.link href={~p"/users/log-in"} class="btn btn-outline">
+                    Sign In
                   </.link>
-                </div>
-              <% end %>
-            </div>
-          </div>
+                </li>
+                <li>
+                  <.link href={~p"/users/register"} class="btn btn-primary">
+                    Join Us
+                  </.link>
+                </li>
+              </ul>
+            <% end %>
+          </nav>
         </div>
       </div>
     </header>
-    
-<!-- Main Content -->
-    <main class="flex-1">
+
+    <main class="flex-1 flex flex-col">
       {@inner_content}
     </main>
+
+    <Layouts.footer />
   </body>
 </html>

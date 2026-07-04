@@ -1,8 +1,10 @@
-<div class="max-w-4xl mx-auto p-6">
-  <.header>
-    Inbox
-    <:subtitle>Your conversations with riders and volunteers</:subtitle>
-  </.header>
+<div class="max-w-3xl w-full mx-auto p-4 sm:p-6">
+  <div class="mb-6">
+    <h1 class="text-3xl text-base-content mb-1">Messages</h1>
+    <p class="text-lg text-base-content/75">
+      Talk with your drivers and riders to settle the details of each trip.
+    </p>
+  </div>
 
   <CarlosassistWeb.UI.MessageComponents.conversations_list
     conversations={@conversations}

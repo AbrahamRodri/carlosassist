@@ -197,6 +197,24 @@ defmodule Carlosassist.Accounts do
     |> Repo.update()
   end
 
+  ## Name management
+
+  @doc """
+  Returns a user changeset for tracking display-name changes.
+  """
+  def change_user_name(user, attrs \\ %{}) do
+    User.name_changeset(user, attrs)
+  end
+
+  @doc """
+  Updates the user's display name.
+  """
+  def update_user_name(user, attrs) do
+    user
+    |> User.name_changeset(attrs)
+    |> Repo.update()
+  end
+
   ## Volunteer information management
 
   @doc """

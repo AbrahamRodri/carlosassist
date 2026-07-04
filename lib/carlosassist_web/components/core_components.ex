@@ -60,19 +60,23 @@ defmodule CarlosassistWeb.CoreComponents do
       {@rest}
     >
       <div class={[
-        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
-        @kind == :info && "alert-info",
+        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap text-base shadow-lg border-2",
+        @kind == :info && "alert-success",
         @kind == :error && "alert-error"
       ]}>
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="size-5 shrink-0" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="size-5 shrink-0" />
+        <.icon :if={@kind == :info} name="hero-check-circle" class="size-7 shrink-0" />
+        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-7 shrink-0" />
         <div>
-          <p :if={@title} class="font-semibold">{@title}</p>
+          <p :if={@title} class="font-bold">{@title}</p>
           <p>{msg}</p>
         </div>
         <div class="flex-1" />
-        <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
-          <.icon name="hero-x-mark-solid" class="size-5 opacity-40 group-hover:opacity-70" />
+        <button
+          type="button"
+          class="group self-start cursor-pointer p-1"
+          aria-label={gettext("close this message")}
+        >
+          <.icon name="hero-x-mark-solid" class="size-6 opacity-50 group-hover:opacity-90" />
         </button>
       </div>
     </div>
@@ -259,8 +263,8 @@ defmodule CarlosassistWeb.CoreComponents do
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
-      <.icon name="hero-exclamation-circle-mini" class="size-5" />
+    <p class="mt-1.5 flex gap-2 items-center text-base font-semibold text-error">
+      <.icon name="hero-exclamation-circle-mini" class="size-5 shrink-0" />
       {render_slot(@inner_block)}
     </p>
     """
@@ -279,10 +283,10 @@ defmodule CarlosassistWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">
+        <h1 class="text-3xl text-base-content">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="text-sm text-base-content/70">
+        <p :if={@subtitle != []} class="mt-1 text-lg text-base-content/75">
           {render_slot(@subtitle)}
         </p>
       </div>
@@ -459,13 +463,6 @@ defmodule CarlosassistWeb.CoreComponents do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
 
-  defp hide_modal(js \\ %JS{}, id) do
-    js
-    |> JS.hide(to: "##{id}", transition: hide_modal_transition())
-    |> JS.hide(to: "##{id}-bg", transition: "fade-out")
-    |> JS.remove_class("overflow-hidden", to: "body")
-  end
-
   @doc """
   Renders an avatar with optional placeholder.
 
@@ -504,13 +501,7 @@ defmodule CarlosassistWeb.CoreComponents do
           :if={!@src || @src == ""}
           class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20"
         >
-          <.icon
-            name="hero-user"
-            class={[
-              "text-primary opacity-70",
-              avatar_icon_size_class(@size)
-            ]}
-          />
+          <.icon name="hero-user" class={"text-primary opacity-70 " <> avatar_icon_size_class(@size)} />
         </div>
       </div>
     </div>
@@ -532,9 +523,4 @@ defmodule CarlosassistWeb.CoreComponents do
   defp avatar_icon_size_class("xl"), do: "size-10"
   defp avatar_icon_size_class("2xl"), do: "size-12"
   defp avatar_icon_size_class(_), do: "size-6"
-
-  defp hide_modal_transition do
-    {"transition-all ease-in duration-200", "opacity-100 translate-y-0 sm:scale-100",
-     "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
-  end
 end

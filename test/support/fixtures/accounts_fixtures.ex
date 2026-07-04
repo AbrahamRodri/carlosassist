@@ -14,6 +14,7 @@ defmodule Carlosassist.AccountsFixtures do
 
   def valid_user_attributes(attrs \\ %{}) do
     Enum.into(attrs, %{
+      name: "Test User #{System.unique_integer([:positive])}",
       email: unique_user_email(),
       phone:
         "+1415555#{:rand.uniform(9999) |> Integer.to_string() |> String.pad_leading(4, "0")}",

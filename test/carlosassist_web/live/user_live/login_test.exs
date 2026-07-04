@@ -5,12 +5,21 @@ defmodule CarlosassistWeb.UserLive.LoginTest do
   import Carlosassist.AccountsFixtures
 
   describe "login page" do
-    test "renders login page", %{conn: conn} do
+    test "renders login page with password form as the main way in", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
-      assert html =~ "Log in"
-      assert html =~ "Register"
-      assert html =~ "Log in with email"
+      assert html =~ "Welcome back"
+      assert html =~ "Join us"
+      assert html =~ "login_form_password"
+      assert html =~ "Sign in with an emailed link instead"
+    end
+
+    test "renders the email-link page", %{conn: conn} do
+      {:ok, _lv, html} = live(conn, ~p"/users/log-in/email")
+
+      assert html =~ "Sign in by email"
+      assert html =~ "login_form_magic"
+      assert html =~ "Go back to regular sign in"
     end
   end
 
@@ -18,28 +27,28 @@ defmodule CarlosassistWeb.UserLive.LoginTest do
     test "sends magic link email when user exists", %{conn: conn} do
       user = user_fixture()
 
-      {:ok, lv, _html} = live(conn, ~p"/users/log-in")
+      {:ok, lv, _html} = live(conn, ~p"/users/log-in/email")
 
       {:ok, _lv, html} =
         form(lv, "#login_form_magic", user: %{email: user.email})
         |> render_submit()
         |> follow_redirect(conn, ~p"/users/log-in")
 
-      assert html =~ "If your email is in our system"
+      assert html =~ "If that email is in our system"
 
       assert Carlosassist.Repo.get_by!(Carlosassist.Accounts.UserToken, user_id: user.id).context ==
                "login"
     end
 
     test "does not disclose if user is registered", %{conn: conn} do
-      {:ok, lv, _html} = live(conn, ~p"/users/log-in")
+      {:ok, lv, _html} = live(conn, ~p"/users/log-in/email")
 
       {:ok, _lv, html} =
         form(lv, "#login_form_magic", user: %{email: "idonotexist@example.com"})
         |> render_submit()
         |> follow_redirect(conn, ~p"/users/log-in")
 
-      assert html =~ "If your email is in our system"
+      assert html =~ "If that email is in our system"
     end
   end
 
@@ -78,16 +87,16 @@ defmodule CarlosassistWeb.UserLive.LoginTest do
   end
 
   describe "login navigation" do
-    test "redirects to registration page when the Register button is clicked", %{conn: conn} do
+    test "redirects to registration page when the join link is clicked", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/log-in")
 
       {:ok, _login_live, login_html} =
         lv
-        |> element("main a", "Sign up")
+        |> element("main a", "Join us")
         |> render_click()
         |> follow_redirect(conn, ~p"/users/register")
 
-      assert login_html =~ "Register"
+      assert login_html =~ "Join CarlosAssist"
     end
   end
 
@@ -100,12 +109,11 @@ defmodule CarlosassistWeb.UserLive.LoginTest do
     test "shows login page with email filled in", %{conn: conn, user: user} do
       {:ok, _lv, html} = live(conn, ~p"/users/log-in")
 
-      assert html =~ "You need to reauthenticate"
-      refute html =~ "Register"
-      assert html =~ "Log in with email"
+      assert html =~ "please confirm it&#39;s you"
+      refute html =~ "Join us"
 
       assert html =~
-               ~s(<input type="email" name="user[email]" id="login_form_magic_email" value="#{user.email}")
+               ~s(<input type="email" name="user[email]" id="login_form_password_email" value="#{user.email}")
     end
   end
 end

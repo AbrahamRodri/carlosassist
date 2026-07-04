@@ -68,6 +68,8 @@ defmodule CarlosassistWeb.Router do
       on_mount: [{CarlosassistWeb.UserAuth, :mount_current_scope}] do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
+      # Static segment must come before the :token catch-all below
+      live "/users/log-in/email", UserLive.Login, :magic
       live "/users/log-in/:token", UserLive.Confirmation, :new
     end
 

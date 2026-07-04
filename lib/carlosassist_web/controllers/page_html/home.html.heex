@@ -1,159 +1,158 @@
 <Layouts.flash_group flash={@flash} />
 
-<!-- Hero Section -->
-<section class="relative min-h-screen flex items-center justify-center overflow-hidden">
-  <!-- Background Pattern -->
-  <div class="absolute inset-0 opacity-5">
-    <div
-      class="absolute inset-0"
-      style="background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0); background-size: 20px 20px;"
-    >
-    </div>
-  </div>
-  
-<!-- Main Content -->
-  <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-    <div class="text-center">
-      <!-- Logo -->
-      <div class="mb-8">
-        <div class="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-2xl mb-6">
-          <span class="text-4xl font-bold text-primary">C</span>
-        </div>
+<!-- Hero -->
+<section class="bg-base-100">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-14 pb-16 text-center">
+    <div class="inline-flex items-center justify-center mb-8">
+      <div class="arch-top-soft bg-base-200 border-2 border-base-300 px-10 pt-10 pb-6">
+        <Layouts.brand_mark class="w-20 h-24 mx-auto" />
       </div>
-      
-<!-- Headline -->
-      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold text-base-content mb-6">
-        <span class="text-primary">Carlos</span>Assist
-      </h1>
-      
-<!-- Subheadline -->
-      <p class="text-xl sm:text-2xl text-base-content/80 mb-12 max-w-3xl mx-auto leading-relaxed">
-        Connect with volunteer drivers in your community. Request rides, choose your volunteer, and chat securely.
-      </p>
-      
-<!-- CTA Buttons -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-        <%= if @current_scope do %>
-          <.link
-            href={"/dashboard/#{@current_scope.user.role}"}
-            class="btn btn-primary btn-lg px-8"
-          >
-            Go to Dashboard <.icon name="hero-arrow-right" class="w-5 h-5 ml-2" />
-          </.link>
-        <% else %>
-          <.link href={~p"/users/register"} class="btn btn-primary btn-lg px-8">
-            Get Started <.icon name="hero-arrow-right" class="w-5 h-5 ml-2" />
-          </.link>
-        <% end %>
-        <.link href="#features" class="btn btn-outline btn-lg px-8">
-          Learn More
+    </div>
+
+    <h1 class="text-4xl sm:text-5xl text-base-content mb-3 text-balance">
+      Need a ride to Mass, the doctor, or the store?
+    </h1>
+    <span class="gold-rule mx-auto my-6"></span>
+    <p class="text-xl sm:text-2xl text-base-content/80 max-w-2xl mx-auto leading-relaxed mb-10 text-balance">
+      Neighbors from your parish community are glad to drive you — free of charge,
+      door to door, with a friendly face.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <%= if @current_scope do %>
+        <.link
+          navigate={
+            if @current_scope.user.role == "volunteer",
+              do: ~p"/dashboard/volunteer",
+              else: ~p"/dashboard/rider"
+          }
+          class="btn btn-primary btn-xl px-10 w-full sm:w-auto"
+        >
+          {if @current_scope.user.role == "volunteer",
+            do: "See who needs a ride",
+            else: "Go to my rides"}
+          <.icon name="hero-arrow-right" class="w-6 h-6" />
         </.link>
-      </div>
+      <% else %>
+        <.link href={~p"/users/register?role=rider"} class="btn btn-primary btn-xl px-10 w-full sm:w-auto">
+          I need a ride
+        </.link>
+        <.link href={~p"/users/register?role=volunteer"} class="btn btn-outline btn-xl px-10 w-full sm:w-auto">
+          I'd like to drive
+        </.link>
+      <% end %>
     </div>
+    <p :if={!@current_scope} class="mt-6 text-lg text-base-content/70">
+      Already a member?
+      <.link href={~p"/users/log-in"} class="link font-bold text-primary">Sign in here</.link>
+    </p>
   </div>
 </section>
 
-<!-- Features Section -->
-<section id="features" class="py-20 bg-base-200/50">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-bold text-base-content mb-4">
-        How CarlosAssist Works
+<!-- How it works -->
+<section class="bg-base-200 border-y-2 border-base-300">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl sm:text-4xl text-base-content mb-3">
+        How it works
       </h2>
-      <p class="text-lg text-base-content/70 max-w-2xl mx-auto">
-        A simple platform connecting riders with volunteer drivers through personal choice and real-time chat
+      <p class="text-xl text-base-content/75">
+        Three simple steps. We walk with you the whole way.
       </p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <!-- Feature 1 -->
-      <div class="modern-card bg-base-100/50 p-8 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
-        <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
-          <.icon name="hero-clipboard-document-check" class="w-8 h-8 text-primary" />
+      <div class="arch-top-soft bg-base-100 border-2 border-base-300 px-8 pt-12 pb-8 text-center">
+        <div class="w-16 h-16 rounded-full bg-primary text-primary-content font-display text-3xl flex items-center justify-center mx-auto mb-5">
+          1
         </div>
-        <h3 class="text-xl font-semibold text-base-content mb-4">Request & Choose</h3>
-        <p class="text-base-content/70">
-          Post ride requests with pickup and destination. Review volunteer applications and choose your driver.
+        <h3 class="text-2xl text-base-content mb-3">Ask for a ride</h3>
+        <p class="text-lg text-base-content/75 leading-relaxed">
+          Tell us where you're going and when. It takes about two minutes,
+          one question at a time.
         </p>
       </div>
-      
-<!-- Feature 2 -->
-      <div class="modern-card bg-base-100/50 p-8 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
-        <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
-          <.icon name="hero-users" class="w-8 h-8 text-primary" />
+
+      <div class="arch-top-soft bg-base-100 border-2 border-base-300 px-8 pt-12 pb-8 text-center">
+        <div class="w-16 h-16 rounded-full bg-primary text-primary-content font-display text-3xl flex items-center justify-center mx-auto mb-5">
+          2
         </div>
-        <h3 class="text-xl font-semibold text-base-content mb-4">Volunteer Network</h3>
-        <p class="text-base-content/70">
-          Community volunteers apply to help with rides. See their profiles, cars, and personal messages.
+        <h3 class="text-2xl text-base-content mb-3">Choose your driver</h3>
+        <p class="text-lg text-base-content/75 leading-relaxed">
+          Volunteers offer to help. You see their name, photo, and car —
+          and you decide who drives you.
         </p>
       </div>
-      
-<!-- Feature 3 -->
-      <div class="modern-card bg-base-100/50 p-8 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
-        <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
-          <.icon name="hero-chat-bubble-left-right" class="w-8 h-8 text-primary" />
+
+      <div class="arch-top-soft bg-base-100 border-2 border-base-300 px-8 pt-12 pb-8 text-center">
+        <div class="w-16 h-16 rounded-full bg-primary text-primary-content font-display text-3xl flex items-center justify-center mx-auto mb-5">
+          3
         </div>
-        <h3 class="text-xl font-semibold text-base-content mb-4">Real-time Chat</h3>
-        <p class="text-base-content/70">
-          Once matched, chat directly with your rider or volunteer to coordinate pickup details.
+        <h3 class="text-2xl text-base-content mb-3">Ride together</h3>
+        <p class="text-lg text-base-content/75 leading-relaxed">
+          Message your driver to settle the details, then enjoy the trip
+          with a neighbor from your community.
         </p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- How It Works Section -->
-<section class="py-20">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+<!-- Reassurance -->
+<section class="bg-base-100">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center mb-12">
-      <h2 class="text-3xl sm:text-4xl font-bold text-base-content mb-4">
-        Simple. Personal. Effective.
+      <h2 class="text-3xl sm:text-4xl text-base-content mb-3">
+        You are in good hands
       </h2>
-      <p class="text-lg text-base-content/70 max-w-2xl mx-auto">
-        CarlosAssist puts you in control of your transportation choices
-      </p>
+      <span class="gold-rule mx-auto"></span>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
-      <div class="p-6">
-        <div class="text-2xl font-bold text-primary mb-3">For Riders</div>
-        <div class="text-base-content/70">Create detailed ride requests, review volunteer applications with photos and car info, choose your preferred driver, and chat to coordinate pickup</div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+      <div class="px-4">
+        <.icon name="hero-hand-raised" class="w-12 h-12 text-accent mx-auto mb-4" />
+        <h3 class="text-xl font-bold text-base-content mb-2">You always choose</h3>
+        <p class="text-lg text-base-content/75 leading-relaxed">
+          No one is ever assigned to you. You pick your driver, and you can
+          change your mind at any time.
+        </p>
       </div>
-      <div class="p-6">
-        <div class="text-2xl font-bold text-primary mb-3">For Volunteers</div>
-        <div class="text-base-content/70">Browse available ride requests, apply with personal messages, share your car details and profile, then chat with riders once selected</div>
+      <div class="px-4">
+        <.icon name="hero-lock-closed" class="w-12 h-12 text-accent mx-auto mb-4" />
+        <h3 class="text-xl font-bold text-base-content mb-2">Your address stays private</h3>
+        <p class="text-lg text-base-content/75 leading-relaxed">
+          Volunteers only see your general area. Your exact address is shared
+          only with the driver you accept.
+        </p>
+      </div>
+      <div class="px-4">
+        <.icon name="hero-heart" class="w-12 h-12 text-accent mx-auto mb-4" />
+        <h3 class="text-xl font-bold text-base-content mb-2">Neighbors, not strangers</h3>
+        <p class="text-lg text-base-content/75 leading-relaxed">
+          Every driver is a volunteer from the community who gives their time
+          freely. No money ever changes hands.
+        </p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Footer -->
-<footer class="py-12 bg-base-200/30 border-t border-base-300/50">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col md:flex-row justify-between items-center">
-      <div class="flex items-center space-x-3 mb-4 md:mb-0">
-        <div class="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
-          <span class="text-primary-content font-bold text-sm">C</span>
-        </div>
-        <span class="text-xl font-semibold text-base-content">CarlosAssist</span>
-      </div>
-
-      <div class="flex items-center space-x-6">
-        <.link href="#" class="text-base-content/60 hover:text-base-content transition-colors">
-          Privacy Policy
-        </.link>
-        <.link href="#" class="text-base-content/60 hover:text-base-content transition-colors">
-          Terms of Service
-        </.link>
-        <.link href="#" class="text-base-content/60 hover:text-base-content transition-colors">
-          Contact
-        </.link>
-      </div>
-    </div>
-
-    <div class="mt-8 pt-8 border-t border-base-300/50 text-center">
-      <p class="text-base-content/60">
-        © 2024 CarlosAssist. Made with ❤️ for communities that care.
-      </p>
-    </div>
+<!-- Volunteer invitation -->
+<section class="bg-base-200 border-t-2 border-base-300">
+  <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 text-center">
+    <h2 class="text-3xl sm:text-4xl text-base-content mb-4">
+      Have a car and an hour to spare?
+    </h2>
+    <p class="text-xl text-base-content/75 leading-relaxed mb-8 text-balance">
+      A short drive means the world to a neighbor who can no longer drive themselves.
+      Browse ride requests and help when it fits your week — no commitment required.
+    </p>
+    <.link
+      :if={!@current_scope}
+      href={~p"/users/register?role=volunteer"}
+      class="btn btn-primary btn-xl px-10"
+    >
+      Become a volunteer driver
+    </.link>
   </div>
-</footer>
+</section>

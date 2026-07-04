@@ -116,18 +116,6 @@ defmodule CarlosassistWeb.VolunteerDashboardLive do
     {:noreply, assign(socket, :current_ride_index, new_index)}
   end
 
-  def handle_event("navigate_rides", %{"key" => "ArrowRight"}, socket) do
-    handle_event("next_ride", %{}, socket)
-  end
-
-  def handle_event("navigate_rides", %{"key" => "ArrowLeft"}, socket) do
-    handle_event("previous_ride", %{}, socket)
-  end
-
-  def handle_event("navigate_rides", _params, socket) do
-    {:noreply, socket}
-  end
-
   def handle_event("show_request_details", %{"request_id" => request_id}, socket) do
     request = Enum.find(socket.assigns.my_requests, &(&1.id == String.to_integer(request_id)))
     

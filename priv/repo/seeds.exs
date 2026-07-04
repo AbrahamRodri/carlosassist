@@ -29,46 +29,51 @@ Repo.delete_all(Accounts.User)
 # Create simple test users
 {:ok, simple_rider} =
   Accounts.register_user(%{
+    name: "Rose Martin",
     email: "rider@example.com",
     phone: "5155550100",
     role: "rider",
-    password: "password123",
-    password_confirmation: "password123"
+    password: "MyParish#2026",
+    password_confirmation: "MyParish#2026"
   })
 
 {:ok, simple_volunteer} =
   Accounts.register_user(%{
+    name: "Vincent Diaz",
     email: "volunteer@example.com",
     phone: "5155550101",
     role: "volunteer",
     volunteer_car: "2022 Honda Accord",
     volunteer_license_plate: "HELP123",
     volunteer_bio: "Happy to help with rides around town!",
-    password: "password123",
-    password_confirmation: "password123"
+    password: "MyParish#2026",
+    password_confirmation: "MyParish#2026"
   })
 
 # Create test users
 {:ok, rider1} =
   Accounts.register_user(%{
+    name: "Sarah Whitfield",
     email: "sarah@example.com",
     phone: "5155550123",
     role: "rider",
-    password: "password123",
-    password_confirmation: "password123"
+    password: "MyParish#2026",
+    password_confirmation: "MyParish#2026"
   })
 
 {:ok, rider2} =
   Accounts.register_user(%{
+    name: "Michael Torres",
     email: "michael@example.com",
     phone: "5155550124",
     role: "rider",
-    password: "password123",
-    password_confirmation: "password123"
+    password: "MyParish#2026",
+    password_confirmation: "MyParish#2026"
   })
 
 {:ok, volunteer1} =
   Accounts.register_user(%{
+    name: "Emily Chen",
     email: "emily@example.com",
     phone: "5155550125",
     role: "volunteer",
@@ -76,20 +81,21 @@ Repo.delete_all(Accounts.User)
     volunteer_license_plate: "ABC123",
     volunteer_bio:
       "Friendly volunteer with 5 years of experience helping seniors with transportation.",
-    password: "password123",
-    password_confirmation: "password123"
+    password: "MyParish#2026",
+    password_confirmation: "MyParish#2026"
   })
 
 {:ok, volunteer2} =
   Accounts.register_user(%{
+    name: "David Okafor",
     email: "david@example.com",
     phone: "5155550126",
     role: "volunteer",
     volunteer_car: "2021 Honda Civic",
     volunteer_license_plate: "XYZ789",
     volunteer_bio: "Reliable driver, happy to help with medical appointments and grocery runs.",
-    password: "password123",
-    password_confirmation: "password123"
+    password: "MyParish#2026",
+    password_confirmation: "MyParish#2026"
   })
 
 # Create sample rides with location privacy fields
@@ -249,12 +255,12 @@ IO.puts("")
 IO.puts("🎯 Simple Test Accounts:")
 IO.puts("Rider: rider@example.com")
 IO.puts("Volunteer: volunteer@example.com")
-IO.puts("Password: password123")
+IO.puts("Password: MyParish#2026")
 IO.puts("")
 IO.puts("📋 Additional Test Users:")
 IO.puts("Riders: sarah@example.com, michael@example.com")
 IO.puts("Volunteers: emily@example.com, david@example.com")
-IO.puts("All passwords: password123")
+IO.puts("All passwords: MyParish#2026")
 IO.puts("")
 IO.puts("📊 Sample Data:")
 IO.puts("- 4 riders, 2 volunteers (6 total users)")

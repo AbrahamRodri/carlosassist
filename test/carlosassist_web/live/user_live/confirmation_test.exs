@@ -18,7 +18,7 @@ defmodule CarlosassistWeb.UserLive.ConfirmationTest do
         end)
 
       {:ok, _lv, html} = live(conn, ~p"/users/log-in/#{token}")
-      assert html =~ "Confirm my account"
+      assert html =~ "Finish signing up"
     end
 
     test "renders login page for confirmed user", %{conn: conn, confirmed_user: user} do
@@ -28,8 +28,8 @@ defmodule CarlosassistWeb.UserLive.ConfirmationTest do
         end)
 
       {:ok, _lv, html} = live(conn, ~p"/users/log-in/#{token}")
-      refute html =~ "Confirm my account"
-      assert html =~ "Log in"
+      refute html =~ "Finish signing up"
+      assert html =~ "Sign me in"
     end
 
     test "confirms the given token once", %{conn: conn, unconfirmed_user: user} do

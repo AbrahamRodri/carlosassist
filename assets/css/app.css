@@ -1,7 +1,9 @@
-/* See the Tailwind configuration guide for advanced usage
-   https://tailwindcss.com/docs/configuration */
+/* CarlosAssist brand stylesheet — "Parish Warmth"
+   Cream + Sacred Heart red + gold. Fraunces for headings,
+   Atkinson Hyperlegible (Braille Institute) for body text.
+   Designed elder-first: 18px+ body, 48px+ touch targets, AAA contrast. */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');
 @import "tailwindcss";
 @import "mapbox-gl/dist/mapbox-gl.css";
 @import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -20,74 +22,75 @@
   themes: false;
 }
 
-/* daisyUI theme plugin with modern sage green color palette */
+/* Dark theme: warm candlelit tones, kept for users whose devices prefer dark */
 @plugin "../vendor/daisyui-theme" {
   name: "dark";
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-  --color-base-100: oklch(22% 0.003 180);
-  --color-base-200: oklch(18% 0.002 180);
-  --color-base-300: oklch(14% 0.002 180);
-  --color-base-content: oklch(95% 0.002 180);
-  --color-primary: oklch(55% 0.08 150);
-  --color-primary-content: oklch(98% 0.01 150);
-  --color-secondary: oklch(50% 0.06 140);
-  --color-secondary-content: oklch(98% 0.01 140);
-  --color-accent: oklch(60% 0.1 160);
-  --color-accent-content: oklch(98% 0.01 160);
-  --color-neutral: oklch(26% 0.003 180);
-  --color-neutral-content: oklch(90% 0.002 180);
-  --color-info: oklch(55% 0.12 200);
-  --color-info-content: oklch(98% 0.01 200);
-  --color-success: oklch(60% 0.1 140);
-  --color-success-content: oklch(98% 0.01 140);
-  --color-warning: oklch(70% 0.15 60);
-  --color-warning-content: oklch(20% 0.02 60);
-  --color-error: oklch(60% 0.2 20);
-  --color-error-content: oklch(98% 0.01 20);
-  --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
-  --radius-box: 1rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 2;
+  --color-base-100: #2b2320;
+  --color-base-200: #241d1a;
+  --color-base-300: #3a302b;
+  --color-base-content: #f3ece1;
+  --color-primary: #e39a97;
+  --color-primary-content: #33100e;
+  --color-secondary: #8fbf98;
+  --color-secondary-content: #10230f;
+  --color-accent: #e3c465;
+  --color-accent-content: #2c2208;
+  --color-neutral: #4a3e38;
+  --color-neutral-content: #f3ece1;
+  --color-info: #9dc3e0;
+  --color-info-content: #0e2233;
+  --color-success: #8fbf98;
+  --color-success-content: #10230f;
+  --color-warning: #e0b45c;
+  --color-warning-content: #2c2208;
+  --color-error: #e59a9a;
+  --color-error-content: #330d0d;
+  --radius-selector: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.28125rem;
+  --size-field: 0.28125rem;
+  --border: 1.5px;
+  --depth: 1;
   --noise: 0;
 }
 
+/* Light theme (default): cream, warm ink, liturgical plum, ordinary-time green, gold */
 @plugin "../vendor/daisyui-theme" {
   name: "light";
   default: true;
   prefersdark: false;
   color-scheme: "light";
-  --color-base-100: oklch(100% 0 0);
-  --color-base-200: oklch(98% 0.005 180);
-  --color-base-300: oklch(90% 0.01 200);
-  --color-base-content: oklch(25% 0.015 220);
-  --color-primary: oklch(55% 0.08 150);
-  --color-primary-content: oklch(98% 0.01 150);
-  --color-secondary: oklch(50% 0.06 140);
-  --color-secondary-content: oklch(98% 0.01 140);
-  --color-accent: oklch(60% 0.1 160);
-  --color-accent-content: oklch(98% 0.01 160);
-  --color-neutral: oklch(25% 0.02 180);
-  --color-neutral-content: oklch(90% 0.01 150);
-  --color-info: oklch(55% 0.12 200);
-  --color-info-content: oklch(98% 0.01 200);
-  --color-success: oklch(60% 0.1 140);
-  --color-success-content: oklch(98% 0.01 140);
-  --color-warning: oklch(70% 0.15 60);
-  --color-warning-content: oklch(20% 0.02 60);
-  --color-error: oklch(60% 0.2 20);
-  --color-error-content: oklch(98% 0.01 20);
-  --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
-  --radius-box: 1rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 2;
+  --color-base-100: #faf6ef;
+  --color-base-200: #f3ecdf;
+  --color-base-300: #e3d8c4;
+  --color-base-content: #2e2620;
+  --color-primary: #9b2226;
+  --color-primary-content: #fdf6f5;
+  --color-secondary: #186420;
+  --color-secondary-content: #f4faf4;
+  --color-accent: #8c6d1f;
+  --color-accent-content: #fdfaf2;
+  --color-neutral: #4c4038;
+  --color-neutral-content: #f6f1e8;
+  --color-info: #1b51ac;
+  --color-info-content: #f4f7fd;
+  --color-success: #186420;
+  --color-success-content: #f4faf4;
+  --color-warning: #8a5a00;
+  --color-warning-content: #fdf9f0;
+  --color-error: #6e1418;
+  --color-error-content: #fdf4f4;
+  --radius-selector: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1.25rem;
+  --size-selector: 0.28125rem;
+  --size-field: 0.28125rem;
+  --border: 1.5px;
+  --depth: 1;
   --noise: 0;
 }
 
@@ -99,89 +102,121 @@
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-root-id] { display: contents }
 
-/* Modern sage green gradient backgrounds */
-.sage-gradient-light {
-  background: linear-gradient(135deg,
-    oklch(98% 0.005 150) 0%,
-    oklch(95% 0.01 140) 50%,
-    oklch(92% 0.015 160) 100%);
-}
+/* ---------- Typography: elder-first sizes ---------- */
 
-.sage-gradient-dark {
-  background: linear-gradient(135deg,
-    oklch(22% 0.003 180) 0%,
-    oklch(25% 0.004 180) 50%,
-    oklch(19% 0.002 180) 100%);
-}
-
-/* Modern card styles */
-.modern-card {
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(134, 159, 130, 0.2);
-  box-shadow: 0 8px 32px rgba(134, 159, 130, 0.1);
-}
-
-/* Modern Typography & Base Styles */
-* {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+html {
+  /* 18px base — body text research minimum for older readers */
+  font-size: 112.5%;
 }
 
 body, html {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  font-variant-numeric: tabular-nums;
-  line-height: 1.6;
-  letter-spacing: -0.011em;
+  font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.5;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, .font-display {
+  font-family: 'Fraunces', Georgia, serif;
   font-weight: 600;
-  letter-spacing: -0.025em;
   line-height: 1.2;
-}
-
-.text-lg, .text-xl, .text-2xl, .text-3xl {
-  letter-spacing: -0.015em;
-}
-
-/* Modern shadows */
-.shadow-soft {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
-
-.shadow-medium {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.shadow-large {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* Modern button styles */
-.btn-modern {
-  @apply font-medium rounded-lg transition-all duration-200;
   letter-spacing: -0.01em;
 }
 
-.btn-modern:hover {
-  transform: translateY(-1px);
+h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-/* Clean card styles */
-.card-modern {
-  @apply bg-base-100 border border-base-300 rounded-xl;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+/* Underline in-text links so color is never the only cue */
+main p a:not(.btn), main li a:not(.btn) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-.card-modern:hover {
-  @apply border-base-content/20;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+/* ---------- Motion: minimal, respectful ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* This file is for your main application CSS */
+/* ---------- Focus: always visible, generous ---------- */
 
-/* Mapbox Geocoder Styling */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* ---------- Brand motifs ---------- */
+
+/* Arch-topped card: echoes a church window/doorway. Use sparingly on feature cards. */
+.arch-top {
+  border-radius: 999px 999px var(--radius-box, 1.25rem) var(--radius-box, 1.25rem);
+}
+
+.arch-top-soft {
+  border-radius: 3rem 3rem var(--radius-box, 1.25rem) var(--radius-box, 1.25rem);
+}
+
+/* Gold rule under important headings, like an illuminated manuscript */
+.gold-rule {
+  display: block;
+  width: 4.5rem;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #d4af37, #8c6d1f);
+}
+
+/* Warm paper card */
+.parish-card {
+  background: var(--color-base-100);
+  border: 1.5px solid var(--color-base-300);
+  border-radius: var(--radius-box, 1.25rem);
+  box-shadow: 0 1px 3px rgba(46, 38, 32, 0.08), 0 4px 16px rgba(46, 38, 32, 0.05);
+}
+
+/* ---------- Elder-first control sizes ---------- */
+
+/* Comfortable minimum touch target on every button */
+.btn {
+  min-height: 3rem; /* 54px at 18px root */
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.btn-lg {
+  min-height: 3.5rem;
+  font-size: 1.11rem;
+}
+
+.btn-xl {
+  min-height: 4rem;
+  font-size: 1.22rem;
+}
+
+/* Inputs: big, readable */
+.input, .select, .textarea {
+  min-height: 3rem;
+  font-size: 1rem;
+}
+
+.fieldset-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-base-content);
+}
+
+/* Checkboxes big enough to hit */
+.checkbox {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* ---------- Mapbox Geocoder Styling ---------- */
+
 .mapbox-geocoder-wrapper {
   position: relative;
   width: 100%;
@@ -191,53 +226,58 @@ h1, h2, h3, h4, h5, h6 {
 .mapboxgl-ctrl-geocoder {
   width: 100% !important;
   max-width: none !important;
-  font-size: 0.875rem !important;
-  border-radius: 0.5rem !important;
-  border: 1px solid hsl(var(--bc) / 0.2) !important;
-  background-color: hsl(var(--b1)) !important;
-  color: hsl(var(--bc)) !important;
-  transition: border-color 0.2s ease !important;
+  font-size: 1rem !important;
+  border-radius: 0.75rem !important;
+  border: 1.5px solid var(--color-base-300) !important;
+  background-color: var(--color-base-100) !important;
+  color: var(--color-base-content) !important;
   position: relative !important;
   z-index: 1000 !important;
+  box-shadow: none !important;
 }
 
 .mapboxgl-ctrl-geocoder:focus-within {
-  border-color: hsl(var(--p)) !important;
-  outline: 2px solid hsl(var(--p) / 0.2) !important;
+  border-color: var(--color-primary) !important;
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 35%, transparent) !important;
   outline-offset: 2px !important;
 }
 
 .mapboxgl-ctrl-geocoder input {
   background-color: transparent !important;
-  color: hsl(var(--bc)) !important;
-  padding: 0.75rem 1rem 0.75rem 3rem !important;
-  font-size: 1.125rem !important;
+  color: var(--color-base-content) !important;
+  padding: 0.85rem 1rem 0.85rem 3rem !important;
+  font-size: 1.1rem !important;
+  height: auto !important;
 }
 
 .mapboxgl-ctrl-geocoder input::placeholder {
-  color: hsl(var(--bc) / 0.6) !important;
+  color: color-mix(in srgb, var(--color-base-content) 55%, transparent) !important;
 }
 
 .mapboxgl-ctrl-geocoder .suggestions {
-  background-color: hsl(var(--b1)) !important;
-  border: 1px solid hsl(var(--bc) / 0.2) !important;
-  border-radius: 0.5rem !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  background-color: var(--color-base-100) !important;
+  border: 1.5px solid var(--color-base-300) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.06) !important;
   margin-top: 0.25rem !important;
   z-index: 9999 !important;
   position: relative !important;
+  font-size: 1rem !important;
 }
 
 .mapboxgl-ctrl-geocoder .suggestions > li {
-  border-bottom: 1px solid hsl(var(--bc) / 0.1) !important;
-  color: hsl(var(--bc)) !important;
-  padding: 0.75rem 1rem !important;
+  border-bottom: 1px solid var(--color-base-300) !important;
+  color: var(--color-base-content) !important;
+}
+
+.mapboxgl-ctrl-geocoder .suggestions > li > a {
+  padding: 0.85rem 1rem !important;
+  color: var(--color-base-content) !important;
 }
 
 .mapboxgl-ctrl-geocoder .suggestions > li:hover,
 .mapboxgl-ctrl-geocoder .suggestions > li.active {
-  background-color: hsl(var(--p) / 0.1) !important;
-  color: hsl(var(--pc)) !important;
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent) !important;
 }
 
 .mapboxgl-ctrl-geocoder .suggestions > li:last-child {
@@ -245,7 +285,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .mapboxgl-ctrl-geocoder .geocoder-icon {
-  fill: hsl(var(--bc) / 0.6) !important;
+  fill: color-mix(in srgb, var(--color-base-content) 60%, transparent) !important;
   position: absolute !important;
   left: 1rem !important;
   top: 50% !important;
@@ -255,15 +295,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .mapboxgl-ctrl-geocoder .geocoder-icon-loading {
-  fill: hsl(var(--p)) !important;
+  fill: var(--color-primary) !important;
 }
 
 .mapboxgl-ctrl-geocoder .geocoder-icon-close {
-  fill: hsl(var(--bc) / 0.6) !important;
+  fill: color-mix(in srgb, var(--color-base-content) 60%, transparent) !important;
 }
 
 .mapboxgl-ctrl-geocoder .geocoder-icon-close:hover {
-  fill: hsl(var(--er)) !important;
+  fill: var(--color-error) !important;
 }
 
 /* Hide mapbox logo in geocoder */

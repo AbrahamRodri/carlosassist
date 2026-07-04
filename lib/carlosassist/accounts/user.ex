@@ -19,6 +19,7 @@ defmodule Carlosassist.Accounts.User do
   import Ecto.Changeset
 
   schema "users" do
+    field :name, :string
     field :email, :string
     field :phone, :string
     field :role, :string
@@ -55,19 +56,35 @@ defmodule Carlosassist.Accounts.User do
   def registration_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [
+      :name,
       :email,
       :phone,
       :role,
+      :password,
       :volunteer_license_plate,
       :volunteer_car,
       :volunteer_bio,
       :profile_pic_location
     ])
+    |> validate_name()
     |> validate_email_for_registration(opts)
     |> validate_phone()
     |> validate_role()
     |> validate_volunteer_fields()
     |> validate_profile_pic_location()
+    |> maybe_validate_registration_password(opts)
+  end
+
+  # Password is optional at registration (email-link sign-in always works),
+  # but when one is given it must be valid and gets hashed.
+  defp maybe_validate_registration_password(changeset, opts) do
+    if get_change(changeset, :password) do
+      changeset
+      |> validate_confirmation(:password, message: "does not match password")
+      |> validate_password(opts)
+    else
+      changeset
+    end
   end
 
   ## Update Changesets
@@ -81,6 +98,7 @@ defmodule Carlosassist.Accounts.User do
   def update_changeset(user, attrs, opts \\ []) do
     user
     |> cast(attrs, [
+      :name,
       :email,
       :phone,
       :role,
@@ -116,6 +134,15 @@ defmodule Carlosassist.Accounts.User do
     user
     |> cast(attrs, [:phone])
     |> validate_phone()
+  end
+
+  @doc """
+  A user changeset specifically for updating the display name.
+  """
+  def name_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:name])
+    |> validate_name()
   end
 
   @doc """
@@ -162,7 +189,31 @@ defmodule Carlosassist.Accounts.User do
     |> validate_password(opts)
   end
 
+  @doc """
+  The name to show in the UI: the user's name, falling back to the part of
+  their email before the @ for accounts created before names existed.
+  """
+  def display_name(%__MODULE__{name: name}) when is_binary(name) and name != "", do: name
+  def display_name(%__MODULE__{email: email}) when is_binary(email) do
+    email |> String.split("@") |> hd()
+  end
+  def display_name(_), do: "Neighbor"
+
+  @doc """
+  A short, friendly version of the display name (first name only).
+  """
+  def first_name(user) do
+    user |> display_name() |> String.split(" ") |> hd()
+  end
+
   ## Validation Functions
+
+  defp validate_name(changeset) do
+    changeset
+    |> update_change(:name, &String.trim/1)
+    |> validate_required([:name])
+    |> validate_length(:name, min: 2, max: 100)
+  end
 
   defp validate_profile_pic_location(changeset) do
     changeset

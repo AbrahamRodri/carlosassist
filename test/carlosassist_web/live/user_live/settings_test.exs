@@ -12,8 +12,8 @@ defmodule CarlosassistWeb.UserLive.SettingsTest do
         |> log_in_user(user_fixture())
         |> live(~p"/users/settings")
 
-      assert html =~ "Change Email"
-      assert html =~ "Save Password"
+      assert html =~ "Change my email"
+      assert html =~ "Save my password"
     end
 
     test "redirects if user is not logged in", %{conn: conn} do
@@ -24,16 +24,15 @@ defmodule CarlosassistWeb.UserLive.SettingsTest do
       assert %{"error" => "You must log in to access this page."} = flash
     end
 
-    test "redirects if user is not in sudo mode", %{conn: conn} do
-      {:ok, conn} =
+    test "renders even when the session is old (no sudo mode required)", %{conn: conn} do
+      {:ok, _lv, html} =
         conn
         |> log_in_user(user_fixture(),
           token_authenticated_at: DateTime.add(DateTime.utc_now(:second), -11, :minute)
         )
         |> live(~p"/users/settings")
-        |> follow_redirect(conn, ~p"/users/log-in")
 
-      assert conn.resp_body =~ "You must re-authenticate to access this page."
+      assert html =~ "My Account"
     end
   end
 
@@ -70,7 +69,7 @@ defmodule CarlosassistWeb.UserLive.SettingsTest do
           "user" => %{"email" => "with spaces"}
         })
 
-      assert result =~ "Change Email"
+      assert result =~ "Change my email"
       assert result =~ "must have the @ sign and no spaces"
     end
 
@@ -84,7 +83,7 @@ defmodule CarlosassistWeb.UserLive.SettingsTest do
         })
         |> render_submit()
 
-      assert result =~ "Change Email"
+      assert result =~ "Change my email"
       assert result =~ "did not change"
     end
   end
@@ -136,7 +135,7 @@ defmodule CarlosassistWeb.UserLive.SettingsTest do
           }
         })
 
-      assert result =~ "Save Password"
+      assert result =~ "Save my password"
       assert result =~ "should be at least 12 character(s)"
       assert result =~ "does not match password"
     end
@@ -154,7 +153,7 @@ defmodule CarlosassistWeb.UserLive.SettingsTest do
         })
         |> render_submit()
 
-      assert result =~ "Save Password"
+      assert result =~ "Save my password"
       assert result =~ "should be at least 12 character(s)"
       assert result =~ "does not match password"
     end

@@ -14,12 +14,77 @@ defmodule CarlosassistWeb.Layouts do
   def app(assigns) do
     ~H"""
     <main class="flex-1">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
         {render_slot(@inner_block)}
       </div>
     </main>
 
     <.flash_group flash={@flash} />
+    """
+  end
+
+  @doc """
+  The CarlosAssist brand mark: a Sacred Heart with a small gold cross rising
+  from its crown, and a road winding through it — love that drives.
+  Sized via `class`.
+  """
+  attr :class, :string, default: "w-10 h-10"
+
+  def brand_mark(assigns) do
+    ~H"""
+    <svg viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg" class={@class} aria-hidden="true">
+      <!-- small gold cross rising from the heart -->
+      <path d="M24 1v9M20.5 4.5h7" stroke="#d4af37" stroke-width="2.5" stroke-linecap="round" />
+      <!-- the heart -->
+      <path
+        d="M24 47C11.5 37.5 4 29 4 18.8 4 12 9.2 6.8 15.8 6.8c3.4 0 6.4 1.6 8.2 4.4 1.8-2.8 4.8-4.4 8.2-4.4C38.8 6.8 44 12 44 18.8 44 29 36.5 37.5 24 47Z"
+        class="fill-primary"
+      />
+      <!-- road winding through the heart -->
+      <path
+        d="M24 46.5c-4.5-6 3.5-9.5 0-15s-3.5-6.5 0-11.5"
+        stroke="#faf6ef"
+        stroke-width="3.5"
+        stroke-linecap="round"
+        fill="none"
+      />
+      <!-- dashed gold center line -->
+      <path
+        d="M24 46.5c-4.5-6 3.5-9.5 0-15s-3.5-6.5 0-11.5"
+        stroke="#d4af37"
+        stroke-width="1"
+        stroke-dasharray="3 4"
+        stroke-linecap="round"
+        fill="none"
+      />
+    </svg>
+    """
+  end
+
+  @doc """
+  Shared footer: brand lockup, one line of scripture, and the St. Christopher
+  dedication — the app's quiet Catholic thread.
+  """
+  def footer(assigns) do
+    ~H"""
+    <footer class="mt-16 border-t-2 border-base-300 bg-base-200">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 text-center">
+        <div class="flex items-center justify-center gap-3 mb-4">
+          <.brand_mark class="w-8 h-9" />
+          <span class="font-display text-2xl text-base-content">CarlosAssist</span>
+        </div>
+        <p class="font-display italic text-lg text-base-content/80">
+          “Carry one another's burdens.”
+        </p>
+        <p class="text-base text-base-content/70 mb-6">— Galatians 6:2</p>
+        <p class="text-base text-base-content/70">
+          A volunteer ride ministry, offered with care by your parish community.
+        </p>
+        <p class="mt-2 text-base text-base-content/60">
+          Under the patronage of St. Christopher, patron of travelers.
+        </p>
+      </div>
+    </footer>
     """
   end
 
@@ -73,19 +138,26 @@ defmodule CarlosassistWeb.Layouts do
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-[33%] h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-[33%] [[data-theme=dark]_&]:left-[66%] transition-[left]" />
-
-      <button phx-click={JS.dispatch("phx:set-theme", detail: %{theme: "system"})} class="flex p-2">
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
+    <div class="flex flex-wrap gap-2" role="group" aria-label="Screen appearance">
+      <button
+        phx-click={JS.dispatch("phx:set-theme", detail: %{theme: "light"})}
+        class="btn btn-outline [[data-theme=light]_&]:btn-primary"
+      >
+        <.icon name="hero-sun" class="size-5" /> Light
       </button>
 
-      <button phx-click={JS.dispatch("phx:set-theme", detail: %{theme: "light"})} class="flex p-2">
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
+      <button
+        phx-click={JS.dispatch("phx:set-theme", detail: %{theme: "dark"})}
+        class="btn btn-outline [[data-theme=dark]_&]:btn-primary"
+      >
+        <.icon name="hero-moon" class="size-5" /> Dark
       </button>
 
-      <button phx-click={JS.dispatch("phx:set-theme", detail: %{theme: "dark"})} class="flex p-2">
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
+      <button
+        phx-click={JS.dispatch("phx:set-theme", detail: %{theme: "system"})}
+        class="btn btn-outline"
+      >
+        <.icon name="hero-computer-desktop" class="size-5" /> Match my device
       </button>
     </div>
     """
