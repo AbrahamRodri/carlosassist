@@ -32,28 +32,28 @@ defmodule CarlosassistWeb.Layouts do
 
   def brand_mark(assigns) do
     ~H"""
-    <svg viewBox="0 0 48 52" fill="none" xmlns="http://www.w3.org/2000/svg" class={@class} aria-hidden="true">
-      <!-- small gold cross rising from the heart -->
-      <path d="M24 1v9M20.5 4.5h7" stroke="#d4af37" stroke-width="2.5" stroke-linecap="round" />
+    <svg viewBox="0 0 48 54" fill="none" xmlns="http://www.w3.org/2000/svg" class={@class} aria-hidden="true">
+      <!-- gold cross standing at the heart's crown -->
+      <path d="M24 1v13M19.5 5.5h9" stroke="#d4af37" stroke-width="3" stroke-linecap="round" />
       <!-- the heart -->
       <path
-        d="M24 47C11.5 37.5 4 29 4 18.8 4 12 9.2 6.8 15.8 6.8c3.4 0 6.4 1.6 8.2 4.4 1.8-2.8 4.8-4.4 8.2-4.4C38.8 6.8 44 12 44 18.8 44 29 36.5 37.5 24 47Z"
+        d="M24 49C11.5 39.5 4 31 4 20.8 4 14 9.2 8.8 15.8 8.8c3.4 0 6.4 1.6 8.2 4.4 1.8-2.8 4.8-4.4 8.2-4.4C38.8 8.8 44 14 44 20.8 44 31 36.5 39.5 24 49Z"
         class="fill-primary"
       />
-      <!-- road winding through the heart -->
+      <!-- road: enters at the dip beneath the cross, winds out the bottom point -->
       <path
-        d="M24 46.5c-4.5-6 3.5-9.5 0-15s-3.5-6.5 0-11.5"
+        d="M24 13.5c-1 4 3.5 6.5 1.5 12s-5 7.5-3 12 2.5 7 1.5 11"
         stroke="#faf6ef"
-        stroke-width="3.5"
+        stroke-width="4.5"
         stroke-linecap="round"
         fill="none"
       />
       <!-- dashed gold center line -->
       <path
-        d="M24 46.5c-4.5-6 3.5-9.5 0-15s-3.5-6.5 0-11.5"
+        d="M24 13.5c-1 4 3.5 6.5 1.5 12s-5 7.5-3 12 2.5 7 1.5 11"
         stroke="#d4af37"
-        stroke-width="1"
-        stroke-dasharray="3 4"
+        stroke-width="1.2"
+        stroke-dasharray="3.5 4"
         stroke-linecap="round"
         fill="none"
       />
