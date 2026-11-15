@@ -98,8 +98,10 @@ defmodule CarlosassistWeb.UserLive.Registration do
     {:ok, redirect(socket, to: CarlosassistWeb.UserAuth.signed_in_path(socket))}
   end
 
-  def mount(_params, _session, socket) do
-    changeset = %User{} |> User.registration_changeset(%{})
+  def mount(params, _session, socket) do
+    # The home page links here with ?role=rider or ?role=volunteer.
+    role = if params["role"] in ["rider", "volunteer"], do: params["role"], else: "rider"
+    changeset = %User{} |> User.registration_changeset(%{"role" => role})
 
     {:ok,
      socket
@@ -110,7 +112,7 @@ defmodule CarlosassistWeb.UserLive.Registration do
        max_entries: 1,
        max_file_size: 10_000_000
      )
-     |> assign(:selected_role, "rider"), temporary_assigns: [form: nil]}
+     |> assign(:selected_role, role), temporary_assigns: [form: nil]}
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do

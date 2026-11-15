@@ -1,159 +1,217 @@
-<Layouts.flash_group flash={@flash} />
+<div class="ca-home" data-theme="light">
+  <Layouts.flash_group flash={@flash} />
 
-<!-- Hero Section -->
-<section class="relative min-h-screen flex items-center justify-center overflow-hidden">
-  <!-- Background Pattern -->
-  <div class="absolute inset-0 opacity-5">
-    <div
-      class="absolute inset-0"
-      style="background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0); background-size: 20px 20px;"
-    >
-    </div>
-  </div>
-  
-<!-- Main Content -->
-  <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-    <div class="text-center">
-      <!-- Logo -->
-      <div class="mb-8">
-        <div class="inline-flex items-center justify-center w-20 h-20 bg-primary/10 rounded-2xl mb-6">
-          <span class="text-4xl font-bold text-primary">C</span>
-        </div>
-      </div>
-      
-<!-- Headline -->
-      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold text-base-content mb-6">
-        <span class="text-primary">Carlos</span>Assist
-      </h1>
-      
-<!-- Subheadline -->
-      <p class="text-xl sm:text-2xl text-base-content/80 mb-12 max-w-3xl mx-auto leading-relaxed">
-        Connect with volunteer drivers in your community. Request rides, choose your volunteer, and chat securely.
-      </p>
-      
-<!-- CTA Buttons -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+  <a href="#main" class="ca-skip">Skip to the main part of the page</a>
+
+  <header class="ca-header">
+    <div class="ca-wrap ca-header-row">
+      <.link href={~p"/"} class="ca-brand" aria-label="CarlosAssist home">
+        <img
+          src={~p"/images/carlosassist-mark.webp"}
+          alt=""
+          width="48"
+          height="48"
+          class="ca-brand-mark"
+        />
+        <span class="ca-brand-name">CarlosAssist</span>
+      </.link>
+
+      <nav class="ca-header-nav" aria-label="Account">
         <%= if @current_scope do %>
-          <.link
-            href={"/dashboard/#{@current_scope.user.role}"}
-            class="btn btn-primary btn-lg px-8"
-          >
-            Go to Dashboard <.icon name="hero-arrow-right" class="w-5 h-5 ml-2" />
+          <.link href={~p"/users/settings"} class="ca-btn ca-btn-quiet">
+            Settings
+          </.link>
+          <.link href={~p"/users/log-out"} method="delete" class="ca-btn ca-btn-quiet">
+            Log out
           </.link>
         <% else %>
-          <.link href={~p"/users/register"} class="btn btn-primary btn-lg px-8">
-            Get Started <.icon name="hero-arrow-right" class="w-5 h-5 ml-2" />
+          <.link href={~p"/users/log-in"} class="ca-btn ca-btn-outline">
+            Sign in
           </.link>
         <% end %>
-        <.link href="#features" class="btn btn-outline btn-lg px-8">
-          Learn More
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="ca-hero">
+      <div class="ca-wrap ca-hero-grid">
+        <div class="ca-hero-text">
+          <p class="ca-eyebrow">Parish ride help</p>
+          <h1 class="ca-h1">A ride to Mass, the doctor or the store</h1>
+          <span class="ca-rule" aria-hidden="true"></span>
+          <p class="ca-lead">
+            CarlosAssist connects people who need a ride with parish volunteers
+            who are glad to drive them. There is no charge.
+          </p>
+
+          <%= if @current_scope do %>
+            <div class="ca-actions">
+              <.link
+                :if={@current_scope.user.role == "volunteer"}
+                href={~p"/dashboard/volunteer"}
+                class="ca-btn ca-btn-primary ca-btn-lg"
+              >
+                See ride requests <.icon name="hero-arrow-right" class="size-6" />
+              </.link>
+              <.link
+                :if={@current_scope.user.role != "volunteer"}
+                href={~p"/dashboard/rider"}
+                class="ca-btn ca-btn-primary ca-btn-lg"
+              >
+                Go to my rides <.icon name="hero-arrow-right" class="size-6" />
+              </.link>
+              <.link href={~p"/dashboard/inbox"} class="ca-btn ca-btn-outline ca-btn-lg">
+                Messages
+              </.link>
+            </div>
+          <% else %>
+            <div class="ca-actions">
+              <.link href={~p"/users/register?role=rider"} class="ca-btn ca-btn-primary ca-btn-lg">
+                I need a ride
+              </.link>
+              <.link
+                href={~p"/users/register?role=volunteer"}
+                class="ca-btn ca-btn-outline ca-btn-lg"
+              >
+                I want to drive
+              </.link>
+            </div>
+            <p class="ca-signin-line">
+              Already have an account?
+              <.link href={~p"/users/log-in"} class="ca-link">Sign in</.link>
+            </p>
+          <% end %>
+        </div>
+
+        <div class="ca-hero-art" aria-hidden="true">
+          <div class="ca-arch">
+            <img
+              src={~p"/images/carlosassist-mark.webp"}
+              alt=""
+              width="360"
+              height="360"
+              class="ca-arch-img"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ca-band" aria-labelledby="how-heading">
+      <div class="ca-wrap">
+        <h2 id="how-heading" class="ca-h2">How it works</h2>
+        <span class="ca-rule ca-rule-center" aria-hidden="true"></span>
+
+        <ol class="ca-steps">
+          <li class="ca-step">
+            <span class="ca-step-num" aria-hidden="true">1</span>
+            <h3 class="ca-h3">Ask for a ride</h3>
+            <p>Enter where you need to go, and the day and time.</p>
+          </li>
+          <li class="ca-step">
+            <span class="ca-step-num" aria-hidden="true">2</span>
+            <h3 class="ca-h3">Choose your driver</h3>
+            <p>
+              Volunteers offer to take you. You see each one's photo, car and
+              message, and you choose who drives you.
+            </p>
+          </li>
+          <li class="ca-step">
+            <span class="ca-step-num" aria-hidden="true">3</span>
+            <h3 class="ca-h3">Agree on the pickup</h3>
+            <p>Send your driver a message here to settle the time and the place.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="ca-section" aria-labelledby="who-heading">
+      <div class="ca-wrap">
+        <h2 id="who-heading" class="ca-h2">Riders and drivers</h2>
+        <span class="ca-rule ca-rule-center" aria-hidden="true"></span>
+
+        <div class="ca-cards">
+          <article class="ca-card">
+            <h3 class="ca-h3 ca-card-title">If you need a ride</h3>
+            <ul class="ca-list">
+              <li>
+                <.icon name="hero-check" class="ca-check" />
+                <span>Ask from a phone or a computer, on any day.</span>
+              </li>
+              <li>
+                <.icon name="hero-check" class="ca-check" />
+                <span>You decide who drives you.</span>
+              </li>
+              <li>
+                <.icon name="hero-check" class="ca-check" />
+                <span>You can write to your driver before the ride.</span>
+              </li>
+            </ul>
+            <.link
+              :if={!@current_scope}
+              href={~p"/users/register?role=rider"}
+              class="ca-btn ca-btn-primary ca-btn-block"
+            >
+              I need a ride
+            </.link>
+          </article>
+
+          <article class="ca-card">
+            <h3 class="ca-h3 ca-card-title">If you can drive</h3>
+            <ul class="ca-list">
+              <li>
+                <.icon name="hero-check" class="ca-check" />
+                <span>See the rides people are asking for.</span>
+              </li>
+              <li>
+                <.icon name="hero-check" class="ca-check" />
+                <span>Offer to help with the ones that fit your day.</span>
+              </li>
+              <li>
+                <.icon name="hero-check" class="ca-check" />
+                <span>Share your photo and your car, so riders know who is coming.</span>
+              </li>
+            </ul>
+            <.link
+              :if={!@current_scope}
+              href={~p"/users/register?role=volunteer"}
+              class="ca-btn ca-btn-outline ca-btn-block"
+            >
+              I want to drive
+            </.link>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section :if={!@current_scope} class="ca-band ca-band-signin" aria-labelledby="signin-heading">
+      <div class="ca-wrap ca-signin">
+        <h2 id="signin-heading" class="ca-h2">Already have an account?</h2>
+        <.link href={~p"/users/log-in"} class="ca-btn ca-btn-primary ca-btn-lg">
+          Sign in
         </.link>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
+  </main>
 
-<!-- Features Section -->
-<section id="features" class="py-20 bg-base-200/50">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl sm:text-4xl font-bold text-base-content mb-4">
-        How CarlosAssist Works
-      </h2>
-      <p class="text-lg text-base-content/70 max-w-2xl mx-auto">
-        A simple platform connecting riders with volunteer drivers through personal choice and real-time chat
-      </p>
+  <footer class="ca-footer">
+    <div class="ca-wrap ca-footer-row">
+      <div class="ca-brand">
+        <img
+          src={~p"/images/carlosassist-mark.webp"}
+          alt=""
+          width="40"
+          height="40"
+          class="ca-brand-mark"
+        />
+        <span class="ca-brand-name">CarlosAssist</span>
+      </div>
+      <p class="ca-footer-note">Rides given by parish volunteers.</p>
+      <nav :if={!@current_scope} class="ca-footer-nav" aria-label="Footer">
+        <.link href={~p"/users/log-in"} class="ca-link">Sign in</.link>
+        <.link href={~p"/users/register"} class="ca-link">Create an account</.link>
+      </nav>
     </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <!-- Feature 1 -->
-      <div class="modern-card bg-base-100/50 p-8 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
-        <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
-          <.icon name="hero-clipboard-document-check" class="w-8 h-8 text-primary" />
-        </div>
-        <h3 class="text-xl font-semibold text-base-content mb-4">Request & Choose</h3>
-        <p class="text-base-content/70">
-          Post ride requests with pickup and destination. Review volunteer applications and choose your driver.
-        </p>
-      </div>
-      
-<!-- Feature 2 -->
-      <div class="modern-card bg-base-100/50 p-8 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
-        <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
-          <.icon name="hero-users" class="w-8 h-8 text-primary" />
-        </div>
-        <h3 class="text-xl font-semibold text-base-content mb-4">Volunteer Network</h3>
-        <p class="text-base-content/70">
-          Community volunteers apply to help with rides. See their profiles, cars, and personal messages.
-        </p>
-      </div>
-      
-<!-- Feature 3 -->
-      <div class="modern-card bg-base-100/50 p-8 rounded-2xl text-center group hover:scale-105 transition-all duration-300">
-        <div class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
-          <.icon name="hero-chat-bubble-left-right" class="w-8 h-8 text-primary" />
-        </div>
-        <h3 class="text-xl font-semibold text-base-content mb-4">Real-time Chat</h3>
-        <p class="text-base-content/70">
-          Once matched, chat directly with your rider or volunteer to coordinate pickup details.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- How It Works Section -->
-<section class="py-20">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-12">
-      <h2 class="text-3xl sm:text-4xl font-bold text-base-content mb-4">
-        Simple. Personal. Effective.
-      </h2>
-      <p class="text-lg text-base-content/70 max-w-2xl mx-auto">
-        CarlosAssist puts you in control of your transportation choices
-      </p>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
-      <div class="p-6">
-        <div class="text-2xl font-bold text-primary mb-3">For Riders</div>
-        <div class="text-base-content/70">Create detailed ride requests, review volunteer applications with photos and car info, choose your preferred driver, and chat to coordinate pickup</div>
-      </div>
-      <div class="p-6">
-        <div class="text-2xl font-bold text-primary mb-3">For Volunteers</div>
-        <div class="text-base-content/70">Browse available ride requests, apply with personal messages, share your car details and profile, then chat with riders once selected</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer class="py-12 bg-base-200/30 border-t border-base-300/50">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col md:flex-row justify-between items-center">
-      <div class="flex items-center space-x-3 mb-4 md:mb-0">
-        <div class="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
-          <span class="text-primary-content font-bold text-sm">C</span>
-        </div>
-        <span class="text-xl font-semibold text-base-content">CarlosAssist</span>
-      </div>
-
-      <div class="flex items-center space-x-6">
-        <.link href="#" class="text-base-content/60 hover:text-base-content transition-colors">
-          Privacy Policy
-        </.link>
-        <.link href="#" class="text-base-content/60 hover:text-base-content transition-colors">
-          Terms of Service
-        </.link>
-        <.link href="#" class="text-base-content/60 hover:text-base-content transition-colors">
-          Contact
-        </.link>
-      </div>
-    </div>
-
-    <div class="mt-8 pt-8 border-t border-base-300/50 text-center">
-      <p class="text-base-content/60">
-        © 2024 CarlosAssist. Made with ❤️ for communities that care.
-      </p>
-    </div>
-  </div>
-</footer>
+  </footer>
+</div>
