@@ -124,7 +124,7 @@ Hooks.PrivacyRadiusMap = {
     const lng = parseFloat(this.el.dataset[`${locationType}Lng`])
     
     if (!lat || !lng) {
-      this.el.innerHTML = '<div class="flex items-center justify-center h-full text-base-content/50">Location data not available</div>'
+      this.el.innerHTML = '<div class="map-empty">The map is not available for this ride.</div>'
       return
     }
 
@@ -240,7 +240,7 @@ Hooks.ExactLocationMap = {
     const destLng = parseFloat(this.el.dataset.destinationLng)
     
     if (!pickupLat || !pickupLng || !destLat || !destLng) {
-      this.el.innerHTML = '<div class="flex items-center justify-center h-full text-base-content/50">Location data not available</div>'
+      this.el.innerHTML = '<div class="map-empty">The map is not available for this ride.</div>'
       return
     }
 

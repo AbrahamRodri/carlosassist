@@ -8,12 +8,12 @@ defmodule CarlosassistWeb.CoreComponents do
   with doc strings and declarative assigns. You may customize and style
   them in any way you want, based on your application growth and needs.
 
-  The foundation for styling is Tailwind CSS, a utility-first CSS framework,
-  augmented with daisyUI, a Tailwind CSS plugin that provides UI components
-  and themes. Here are useful references:
-
-    * [daisyUI](https://daisyui.com/docs/intro/) - a good place to get
-      started and see the available components.
+  The foundation for styling is Tailwind CSS plus the app's own component
+  classes in `assets/css/app.css` (`btn`, `sheet`, `field`, `badge`, `notice`
+  and so on): one look for the whole app, taken from Lumen Viae. Night
+  ground, vellum sheets for anything read closely or filled in, gilt for the
+  primary action, Cormorant Garamond headings and EB Garamond text. Here are
+  useful references:
 
     * [Tailwind CSS](https://tailwindcss.com) - the foundational framework
       we build on. You will use it for layout, sizing, flexbox, grid, and
@@ -56,25 +56,18 @@ defmodule CarlosassistWeb.CoreComponents do
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
-      class="toast toast-top toast-end z-50"
+      class={["flash", @kind == :error && "flash-error"]}
       {@rest}
     >
-      <div class={[
-        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
-        @kind == :info && "alert-info",
-        @kind == :error && "alert-error"
-      ]}>
-        <.icon :if={@kind == :info} name="hero-information-circle-mini" class="size-5 shrink-0" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle-mini" class="size-5 shrink-0" />
-        <div>
-          <p :if={@title} class="font-semibold">{@title}</p>
-          <p>{msg}</p>
-        </div>
-        <div class="flex-1" />
-        <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
-          <.icon name="hero-x-mark-solid" class="size-5 opacity-40 group-hover:opacity-70" />
-        </button>
+      <.icon :if={@kind == :info} name="hero-check-circle" class="flash-icon" />
+      <.icon :if={@kind == :error} name="hero-exclamation-circle" class="flash-icon" />
+      <div class="flex-1 min-w-0">
+        <p :if={@title} class="font-semibold">{@title}</p>
+        <p>{msg}</p>
       </div>
+      <button type="button" class="flash-close" aria-label={gettext("close")}>
+        <.icon name="hero-x-mark" class="size-6" />
+      </button>
     </div>
     """
   end
@@ -82,29 +75,42 @@ defmodule CarlosassistWeb.CoreComponents do
   @doc """
   Renders a button with navigation support.
 
+  A capsule at least 52px tall. `variant="primary"` is the gilt primary
+  action, one per screen region; the default is the outline; `"danger"`
+  removes or refuses something.
+
   ## Examples
 
       <.button>Send!</.button>
       <.button phx-click="go" variant="primary">Send!</.button>
       <.button navigate={~p"/"}>Home</.button>
   """
-  attr :rest, :global, include: ~w(href navigate patch)
-  attr :variant, :string, values: ~w(primary)
+  attr :rest, :global,
+    include: ~w(href navigate patch method type disabled name value form data-confirm)
+
+  attr :variant, :string, values: ~w(primary outline danger)
+  attr :class, :any, default: nil
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
-    assigns = assign(assigns, :class, Map.fetch!(variants, assigns[:variant]))
+    variants = %{
+      "primary" => "btn-gold",
+      "outline" => "btn-outline",
+      "danger" => "btn-danger",
+      nil => "btn-outline"
+    }
+
+    assigns = assign(assigns, :variant_class, Map.fetch!(variants, assigns[:variant]))
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""
-      <.link class={["btn", @class]} {@rest}>
+      <.link class={["btn", @variant_class, @class]} {@rest}>
         {render_slot(@inner_block)}
       </.link>
       """
     else
       ~H"""
-      <button class={["btn", @class]} {@rest}>
+      <button class={["btn", @variant_class, @class]} {@rest}>
         {render_slot(@inner_block)}
       </button>
       """
@@ -155,6 +161,7 @@ defmodule CarlosassistWeb.CoreComponents do
   attr :prompt, :string, default: nil, doc: "the prompt for select inputs"
   attr :options, :list, doc: "the options to pass to Phoenix.HTML.Form.options_for_select/2"
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
+  attr :help, :string, default: nil, doc: "a line of help shown under the field"
 
   attr :rest, :global,
     include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
@@ -178,98 +185,88 @@ defmodule CarlosassistWeb.CoreComponents do
       end)
 
     ~H"""
-    <fieldset class="fieldset mb-2">
-      <label>
+    <div class="field">
+      <label class="field-check">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
-        <span class="fieldset-label">
-          <input
-            type="checkbox"
-            id={@id}
-            name={@name}
-            value="true"
-            checked={@checked}
-            class="checkbox checkbox-sm"
-            {@rest}
-          />{@label}
-        </span>
+        <input type="checkbox" id={@id} name={@name} value="true" checked={@checked} {@rest} />
+        <span>{@label}</span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
-    </fieldset>
+    </div>
     """
   end
 
   def input(%{type: "select"} = assigns) do
     ~H"""
-    <fieldset class="fieldset mb-2">
-      <label>
-        <span :if={@label} class="fieldset-label mb-1">{@label}</span>
-        <select
-          id={@id}
-          name={@name}
-          class={["w-full select", @errors != [] && "select-error"]}
-          multiple={@multiple}
-          {@rest}
-        >
-          <option :if={@prompt} value="">{@prompt}</option>
-          {Phoenix.HTML.Form.options_for_select(@options, @value)}
-        </select>
-      </label>
+    <div class="field">
+      <label :if={@label} for={@id} class="field-label">{@label}</label>
+      <select
+        id={@id}
+        name={@name}
+        class={["field-input", @errors != [] && "field-input-error"]}
+        multiple={@multiple}
+        {@rest}
+      >
+        <option :if={@prompt} value="">{@prompt}</option>
+        {Phoenix.HTML.Form.options_for_select(@options, @value)}
+      </select>
+      <p :if={@help} class="field-help">{@help}</p>
       <.error :for={msg <- @errors}>{msg}</.error>
-    </fieldset>
+    </div>
     """
   end
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <fieldset class="fieldset mb-2">
-      <label>
-        <span :if={@label} class="fieldset-label mb-1">{@label}</span>
-        <textarea
-          id={@id}
-          name={@name}
-          class={["w-full textarea", @errors != [] && "textarea-error"]}
-          {@rest}
-        >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
-      </label>
+    <div class="field">
+      <label :if={@label} for={@id} class="field-label">{@label}</label>
+      <textarea
+        id={@id}
+        name={@name}
+        class={["field-input", @errors != [] && "field-input-error"]}
+        {@rest}
+      >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+      <p :if={@help} class="field-help">{@help}</p>
       <.error :for={msg <- @errors}>{msg}</.error>
-    </fieldset>
+    </div>
     """
   end
 
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <fieldset class="fieldset mb-2">
-      <label>
-        <span :if={@label} class="fieldset-label mb-1">{@label}</span>
-        <input
-          type={@type}
-          name={@name}
-          id={@id}
-          value={Phoenix.HTML.Form.normalize_value(@type, @value)}
-          class={["w-full input", @errors != [] && "input-error"]}
-          {@rest}
-        />
-      </label>
+    <div class="field">
+      <label :if={@label} for={@id} class="field-label">{@label}</label>
+      <input
+        type={@type}
+        name={@name}
+        id={@id}
+        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+        class={["field-input", @errors != [] && "field-input-error"]}
+        {@rest}
+      />
+      <p :if={@help} class="field-help">{@help}</p>
       <.error :for={msg <- @errors}>{msg}</.error>
-    </fieldset>
+    </div>
     """
   end
 
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
-      <.icon name="hero-exclamation-circle-mini" class="size-5" />
+    <p class="field-error">
+      <.icon name="hero-exclamation-circle" class="size-6 shrink-0" />
       {render_slot(@inner_block)}
     </p>
     """
   end
 
   @doc """
-  Renders a header with title.
+  Renders a page header: an optional small label, the page title, an
+  optional line under it and optional actions beside it.
   """
   attr :class, :string, default: nil
+  attr :kicker, :string, default: nil
 
   slot :inner_block, required: true
   slot :subtitle
@@ -277,17 +274,64 @@ defmodule CarlosassistWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4", @class]}>
+    <header class={[
+      "mb-8",
+      @actions != [] && "flex flex-col gap-5 md:flex-row md:items-end md:justify-between",
+      @class
+    ]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">
+        <p :if={@kicker} class="kicker mb-2">{@kicker}</p>
+        <h1 class="page-title">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="text-sm text-base-content/70">
+        <p :if={@subtitle != []} class="lead mt-3">
           {render_slot(@subtitle)}
         </p>
       </div>
-      <div class="flex-none">{render_slot(@actions)}</div>
+      <div :if={@actions != []} class="flex-none">{render_slot(@actions)}</div>
     </header>
+    """
+  end
+
+  @doc """
+  The ornament between parts of a page: a hairline, a diamond, a small
+  cross, a diamond, a hairline.
+  """
+  attr :class, :any, default: nil
+
+  def divider(assigns) do
+    ~H"""
+    <div class={["divider", @class]} aria-hidden="true">
+      <span class="divider-line"></span>
+      <span class="divider-diamond"></span>
+      <svg viewBox="0 0 9 13" class="divider-cross">
+        <path d="M3.24 0 H5.76 V2.64 H9 V5.16 H5.76 V13 H3.24 V5.16 H0 V2.64 H3.24 Z" />
+      </svg>
+      <span class="divider-diamond"></span>
+      <span class="divider-line"></span>
+    </div>
+    """
+  end
+
+  @doc """
+  A label and its value, as on a ride: "Pickup", then the place.
+  """
+  attr :label, :string, required: true
+  attr :icon, :string, default: nil
+  attr :class, :any, default: nil
+  slot :inner_block, required: true
+  slot :note
+
+  def datum(assigns) do
+    ~H"""
+    <div class={@class}>
+      <p class="data-label">
+        <.icon :if={@icon} name={@icon} class="size-5" />
+        {@label}
+      </p>
+      <p class="data-value">{render_slot(@inner_block)}</p>
+      <p :for={note <- @note} class="data-note">{render_slot(note)}</p>
+    </div>
     """
   end
 
@@ -323,7 +367,7 @@ defmodule CarlosassistWeb.CoreComponents do
       end
 
     ~H"""
-    <table class="table table-zebra">
+    <table class="table">
       <thead>
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
@@ -337,7 +381,7 @@ defmodule CarlosassistWeb.CoreComponents do
           <td
             :for={col <- @col}
             phx-click={@row_click && @row_click.(row)}
-            class={@row_click && "hover:cursor-pointer"}
+            class={@row_click && "cursor-pointer"}
           >
             {render_slot(col, @row_item.(row))}
           </td>
@@ -370,12 +414,10 @@ defmodule CarlosassistWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <ul class="list">
-      <li :for={item <- @item} class="list-row">
-        <div>
-          <div class="font-bold">{item.title}</div>
-          <div>{render_slot(item)}</div>
-        </div>
+    <ul class="rows">
+      <li :for={item <- @item} class="py-3">
+        <div class="data-label">{item.title}</div>
+        <div>{render_slot(item)}</div>
       </li>
     </ul>
     """
@@ -400,7 +442,7 @@ defmodule CarlosassistWeb.CoreComponents do
       <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
   """
   attr :name, :string, required: true
-  attr :class, :any, default: "size-4"
+  attr :class, :any, default: "size-6"
 
   def icon(%{name: "hero-" <> _} = assigns) do
     ~H"""
@@ -481,46 +523,24 @@ defmodule CarlosassistWeb.CoreComponents do
 
   def avatar(assigns) do
     ~H"""
-    <div
-      class={[
-        "avatar",
-        @class
-      ]}
-      {@rest}
-    >
-      <div class={[
-        "rounded-full bg-base-300 overflow-hidden",
-        avatar_size_class(@size)
-      ]}>
-        <img :if={@src && @src != ""} src={@src} alt={@alt} class="w-full h-full object-cover" />
-        <div
-          :if={!@src || @src == ""}
-          class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20"
-        >
-          <.icon
-            name="hero-user"
-            class={[
-              "text-primary opacity-70",
-              avatar_icon_size_class(@size)
-            ]}
-          />
-        </div>
-      </div>
+    <div class={["avatar", avatar_size_class(@size), @class]} {@rest}>
+      <img :if={@src && @src != ""} src={@src} alt={@alt} />
+      <.icon :if={!@src || @src == ""} name="hero-user" class={avatar_icon_size_class(@size)} />
     </div>
     """
   end
 
-  defp avatar_size_class("xs"), do: "w-8 h-8"
-  defp avatar_size_class("sm"), do: "w-10 h-10"
-  defp avatar_size_class("md"), do: "w-12 h-12"
+  defp avatar_size_class("xs"), do: "w-10 h-10"
+  defp avatar_size_class("sm"), do: "w-12 h-12"
+  defp avatar_size_class("md"), do: "w-14 h-14"
   defp avatar_size_class("lg"), do: "w-16 h-16"
   defp avatar_size_class("xl"), do: "w-20 h-20"
   defp avatar_size_class("2xl"), do: "w-24 h-24"
   defp avatar_size_class(_), do: "w-12 h-12"
 
-  defp avatar_icon_size_class("xs"), do: "size-4"
-  defp avatar_icon_size_class("sm"), do: "size-5"
-  defp avatar_icon_size_class("md"), do: "size-6"
+  defp avatar_icon_size_class("xs"), do: "size-5"
+  defp avatar_icon_size_class("sm"), do: "size-6"
+  defp avatar_icon_size_class("md"), do: "size-7"
   defp avatar_icon_size_class("lg"), do: "size-8"
   defp avatar_icon_size_class("xl"), do: "size-10"
   defp avatar_icon_size_class("2xl"), do: "size-12"

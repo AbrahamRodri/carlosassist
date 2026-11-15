@@ -5,9 +5,17 @@ defmodule CarlosassistWeb.UserLive.Confirmation do
 
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm">
-        <.header class="text-center">Welcome {@user.email}</.header>
+    <Layouts.app flash={@flash} current_scope={@current_scope} width="narrow">
+      <div class="sheet">
+        <.header kicker="Welcome">
+          <span class="break-words">{@user.email}</span>
+          <:subtitle :if={!@user.confirmed_at}>
+            Press the button to confirm your account and log in.
+          </:subtitle>
+          <:subtitle :if={@user.confirmed_at}>
+            Press the button to log in.
+          </:subtitle>
+        </.header>
 
         <.form
           :if={!@user.confirmed_at}
@@ -24,7 +32,7 @@ defmodule CarlosassistWeb.UserLive.Confirmation do
             type="checkbox"
             label="Keep me logged in"
           />
-          <.button variant="primary" phx-disable-with="Confirming..." class="w-full">
+          <.button variant="primary" phx-disable-with="Confirming..." class="btn-block">
             Confirm my account
           </.button>
         </.form>
@@ -44,12 +52,15 @@ defmodule CarlosassistWeb.UserLive.Confirmation do
             type="checkbox"
             label="Keep me logged in"
           />
-          <.button variant="primary" phx-disable-with="Logging in..." class="w-full">Log in</.button>
+          <.button variant="primary" phx-disable-with="Logging in..." class="btn-block">
+            Log in
+          </.button>
         </.form>
 
-        <p :if={!@user.confirmed_at} class="alert alert-outline mt-8">
-          Tip: If you prefer passwords, you can enable them in the user settings.
-        </p>
+        <div :if={!@user.confirmed_at} class="notice mt-8">
+          <.icon name="hero-information-circle" />
+          <p>If you would rather use a password, you can set one in Settings.</p>
+        </div>
       </div>
     </Layouts.app>
     """

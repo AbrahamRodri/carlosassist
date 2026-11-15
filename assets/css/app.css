@@ -1,7 +1,6 @@
 /* See the Tailwind configuration guide for advanced usage
    https://tailwindcss.com/docs/configuration */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap');
 @import "tailwindcss";
 @import "mapbox-gl/dist/mapbox-gl.css";
 @import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -13,84 +12,6 @@
    The heroicons installation itself is managed by your mix.exs */
 @plugin "../vendor/heroicons";
 
-/* daisyUI Tailwind Plugin. You can update this file by fetching the latest version with:
-   curl -sLO https://github.com/saadeghi/daisyui/releases/latest/download/daisyui.js
-   Make sure to look at the daisyUI changelog: https://daisyui.com/docs/changelog/ */
-@plugin "../vendor/daisyui" {
-  themes: false;
-}
-
-/* daisyUI theme plugin with modern sage green color palette */
-@plugin "../vendor/daisyui-theme" {
-  name: "dark";
-  default: false;
-  prefersdark: true;
-  color-scheme: "dark";
-  --color-base-100: oklch(22% 0.003 180);
-  --color-base-200: oklch(18% 0.002 180);
-  --color-base-300: oklch(14% 0.002 180);
-  --color-base-content: oklch(95% 0.002 180);
-  --color-primary: oklch(55% 0.08 150);
-  --color-primary-content: oklch(98% 0.01 150);
-  --color-secondary: oklch(50% 0.06 140);
-  --color-secondary-content: oklch(98% 0.01 140);
-  --color-accent: oklch(60% 0.1 160);
-  --color-accent-content: oklch(98% 0.01 160);
-  --color-neutral: oklch(26% 0.003 180);
-  --color-neutral-content: oklch(90% 0.002 180);
-  --color-info: oklch(55% 0.12 200);
-  --color-info-content: oklch(98% 0.01 200);
-  --color-success: oklch(60% 0.1 140);
-  --color-success-content: oklch(98% 0.01 140);
-  --color-warning: oklch(70% 0.15 60);
-  --color-warning-content: oklch(20% 0.02 60);
-  --color-error: oklch(60% 0.2 20);
-  --color-error-content: oklch(98% 0.01 20);
-  --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
-  --radius-box: 1rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 2;
-  --noise: 0;
-}
-
-@plugin "../vendor/daisyui-theme" {
-  name: "light";
-  default: true;
-  prefersdark: false;
-  color-scheme: "light";
-  --color-base-100: oklch(100% 0 0);
-  --color-base-200: oklch(98% 0.005 180);
-  --color-base-300: oklch(90% 0.01 200);
-  --color-base-content: oklch(25% 0.015 220);
-  --color-primary: oklch(55% 0.08 150);
-  --color-primary-content: oklch(98% 0.01 150);
-  --color-secondary: oklch(50% 0.06 140);
-  --color-secondary-content: oklch(98% 0.01 140);
-  --color-accent: oklch(60% 0.1 160);
-  --color-accent-content: oklch(98% 0.01 160);
-  --color-neutral: oklch(25% 0.02 180);
-  --color-neutral-content: oklch(90% 0.01 150);
-  --color-info: oklch(55% 0.12 200);
-  --color-info-content: oklch(98% 0.01 200);
-  --color-success: oklch(60% 0.1 140);
-  --color-success-content: oklch(98% 0.01 140);
-  --color-warning: oklch(70% 0.15 60);
-  --color-warning-content: oklch(20% 0.02 60);
-  --color-error: oklch(60% 0.2 20);
-  --color-error-content: oklch(98% 0.01 20);
-  --radius-selector: 0.5rem;
-  --radius-field: 0.5rem;
-  --radius-box: 1rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 2;
-  --noise: 0;
-}
-
 /* Add variants based on LiveView classes */
 @custom-variant phx-click-loading ([".phx-click-loading&", ".phx-click-loading &"]);
 @custom-variant phx-submit-loading ([".phx-submit-loading&", ".phx-submit-loading &"]);
@@ -99,485 +20,1434 @@
 /* Make LiveView wrapper divs transparent for layout */
 [data-phx-root-id] { display: contents }
 
-/* Modern sage green gradient backgrounds */
-.sage-gradient-light {
-  background: linear-gradient(135deg,
-    oklch(98% 0.005 150) 0%,
-    oklch(95% 0.01 140) 50%,
-    oklch(92% 0.015 160) 100%);
+/* === fonts ===
+   The two families of Lumen Viae, self-hosted from priv/static/fonts
+   (woff2, Latin subset, OFL): Cormorant Garamond 500 to 600 for headings,
+   EB Garamond 500 to 600 and its 500 italic for everything read. Nothing
+   asks for 400 or 700. Each has a fallback face on a local serif with the
+   web font's metrics, so the swap moves nothing on the page. */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src: url('/fonts/cormorant-garamond-latin.woff2') format('woff2');
 }
 
-.sage-gradient-dark {
-  background: linear-gradient(135deg,
-    oklch(22% 0.003 180) 0%,
-    oklch(25% 0.004 180) 50%,
-    oklch(19% 0.002 180) 100%);
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: normal;
+  font-weight: 500 600;
+  font-display: swap;
+  src: url('/fonts/eb-garamond-latin.woff2') format('woff2');
 }
 
-/* Modern card styles */
-.modern-card {
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(134, 159, 130, 0.2);
-  box-shadow: 0 8px 32px rgba(134, 159, 130, 0.1);
+@font-face {
+  font-family: 'EB Garamond';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/eb-garamond-italic-latin.woff2') format('woff2');
 }
 
-/* Modern Typography & Base Styles */
-* {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+@font-face {
+  font-family: 'Cormorant Garamond Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Times');
+  size-adjust: 95.73%;
+  ascent-override: 96.52%;
+  descent-override: 29.98%;
+  line-gap-override: 0%;
 }
 
-body, html {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  font-variant-numeric: tabular-nums;
-  line-height: 1.6;
-  letter-spacing: -0.011em;
+@font-face {
+  font-family: 'EB Garamond Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Times');
+  size-adjust: 97%;
+  ascent-override: 103.81%;
+  descent-override: 30.72%;
+  line-gap-override: 0%;
+}
+/* === end fonts === */
+
+/* CarlosAssist theme. One look for the whole app, taken from Lumen Viae's
+   "Midnight Marian" palette: every page is night, and everything a person
+   reads closely or fills in (a form, a ride, a conversation) sits on a
+   vellum sheet. Gilt is the one primary accent. What is CarlosAssist's own
+   is the rubric red of its heart, used for labels and links on vellum.
+
+   Ratios are WCAG contrast against the surface named; keep them when
+   changing a value. */
+@theme {
+  /* Surfaces. night is the page ground, night-deep the header and footer,
+     night-raised a card on night. */
+  --color-night: #0D1730;
+  --color-night-deep: #070E1F;
+  --color-night-raised: #17284E;
+
+  /* Rules. night-border is a decorative hairline only; a border that marks
+     a control is night-line (4.5:1 on night) or gilt. */
+  --color-night-border: #2A3B63;
+  --color-night-line: #6E80AB;
+
+  /* Text on night. ink-light 15.5:1, ink-muted 8.5:1. */
+  --color-ink-light: #F4EFE2;
+  --color-ink-muted: #B9B3A3;
+
+  /* Accents. gilt is the primary action (night text on it is 9.2:1).
+     sky is the quiet accent for labels and links on night (8.5:1). */
+  --color-gilt: #D9B84A;
+  --color-gilt-light: #E9CC6E;
+  --color-sky: #9DB4E0;
+
+  /* The vellum sheet. vellum-ink 13.9:1, vellum-muted 5.7:1, rubric 8.1:1.
+     gilt, sky and ink-* never carry text on vellum: they fail. */
+  --color-vellum: #F6F0E2;
+  --color-vellum-deep: #EDE4CF;
+  --color-vellum-field: #FFFDF8;
+  --color-vellum-ink: #2A211C;
+  --color-vellum-muted: #6A5B4E;
+  --color-vellum-border: #E3D7BF;
+  --color-rubric: #8B2F23;
+  --color-rubric-dark: #6F2419;
+
+  /* Status colours, the same warm, muted families as Lumen Viae. Each is
+     a strong text colour (AA on its own surface), a tinted surface and a
+     border. */
+  --color-danger: #8B2F23;
+  --color-danger-strong: #6F2419;
+  --color-danger-surface: #FBEEEC;
+  --color-danger-border: #E3C4BF;
+
+  --color-positive: #3D6B46;
+  --color-positive-strong: #2F5436;
+  --color-positive-surface: #EDF4EE;
+  --color-positive-border: #C2D8C7;
+
+  --color-caution: #8A5A1F;
+  --color-caution-strong: #6D4718;
+  --color-caution-surface: #FBF1E0;
+  --color-caution-border: #E2CBA3;
+
+  --color-notice: #1F4F6B;
+  --color-notice-surface: #EBF2F6;
+  --color-notice-border: #B9CFDC;
+
+  /* Type. Cormorant Garamond for headings, in sentence case; EB Garamond
+     for everything read and for the small tracked-caps labels. */
+  --font-display: 'Cormorant Garamond', 'Cormorant Garamond Fallback', Georgia, serif;
+  --font-garamond: 'EB Garamond', 'EB Garamond Fallback', Georgia, serif;
+
+  --shadow-night: 0 10px 30px rgba(3, 7, 18, 0.45), 0 1px 3px rgba(3, 7, 18, 0.35);
+  --shadow-gilt: 0 0 18px rgba(217, 184, 74, 0.35);
 }
 
-h1, h2, h3, h4, h5, h6 {
+/* Base type. The readers are mostly older people: body text is 21px
+   (EB Garamond runs small, so this reads like 18px in a sans), nothing a
+   person must read is under 18px, and every control is at least 52px
+   tall. */
+@layer base {
+  html {
+    background-color: var(--color-night-deep);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-night);
+    color: var(--color-ink-light);
+    font-family: var(--font-garamond);
+    font-size: 1.3125rem;
+    font-weight: 500;
+    line-height: 1.6;
+    --focus-ring: var(--color-gilt);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  /* 600 is the heaviest face served; asking for 700 would fake a bold. */
+  strong, b {
+    font-weight: 600;
+  }
+
+  /* The focus ring clears 3:1 on whatever it sits on: gilt on night,
+     vellum-ink on a vellum sheet. */
+  :focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  .sheet,
+  .flash {
+    --focus-ring: var(--color-vellum-ink);
+  }
+
+  button,
+  [role="button"],
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  ::placeholder {
+    color: var(--color-vellum-muted);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+/* ---------------------------------------------------------------------
+   Shell: skip link, header, page container, footer
+   --------------------------------------------------------------------- */
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 100;
+  padding: 0.75rem 1.25rem;
+  border-radius: 9999px;
+  background: var(--color-gilt);
+  color: var(--color-night);
   font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
+  transform: translateY(-250%);
 }
 
-.text-lg, .text-xl, .text-2xl, .text-3xl {
-  letter-spacing: -0.015em;
+.skip-link:focus {
+  transform: translateY(0);
+  outline-color: var(--color-ink-light);
 }
 
-/* Modern shadows */
-.shadow-soft {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
-
-.shadow-medium {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.shadow-large {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* Modern button styles */
-.btn-modern {
-  @apply font-medium rounded-lg transition-all duration-200;
-  letter-spacing: -0.01em;
-}
-
-.btn-modern:hover {
-  transform: translateY(-1px);
-}
-
-/* Clean card styles */
-.card-modern {
-  @apply bg-base-100 border border-base-300 rounded-xl;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
-
-.card-modern:hover {
-  @apply border-base-content/20;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* This file is for your main application CSS */
-
-/* Mapbox Geocoder Styling */
-.mapbox-geocoder-wrapper {
-  position: relative;
-  width: 100%;
-  z-index: 1000;
-}
-
-.mapboxgl-ctrl-geocoder {
-  width: 100% !important;
-  max-width: none !important;
-  font-size: 0.875rem !important;
-  border-radius: 0.5rem !important;
-  border: 1px solid hsl(var(--bc) / 0.2) !important;
-  background-color: hsl(var(--b1)) !important;
-  color: hsl(var(--bc)) !important;
-  transition: border-color 0.2s ease !important;
-  position: relative !important;
-  z-index: 1000 !important;
-}
-
-.mapboxgl-ctrl-geocoder:focus-within {
-  border-color: hsl(var(--p)) !important;
-  outline: 2px solid hsl(var(--p) / 0.2) !important;
-  outline-offset: 2px !important;
-}
-
-.mapboxgl-ctrl-geocoder input {
-  background-color: transparent !important;
-  color: hsl(var(--bc)) !important;
-  padding: 0.75rem 1rem 0.75rem 3rem !important;
-  font-size: 1.125rem !important;
-}
-
-.mapboxgl-ctrl-geocoder input::placeholder {
-  color: hsl(var(--bc) / 0.6) !important;
-}
-
-.mapboxgl-ctrl-geocoder .suggestions {
-  background-color: hsl(var(--b1)) !important;
-  border: 1px solid hsl(var(--bc) / 0.2) !important;
-  border-radius: 0.5rem !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-  margin-top: 0.25rem !important;
-  z-index: 9999 !important;
-  position: relative !important;
-}
-
-.mapboxgl-ctrl-geocoder .suggestions > li {
-  border-bottom: 1px solid hsl(var(--bc) / 0.1) !important;
-  color: hsl(var(--bc)) !important;
-  padding: 0.75rem 1rem !important;
-}
-
-.mapboxgl-ctrl-geocoder .suggestions > li:hover,
-.mapboxgl-ctrl-geocoder .suggestions > li.active {
-  background-color: hsl(var(--p) / 0.1) !important;
-  color: hsl(var(--pc)) !important;
-}
-
-.mapboxgl-ctrl-geocoder .suggestions > li:last-child {
-  border-bottom: none !important;
-}
-
-.mapboxgl-ctrl-geocoder .geocoder-icon {
-  fill: hsl(var(--bc) / 0.6) !important;
-  position: absolute !important;
-  left: 1rem !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  width: 1.25rem !important;
-  height: 1.25rem !important;
-}
-
-.mapboxgl-ctrl-geocoder .geocoder-icon-loading {
-  fill: hsl(var(--p)) !important;
-}
-
-.mapboxgl-ctrl-geocoder .geocoder-icon-close {
-  fill: hsl(var(--bc) / 0.6) !important;
-}
-
-.mapboxgl-ctrl-geocoder .geocoder-icon-close:hover {
-  fill: hsl(var(--er)) !important;
-}
-
-/* Hide mapbox logo in geocoder */
-.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-logo {
-  display: none !important;
-}
-
-/* === Home page ===
-   The public home page has its own look, kept under .ca-home so the
-   dashboards are not touched: ivory paper, dark brown ink, the heart red of
-   the logo for actions and a thin gold rule. Lora for headings, Source
-   Sans 3 for everything read. Body text is 20px and every button is at
-   least 56px tall, for older readers. */
-.ca-home {
-  --ca-paper: #fbf6ea;
-  --ca-cream: #f4ead5;
-  --ca-card: #fffdf7;
-  --ca-ink: #2a1f1a;
-  --ca-ink-soft: #54453b;
-  --ca-red: #9e2a22;
-  --ca-red-dark: #7c1f19;
-  --ca-gold: #b18b49;
-  --ca-line: #e0d0ae;
-
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--ca-paper);
-  color: var(--ca-ink);
-  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 1.25rem;
-  line-height: 1.6;
-  letter-spacing: 0;
-  word-spacing: 0;
-  font-feature-settings: normal;
-  font-variant-numeric: normal;
-}
-
-/* Keep the paper colour behind the page when it is scrolled past its ends. */
-html:has(.ca-home) {
-  background: #fbf6ea;
-}
-
-.ca-home * {
-  transition: none;
-}
-
-.ca-home main {
-  flex: 1;
-}
-
-.ca-wrap {
+.wrap {
   width: 100%;
   max-width: 70rem;
-  margin: 0 auto;
-  padding: 0 1.25rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
 }
 
-.ca-skip {
-  position: absolute;
-  left: -9999px;
+.wrap-narrow {
+  max-width: 36rem;
 }
 
-.ca-skip:focus {
-  left: 1rem;
-  top: 1rem;
-  z-index: 100;
-  padding: 0.75rem 1rem;
-  background: var(--ca-card);
-  color: var(--ca-ink);
-  border: 2px solid var(--ca-ink);
+.wrap-text {
+  max-width: 52rem;
+}
+
+@media (min-width: 48rem) {
+  .wrap {
+    padding-inline: 2rem;
+  }
+}
+
+.site-header {
+  background: var(--color-night-deep);
+  border-bottom: 1px solid var(--color-night-border);
+}
+
+.site-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+  padding-block: 0.625rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.25rem;
   border-radius: 0.5rem;
 }
 
-/* Type */
-.ca-h1,
-.ca-h2,
-.ca-h3,
-.ca-brand-name {
-  font-family: 'Lora', Georgia, 'Times New Roman', serif;
-  font-weight: 600;
-  letter-spacing: 0;
-  color: var(--ca-ink);
+/* The logo file has its own cream ground, so it sits in a round vellum
+   badge with a gilt hairline rather than straight on the night. */
+.brand-mark {
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-gilt);
+  background: #FEF9F0;
 }
 
-.ca-h1 {
-  font-size: clamp(2.25rem, 5.2vw, 3.75rem);
-  line-height: 1.12;
-  text-wrap: balance;
-}
-
-.ca-h2 {
-  font-size: clamp(1.875rem, 3.6vw, 2.5rem);
-  line-height: 1.2;
-  text-align: center;
-}
-
-.ca-h3 {
-  font-size: 1.625rem;
-  line-height: 1.25;
-}
-
-.ca-eyebrow {
-  font-size: 1.0625rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ca-red);
-  margin-bottom: 0.75rem;
-}
-
-.ca-lead {
-  font-size: clamp(1.25rem, 2vw, 1.5rem);
-  line-height: 1.55;
-  color: var(--ca-ink-soft);
-  max-width: 34rem;
-}
-
-.ca-rule {
+.brand-name {
   display: block;
-  width: 4.5rem;
-  height: 3px;
-  margin: 1.5rem 0;
-  background: var(--ca-gold);
-  border-radius: 2px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.75rem;
+  line-height: 1.1;
+  color: var(--color-ink-light);
 }
 
-.ca-rule-center {
-  margin: 1.25rem auto 0;
+.brand-line {
+  display: none;
+  font-style: italic;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  color: var(--color-ink-muted);
 }
 
-.ca-link {
-  color: var(--ca-red);
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  text-decoration-thickness: 2px;
-  display: inline-block;
-  padding: 0.625rem 0.125rem;
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.25rem;
+  margin-inline: -0.625rem;
 }
 
-.ca-link:hover {
-  color: var(--ca-red-dark);
-}
-
-/* Buttons */
-.ca-btn {
+.site-nav-link {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  min-height: 3.5rem;
-  padding: 0.75rem 1.5rem;
-  border: 2px solid transparent;
-  border-radius: 0.625rem;
-  font-family: inherit;
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.2;
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 1.1875rem;
+  color: var(--color-ink-light);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.3em;
+  text-decoration-thickness: 2px;
+  transition: text-decoration-color 0.16s ease-out;
 }
 
-.ca-btn-lg {
-  min-height: 4rem;
-  padding: 0.875rem 2rem;
-  font-size: 1.375rem;
+.site-nav-link:hover,
+.site-nav-link[aria-current="page"] {
+  text-decoration-color: var(--color-gilt);
 }
 
-.ca-btn-block {
+@media (min-width: 48rem) {
+  .site-header-row {
+    padding-block: 0.875rem;
+  }
+
+  .brand-line {
+    display: block;
+  }
+
+  .site-nav {
+    gap: 0 0.5rem;
+    margin-inline: 0;
+  }
+
+  .site-nav-link {
+    font-size: 1.25rem;
+  }
+}
+
+.site-main {
+  flex: 1;
   width: 100%;
 }
 
-.ca-btn-primary {
-  background: var(--ca-red);
-  border-color: var(--ca-red);
-  color: #fff;
+.page {
+  padding-block: 2rem 4rem;
 }
 
-.ca-btn-primary:hover {
-  background: var(--ca-red-dark);
-  border-color: var(--ca-red-dark);
+@media (min-width: 48rem) {
+  .page {
+    padding-block: 3rem 5rem;
+  }
 }
 
-.ca-btn-outline {
-  background: var(--ca-card);
-  border-color: var(--ca-red);
-  color: var(--ca-red);
+.site-footer {
+  background: var(--color-night-deep);
+  border-top: 1px solid var(--color-night-border);
+  text-align: center;
+  padding-block: 2.5rem 2.25rem;
 }
 
-.ca-btn-outline:hover {
-  background: var(--ca-cream);
-  color: var(--ca-red-dark);
-  border-color: var(--ca-red-dark);
-}
-
-.ca-btn-quiet {
-  background: transparent;
-  border-color: var(--ca-line);
-  color: var(--ca-ink);
-}
-
-.ca-btn-quiet:hover {
-  background: var(--ca-cream);
-}
-
-.ca-home a:focus-visible,
-.ca-home button:focus-visible {
-  outline: 3px solid var(--ca-ink);
-  outline-offset: 3px;
-}
-
-/* Header */
-.ca-header {
-  border-bottom: 1px solid var(--ca-line);
-  background: var(--ca-paper);
-}
-
-.ca-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-}
-
-.ca-header-nav {
+.site-footer-nav {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: center;
+  gap: 0 1.5rem;
+  margin-top: 1rem;
+}
+
+/* ---------------------------------------------------------------------
+   Type
+   --------------------------------------------------------------------- */
+
+/* The small label above a heading or a group: EB Garamond in modest
+   tracked capitals. sky on night, rubric on vellum. */
+.kicker {
+  font-family: var(--font-garamond);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-sky);
+}
+
+@media (max-width: 30rem) {
+  .kicker {
+    letter-spacing: 0.1em;
+  }
+}
+
+.sheet .kicker,
+.flash .kicker {
+  color: var(--color-rubric);
+}
+
+.display {
+  font-size: clamp(2.5rem, 5.6vw, 4rem);
+  line-height: 1.08;
+}
+
+.page-title {
+  font-size: clamp(2.125rem, 4.4vw, 2.875rem);
+  line-height: 1.12;
+}
+
+.section-title {
+  font-size: clamp(1.75rem, 3.2vw, 2.25rem);
+}
+
+.card-title {
+  font-size: 1.625rem;
+  line-height: 1.2;
+}
+
+.lead {
+  font-size: clamp(1.3125rem, 2vw, 1.5rem);
+  line-height: 1.55;
+  color: var(--color-ink-muted);
+}
+
+.muted {
+  color: var(--color-ink-muted);
+}
+
+.sheet .muted,
+.sheet .lead {
+  color: var(--color-vellum-muted);
+}
+
+.small {
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+/* A text link. sky on night, rubric on vellum; always underlined, and
+   tall enough to tap. */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 3rem;
+  color: var(--color-sky);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1.5px;
+  border-radius: 0.25rem;
+}
+
+.link:hover {
+  color: var(--color-ink-light);
+}
+
+.sheet .link,
+.flash .link {
+  color: var(--color-rubric);
+}
+
+.sheet .link:hover,
+.flash .link:hover {
+  color: var(--color-rubric-dark);
+}
+
+/* A link inside a sentence keeps the line's own height. */
+.link-inline {
+  display: inline;
+  min-height: 0;
+}
+
+/* The ornament between parts: a hairline, a diamond, a small cross, a
+   diamond, a hairline. Lumen Viae's divider. */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-block: 1.5rem;
+}
+
+.divider-line {
+  height: 1px;
+  width: 100%;
+  max-width: 10rem;
+  background: linear-gradient(to right, transparent, var(--color-night-line));
+}
+
+.divider-line:last-child {
+  background: linear-gradient(to left, transparent, var(--color-night-line));
+}
+
+.divider-diamond {
+  flex: none;
+  width: 0.375rem;
+  height: 0.375rem;
+  transform: rotate(45deg);
+  background: var(--color-gilt);
+  opacity: 0.8;
+}
+
+.divider-cross {
+  flex: none;
+  width: 0.625rem;
+  height: 0.875rem;
+  fill: var(--color-gilt);
+}
+
+.sheet .divider-line {
+  background: linear-gradient(to right, transparent, var(--color-vellum-muted));
+}
+
+.sheet .divider-line:last-child {
+  background: linear-gradient(to left, transparent, var(--color-vellum-muted));
+}
+
+.sheet .divider-diamond {
+  background: var(--color-rubric);
+}
+
+.sheet .divider-cross {
+  fill: var(--color-rubric);
+}
+
+.divider-start {
+  justify-content: flex-start;
+}
+
+.divider-start .divider-line:first-child {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------
+   Surfaces
+   --------------------------------------------------------------------- */
+
+/* A raised night card with a decorative hairline. */
+.hairline-card {
+  background: var(--color-night-raised);
+  border: 1px solid var(--color-night-border);
+  border-radius: 1rem;
+  padding: 1.5rem 1.25rem;
+}
+
+/* The vellum sheet: everything read closely or filled in. Inside it text
+   is vellum-ink, vellum-muted or rubric; nothing from the night palette. */
+.sheet {
+  background: var(--color-vellum);
+  color: var(--color-vellum-ink);
+  border: 1px solid var(--color-vellum-border);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-night);
+  padding: 1.5rem 1.125rem;
+}
+
+@media (min-width: 40rem) {
+  .hairline-card {
+    padding: 2rem 1.75rem;
+  }
+
+  .sheet {
+    padding: 2.25rem 2.25rem;
+  }
+}
+
+/* A part of a sheet set apart: a ruled inner panel. */
+.inset {
+  background: var(--color-vellum-field);
+  border: 1px solid var(--color-vellum-border);
+  border-radius: 0.75rem;
+  padding: 1.125rem 1.125rem;
+}
+
+@media (min-width: 40rem) {
+  .inset {
+    padding: 1.5rem 1.5rem;
+  }
+}
+
+.sheet-rule {
+  border: 0;
+  border-top: 1px solid var(--color-vellum-border);
+  margin-block: 1.5rem;
+}
+
+/* ---------------------------------------------------------------------
+   Buttons. Capsules, at least 52px tall. One gilt shape per screen
+   region: a second primary action means one of them is wrong.
+   --------------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  padding: 0.625rem 1.75rem;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  font-family: var(--font-garamond);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.16s ease-out, border-color 0.16s ease-out,
+    color 0.16s ease-out, box-shadow 0.16s ease-out, transform 0.16s ease-out;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* A primary action that cannot be pressed yet is drawn plainly, so its
+   words stay readable on vellum. */
+.sheet .btn-gold:disabled {
+  opacity: 1;
+  background: var(--color-vellum-deep);
+  border-color: var(--color-vellum-muted);
+  color: var(--color-vellum-muted);
+}
+
+.btn-lg {
+  min-height: 3.75rem;
+  padding: 0.75rem 2.25rem;
+  font-size: 1.375rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* The primary action: gilt with night text (9.2:1). On vellum it takes a
+   night rule, so its edge still reads against the pale sheet. */
+.btn-gold {
+  background: var(--color-gilt);
+  border-color: var(--color-gilt);
+  color: var(--color-night);
+  box-shadow: 0 6px 22px rgba(217, 184, 74, 0.16);
+}
+
+.btn-gold:hover:not(:disabled) {
+  background: var(--color-gilt-light);
+  border-color: var(--color-gilt-light);
+  box-shadow: var(--shadow-gilt);
+}
+
+.sheet .btn-gold,
+.sheet .btn-gold:hover:not(:disabled) {
+  border-color: var(--color-night);
+  box-shadow: none;
+}
+
+/* The secondary action: the same capsule with a rule and no fill. A gilt
+   rule and light ink on night; a night rule and night ink on vellum. */
+.btn-outline {
+  background: transparent;
+  border-color: var(--color-gilt);
+  color: var(--color-ink-light);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: rgba(217, 184, 74, 0.14);
+}
+
+.sheet .btn-outline {
+  border-color: var(--color-night);
+  color: var(--color-night);
+}
+
+.sheet .btn-outline:hover:not(:disabled) {
+  background: var(--color-vellum-deep);
+}
+
+/* An action that removes or refuses something. Only ever on vellum. */
+.btn-danger {
+  background: transparent;
+  border-color: var(--color-danger);
+  color: var(--color-danger-strong);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-surface);
+}
+
+/* A round 52px button that holds only an icon (close). */
+.btn-icon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  border: 2px solid var(--color-vellum-muted);
+  color: var(--color-vellum-ink);
+  background: transparent;
+}
+
+.btn-icon:hover {
+  background: var(--color-vellum-deep);
+}
+
+.btn-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+@media (min-width: 40rem) {
+  .btn-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .btn-row-end {
+    justify-content: flex-end;
+  }
+
+  .btn-row-between {
+    justify-content: space-between;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Forms. Fields live on vellum: a near-white ground, a 2px rule that
+   reads as a control, 20px type.
+   --------------------------------------------------------------------- */
+.field {
+  display: block;
+  margin-bottom: 1.375rem;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-vellum-ink);
+}
+
+.field-help {
+  margin-top: 0.375rem;
+  font-size: 1.125rem;
+  line-height: 1.45;
+  color: var(--color-vellum-muted);
+}
+
+.field-input {
+  display: block;
+  width: 100%;
+  min-height: 3.375rem;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid var(--color-vellum-muted);
+  border-radius: 0.75rem;
+  background: var(--color-vellum-field);
+  color: var(--color-vellum-ink);
+  font-family: var(--font-garamond);
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+textarea.field-input {
+  min-height: 7.5rem;
+  resize: vertical;
+}
+
+select.field-input {
+  appearance: none;
+  padding-right: 3rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232A211C' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  background-size: 1.375rem;
+}
+
+.field-input:focus {
+  outline: 3px solid var(--color-gilt);
+  outline-offset: 1px;
+  border-color: var(--color-night);
+}
+
+.field-input[readonly] {
+  background: var(--color-vellum-deep);
+}
+
+.field-input-error {
+  border-color: var(--color-danger);
+}
+
+.field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-danger-strong);
+}
+
+.field-check {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.field-check input[type="checkbox"] {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  accent-color: var(--color-night);
+  cursor: pointer;
+}
+
+/* The file picker: the browser's button drawn as the outline capsule. */
+.field-file {
+  display: block;
+  width: 100%;
+  font-family: var(--font-garamond);
+  font-size: 1.125rem;
+  color: var(--color-vellum-ink);
+}
+
+.field-file::file-selector-button {
+  min-height: 3.25rem;
+  margin-right: 1rem;
+  padding: 0.5rem 1.5rem;
+  border: 2px solid var(--color-night);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-night);
+  font-family: var(--font-garamond);
+  font-size: 1.1875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.field-file::file-selector-button:hover {
+  background: var(--color-vellum-deep);
+}
+
+.upload-progress {
+  margin-top: 0.75rem;
+  height: 0.75rem;
+  border-radius: 9999px;
+  background: var(--color-vellum-deep);
+  overflow: hidden;
+}
+
+.upload-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--color-night);
+}
+
+/* ---------------------------------------------------------------------
+   Status: badges and notices, in the status families.
+   --------------------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-vellum-border);
+  background: var(--color-vellum-deep);
+  color: var(--color-vellum-ink);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badge-caution {
+  background: var(--color-caution-surface);
+  border-color: var(--color-caution-border);
+  color: var(--color-caution-strong);
+}
+
+.badge-positive {
+  background: var(--color-positive-surface);
+  border-color: var(--color-positive-border);
+  color: var(--color-positive-strong);
+}
+
+.badge-danger {
+  background: var(--color-danger-surface);
+  border-color: var(--color-danger-border);
+  color: var(--color-danger-strong);
+}
+
+.badge-notice {
+  background: var(--color-notice-surface);
+  border-color: var(--color-notice-border);
+  color: var(--color-notice);
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.125rem;
+  border: 1px solid var(--color-notice-border);
+  border-left-width: 5px;
+  border-radius: 0.75rem;
+  background: var(--color-notice-surface);
+  color: var(--color-vellum-ink);
+  font-size: 1.1875rem;
+  line-height: 1.5;
+}
+
+.notice > [class*="hero-"] {
+  flex: none;
+  margin-top: 0.1875rem;
+  color: var(--color-notice);
+}
+
+.notice-positive {
+  background: var(--color-positive-surface);
+  border-color: var(--color-positive-border);
+  border-left-color: var(--color-positive);
+}
+
+.notice-positive > [class*="hero-"] {
+  color: var(--color-positive);
+}
+
+.notice-caution {
+  background: var(--color-caution-surface);
+  border-color: var(--color-caution-border);
+  border-left-color: var(--color-caution);
+}
+
+.notice-caution > [class*="hero-"] {
+  color: var(--color-caution);
+}
+
+.notice-danger {
+  background: var(--color-danger-surface);
+  border-color: var(--color-danger-border);
+  border-left-color: var(--color-danger);
+}
+
+.notice-danger > [class*="hero-"] {
+  color: var(--color-danger);
+}
+
+.notice-notice {
+  border-left-color: var(--color-notice);
+}
+
+/* Flash: a small vellum sheet at the top of the screen, with the status
+   colour down its left edge. Pressing it puts it away. */
+.flash-stack {
+  position: fixed;
+  top: 0.75rem;
+  right: 0.75rem;
+  left: 0.75rem;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.flash {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 30rem;
+  padding: 1rem 1rem 1rem 1.125rem;
+  border: 1px solid var(--color-vellum-border);
+  border-left: 6px solid var(--color-positive);
+  border-radius: 0.75rem;
+  background: var(--color-vellum);
+  color: var(--color-vellum-ink);
+  box-shadow: var(--shadow-night);
+  font-size: 1.1875rem;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.flash-error {
+  border-left-color: var(--color-danger);
+}
+
+.flash-icon {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-top: 0.0625rem;
+  color: var(--color-positive);
+}
+
+.flash-error .flash-icon {
+  color: var(--color-danger);
+}
+
+.flash-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin: -0.5rem -0.5rem -0.5rem 0;
+  border-radius: 9999px;
+  color: var(--color-vellum-muted);
+}
+
+.flash-close:hover {
+  background: var(--color-vellum-deep);
+  color: var(--color-vellum-ink);
+}
+
+/* ---------------------------------------------------------------------
+   Data: label and value pairs, lists of rows, tables, avatars
+   --------------------------------------------------------------------- */
+.data-grid {
+  display: grid;
+  gap: 1.25rem 2rem;
+}
+
+@media (min-width: 40rem) {
+  .data-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .data-span {
+    grid-column: 1 / -1;
+  }
+}
+
+.data-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--color-rubric);
+  margin-bottom: 0.125rem;
+}
+
+.data-value {
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-vellum-ink);
+  overflow-wrap: anywhere;
+}
+
+.data-note {
+  font-size: 1.125rem;
+  line-height: 1.45;
+  color: var(--color-vellum-muted);
+  overflow-wrap: anywhere;
+}
+
+/* The words someone wrote: a note on a ride, a message to a rider. */
+.quote {
+  padding: 0.875rem 1.125rem;
+  border-left: 4px solid var(--color-rubric);
+  border-radius: 0 0.5rem 0.5rem 0;
+  background: var(--color-vellum-field);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.1875rem;
+}
+
+.table th {
+  padding: 0.75rem 0.75rem;
+  border-bottom: 2px solid var(--color-vellum-muted);
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-rubric);
+}
+
+.table td {
+  padding: 0.875rem 0.75rem;
+  border-bottom: 1px solid var(--color-vellum-border);
+  vertical-align: top;
+}
+
+.table tr:last-child td {
+  border-bottom: 0;
+}
+
+.rows > * + * {
+  border-top: 1px solid var(--color-vellum-border);
+}
+
+.avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 9999px;
+  border: 1px solid var(--color-gilt);
+  background: var(--color-night-raised);
+  color: var(--color-gilt);
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* A numbered circle: a step on the home page, a step of the ride form. */
+.numeral {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-gilt);
+  color: var(--color-gilt);
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------------
+   Modal: a vellum sheet over a darkened page.
+   --------------------------------------------------------------------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow-y: auto;
+  background: rgba(7, 14, 31, 0.82);
+  padding: 1rem 0.75rem 3rem;
+}
+
+.modal-sheet {
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.modal-sheet-narrow {
+  max-width: 36rem;
+}
+
+@media (min-width: 40rem) {
+  .modal {
+    padding: 3rem 1.5rem 4rem;
+  }
+}
+
+.modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ---------------------------------------------------------------------
+   Ride request form: the four numbered steps
+   --------------------------------------------------------------------- */
+.steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
-.ca-brand {
+.steps li + li::before {
+  content: "";
+  display: block;
+  width: clamp(1rem, 6vw, 3rem);
+  height: 2px;
+  background: var(--color-vellum-muted);
+}
+
+.step-dot {
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
-  min-height: 3rem;
-  text-decoration: none;
-}
-
-/* The logo file has its own cream ground (#fef9f0), so it sits in a
-   round badge of that colour instead of straight on the paper. */
-.ca-brand-mark {
+  justify-content: center;
   width: 3rem;
   height: 3rem;
-  border-radius: 50%;
-  border: 1px solid var(--ca-gold);
-  background: #fef9f0;
-}
-
-.ca-brand-name {
+  border-radius: 9999px;
+  border: 2px solid var(--color-vellum-muted);
+  color: var(--color-vellum-muted);
+  font-family: var(--font-display);
   font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
-/* Hero */
-.ca-hero {
-  padding: 2.5rem 0 3.5rem;
+.step-dot-done {
+  border-color: var(--color-night);
+  background: var(--color-vellum-deep);
+  color: var(--color-night);
 }
 
-.ca-hero-grid {
+.step-dot-current {
+  border-color: var(--color-night);
+  background: var(--color-night);
+  color: var(--color-ink-light);
+}
+
+/* ---------------------------------------------------------------------
+   Conversation
+   --------------------------------------------------------------------- */
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+  min-height: 14rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 1.25rem 0.875rem;
+  border: 1px solid var(--color-vellum-border);
+  border-radius: 0.75rem;
+  background: var(--color-vellum-field);
+}
+
+.chat-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 88%;
+}
+
+.chat-msg-mine {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.chat-meta {
+  margin-bottom: 0.25rem;
+  font-size: 1.0625rem;
+  color: var(--color-vellum-muted);
+}
+
+.chat-bubble {
+  padding: 0.75rem 1.125rem;
+  border: 1px solid var(--color-vellum-border);
+  border-radius: 1.125rem 1.125rem 1.125rem 0.375rem;
+  background: var(--color-vellum-deep);
+  color: var(--color-vellum-ink);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.chat-msg-mine .chat-bubble {
+  border-color: var(--color-night);
+  border-radius: 1.125rem 1.125rem 0.375rem 1.125rem;
+  background: var(--color-night);
+  color: var(--color-ink-light);
+}
+
+/* ---------------------------------------------------------------------
+   Maps
+   --------------------------------------------------------------------- */
+.map-frame {
+  position: relative;
+  min-height: 16rem;
+  border: 1px solid var(--color-vellum-muted);
+  border-radius: 0.75rem;
+  background: var(--color-vellum-deep);
+  overflow: hidden;
+}
+
+.map-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* When the map has not loaded the canvas is empty: say so in words. */
+.map-canvas:empty::before,
+.map-empty {
+  content: "The map is not available right now.";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 1rem;
+  text-align: center;
+  font-size: 1.125rem;
+  color: var(--color-vellum-muted);
+}
+
+.map-legend {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: grid;
+  gap: 0.125rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-vellum-border);
+  border-radius: 0.5rem;
+  background: var(--color-vellum);
+  color: var(--color-vellum-ink);
+  font-size: 1.0625rem;
+  line-height: 1.4;
+}
+
+.map-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.map-dot {
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 9999px;
+  border: 2px solid var(--color-night);
+  background: rgba(13, 23, 48, 0.25);
+}
+
+.map-dot-pickup {
+  border-color: var(--color-positive);
+  background: var(--color-positive);
+}
+
+.map-dot-destination {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+}
+
+/* ---------------------------------------------------------------------
+   Home page
+   --------------------------------------------------------------------- */
+.hero {
+  padding-block: 2.5rem 3.5rem;
+}
+
+.hero-grid {
   display: grid;
   gap: 2rem;
   align-items: center;
 }
 
-.ca-hero-art {
+.hero-art {
   order: -1;
+  position: relative;
   display: flex;
   justify-content: center;
 }
 
-.ca-arch {
-  width: 11rem;
-  padding: 1.25rem 0.75rem 0.75rem;
-  background: #fef9f0;
-  border: 2px solid var(--ca-gold);
-  border-radius: 999px 999px 0.75rem 0.75rem;
-  overflow: hidden;
-  box-shadow: 0 0 0 6px var(--ca-paper), 0 0 0 7px var(--ca-line);
+/* Radial gilt halo behind the hero's arch. */
+.hero-art::before {
+  content: "";
+  position: absolute;
+  inset: -12% 8%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    closest-side,
+    rgba(217, 184, 74, 0.3),
+    rgba(217, 184, 74, 0.08) 55%,
+    transparent 100%
+  );
 }
 
-.ca-arch-img {
+/* The logo in an arched vellum mount with a gilt rule and a ruled inner
+   line, as a plate is set in a book. */
+.arch {
+  position: relative;
+  width: 11rem;
+  padding: 1.25rem 0.75rem 0.75rem;
+  background: #FEF9F0;
+  border: 2px solid var(--color-gilt);
+  border-radius: 999px 999px 0.75rem 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 0 0 6px var(--color-night), 0 0 0 7px var(--color-night-line),
+    var(--shadow-night);
+}
+
+.arch img {
   width: 100%;
   height: auto;
 }
 
-.ca-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 2rem;
+.band {
+  padding-block: 3.5rem;
 }
 
-.ca-signin-line {
-  margin-top: 1.25rem;
-  color: var(--ca-ink-soft);
+.band-deep {
+  background: var(--color-night-deep);
+  border-block: 1px solid var(--color-night-border);
 }
 
-/* Sections */
-.ca-section,
-.ca-band {
-  padding: 3.5rem 0;
-}
-
-.ca-band {
-  background: var(--ca-cream);
-  border-top: 1px solid var(--ca-line);
-  border-bottom: 1px solid var(--ca-line);
-}
-
-.ca-steps {
+.step-list {
   display: grid;
   gap: 1.25rem;
   margin-top: 2.5rem;
@@ -585,50 +1455,22 @@ html:has(.ca-home) {
   padding: 0;
 }
 
-.ca-step {
-  background: var(--ca-card);
-  border: 1px solid var(--ca-line);
-  border-radius: 0.875rem;
-  padding: 1.75rem 1.5rem;
-}
-
-.ca-step p {
-  margin-top: 0.5rem;
-  color: var(--ca-ink-soft);
-}
-
-.ca-step-num {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3.25rem;
-  height: 3.25rem;
+.step-list .numeral {
   margin-bottom: 1rem;
-  border-radius: 50%;
-  background: var(--ca-red);
-  color: #fff;
-  font-family: 'Lora', Georgia, serif;
-  font-size: 1.625rem;
-  font-weight: 600;
 }
 
-.ca-cards {
+.card-pair {
   display: grid;
   gap: 1.5rem;
   margin-top: 2.5rem;
 }
 
-.ca-card {
+.card-pair > .sheet {
   display: flex;
   flex-direction: column;
-  background: var(--ca-card);
-  border: 1px solid var(--ca-line);
-  border-top: 4px solid var(--ca-gold);
-  border-radius: 0.875rem;
-  padding: 2rem 1.5rem;
 }
 
-.ca-list {
+.check-list {
   flex: 1;
   display: grid;
   align-content: start;
@@ -638,105 +1480,136 @@ html:has(.ca-home) {
   list-style: none;
 }
 
-.ca-list li {
+.check-list li {
   display: flex;
   gap: 0.75rem;
   align-items: flex-start;
 }
 
-.ca-check {
+.check-list [class*="hero-"] {
   flex: none;
-  width: 1.625rem;
-  height: 1.625rem;
-  margin-top: 0.2rem;
-  color: var(--ca-red);
-}
-
-.ca-signin {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.ca-band-signin {
-  border-bottom: 0;
-}
-
-/* Footer */
-.ca-footer {
-  border-top: 1px solid var(--ca-line);
-  background: var(--ca-paper);
-  padding: 2rem 0;
-  font-size: 1.125rem;
-  color: var(--ca-ink-soft);
-}
-
-.ca-footer-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  text-align: center;
-}
-
-.ca-footer-nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem 1.75rem;
+  margin-top: 0.3125rem;
+  color: var(--color-rubric);
 }
 
 @media (min-width: 40rem) {
-  .ca-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .ca-steps {
+  .step-list {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .ca-cards {
+  .card-pair {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .ca-card {
-    padding: 2.25rem 2rem;
   }
 }
 
 @media (min-width: 60rem) {
-  .ca-wrap {
-    padding: 0 2rem;
+  .hero {
+    padding-block: 5rem 5.5rem;
   }
 
-  .ca-hero {
-    padding: 5rem 0 5.5rem;
-  }
-
-  .ca-hero-grid {
+  .hero-grid {
     grid-template-columns: 1.25fr 1fr;
     gap: 4rem;
   }
 
-  .ca-hero-art {
+  .hero-art {
     order: 0;
   }
 
-  .ca-arch {
-    width: 22rem;
+  .arch {
+    width: 21rem;
     padding: 3rem 1.5rem 2rem;
   }
 
-  .ca-section,
-  .ca-band {
-    padding: 5rem 0;
+  .band {
+    padding-block: 5rem;
   }
+}
+}
 
-  .ca-footer-row {
-    flex-direction: row;
-    justify-content: space-between;
-    text-align: left;
-  }
+/* ---------------------------------------------------------------------
+   Mapbox address search, drawn as one of our fields. Unlayered, because
+   Mapbox's own stylesheet is.
+   --------------------------------------------------------------------- */
+.mapbox-geocoder-wrapper {
+  position: relative;
+  width: 100%;
+  z-index: 20;
+}
+
+.mapboxgl-ctrl-geocoder {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 3.375rem;
+  border: 2px solid var(--color-vellum-muted);
+  border-radius: 0.75rem;
+  background-color: var(--color-vellum-field);
+  box-shadow: none;
+  font-family: var(--font-garamond);
+  font-size: 1.25rem;
+  line-height: 1.4;
+  color: var(--color-vellum-ink);
+}
+
+.mapboxgl-ctrl-geocoder:focus-within {
+  border-color: var(--color-night);
+  outline: 3px solid var(--color-gilt);
+  outline-offset: 1px;
+}
+
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--input {
+  height: 3.125rem;
+  padding: 0.625rem 3rem;
+  font-family: var(--font-garamond);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--color-vellum-ink);
+}
+
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--input:focus {
+  outline: none;
+}
+
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--icon {
+  fill: var(--color-vellum-muted);
+}
+
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--icon-search {
+  top: 0.875rem;
+  left: 0.875rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--pin-right > * {
+  top: 0.625rem;
+  right: 0.625rem;
+}
+
+.mapboxgl-ctrl-geocoder .suggestions {
+  margin-top: 0.375rem;
+  border: 2px solid var(--color-vellum-muted);
+  border-radius: 0.75rem;
+  background-color: var(--color-vellum-field);
+  box-shadow: var(--shadow-night);
+  font-size: 1.1875rem;
+  z-index: 50;
+}
+
+.mapboxgl-ctrl-geocoder .suggestions > li > a {
+  padding: 0.75rem 1rem;
+  color: var(--color-vellum-ink);
+}
+
+.mapboxgl-ctrl-geocoder .suggestions > .active > a,
+.mapboxgl-ctrl-geocoder .suggestions > li > a:hover {
+  background-color: var(--color-vellum-deep);
+  color: var(--color-vellum-ink);
+}
+
+.mapboxgl-popup-content {
+  font-family: var(--font-garamond);
+  font-size: 1.0625rem;
+  color: var(--color-vellum-ink);
 }

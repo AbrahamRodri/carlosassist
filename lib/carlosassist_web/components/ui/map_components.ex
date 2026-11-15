@@ -11,7 +11,7 @@ defmodule CarlosassistWeb.UI.MapComponents do
   """
   attr :ride, :map, required: true
   attr :location_type, :atom, required: true, values: [:pickup, :destination]
-  attr :class, :string, default: "h-80 rounded-lg"
+  attr :class, :string, default: "h-80"
 
   def privacy_radius_map(assigns) do
     # Generate unique ID for each map instance
@@ -21,10 +21,10 @@ defmodule CarlosassistWeb.UI.MapComponents do
     assigns = assign(assigns, :map_id, map_id)
 
     ~H"""
-    <div class={["relative bg-base-200 border border-base-300", @class]}>
+    <div class={["map-frame", @class]}>
       <div
         id={@map_id}
-        class="w-full h-full rounded-lg"
+        class="map-canvas"
         phx-hook="PrivacyRadiusMap"
         data-ride-id={@ride.id}
         data-location-type={@location_type}
@@ -34,19 +34,13 @@ defmodule CarlosassistWeb.UI.MapComponents do
         data-destination-lng={@ride.destination_long}
       >
       </div>
-      
-    <!-- Map Controls -->
-      <div class="absolute top-2 right-2 bg-base-100/90 backdrop-blur-sm rounded-lg p-3 text-xs space-y-1">
-        <div class="flex items-center gap-2 text-primary font-medium">
-          <span class="w-3 h-3 bg-primary/30 border-2 border-primary rounded-full"></span>
-          <span>0.5-mile privacy area</span>
-        </div>
-        <div class="text-base-content/70 font-medium">
-          <%= if @location_type == :pickup do %>
-            <.icon name="hero-map-pin" class="w-3 h-3 inline" /> Pickup Location
-          <% else %>
-            <.icon name="hero-flag" class="w-3 h-3 inline" /> Destination
-          <% end %>
+
+      <div class="map-legend">
+        <div class="map-legend-row">
+          <span class="map-dot"></span>
+          <span>
+            {if @location_type == :pickup, do: "Pickup area", else: "Destination area"} (half a mile)
+          </span>
         </div>
       </div>
     </div>
@@ -59,7 +53,7 @@ defmodule CarlosassistWeb.UI.MapComponents do
   Shows precise locations with markers for pickup and destination.
   """
   attr :ride, :map, required: true
-  attr :class, :string, default: "h-80 rounded-lg"
+  attr :class, :string, default: "h-80"
 
   def exact_location_map(assigns) do
     # Generate unique ID for each map instance
@@ -67,10 +61,10 @@ defmodule CarlosassistWeb.UI.MapComponents do
     assigns = assign(assigns, :map_id, map_id)
 
     ~H"""
-    <div class={["relative bg-base-200 border border-base-300", @class]}>
+    <div class={["map-frame", @class]}>
       <div
         id={@map_id}
-        class="w-full h-full rounded-lg"
+        class="map-canvas"
         phx-hook="ExactLocationMap"
         data-ride-id={@ride.id}
         data-pickup-lat={@ride.pickup_lat}
@@ -83,15 +77,14 @@ defmodule CarlosassistWeb.UI.MapComponents do
         data-destination-address={@ride.destination_address}
       >
       </div>
-      
-    <!-- Map Controls -->
-      <div class="absolute top-2 right-2 bg-base-100/90 backdrop-blur-sm rounded-lg p-2 text-xs space-y-1">
-        <div class="flex items-center gap-1 text-success">
-          <span class="w-3 h-3 bg-success rounded-full"></span>
+
+      <div class="map-legend">
+        <div class="map-legend-row">
+          <span class="map-dot map-dot-pickup"></span>
           <span>Pickup</span>
         </div>
-        <div class="flex items-center gap-1 text-error">
-          <span class="w-3 h-3 bg-error rounded-full"></span>
+        <div class="map-legend-row">
+          <span class="map-dot map-dot-destination"></span>
           <span>Destination</span>
         </div>
       </div>
@@ -106,50 +99,35 @@ defmodule CarlosassistWeb.UI.MapComponents do
   attr :ride, :map, required: true
   attr :current_user, :map, required: true
   attr :location_type, :atom, default: :both, values: [:pickup, :destination, :both]
-  attr :class, :string, default: "h-80 rounded-lg"
+  attr :class, :string, default: "h-80"
 
   def smart_location_map(assigns) do
     can_see_exact = LocationPrivacy.can_see_exact_location?(assigns.ride, assigns.current_user)
     assigns = assign(assigns, :can_see_exact, can_see_exact)
 
     ~H"""
-    <div class="space-y-4">
+    <div class="grid gap-5">
       <%= if @can_see_exact do %>
-        <!-- Exact Location Map for Authorized Users -->
-        <div class="space-y-2">
-          <div class="flex items-center gap-2 text-success">
-            <.icon name="hero-lock-open" class="w-5 h-5" />
-            <span class="font-medium">Exact Locations</span>
-            <span class="text-sm text-success/80">(You have access)</span>
-          </div>
+        <div>
+          <p class="data-label mb-2">
+            <.icon name="hero-lock-open" class="size-5" /> Exact addresses
+          </p>
           <.exact_location_map ride={@ride} class={@class} />
         </div>
       <% else %>
-        <!-- Privacy Radius Maps for Non-Authorized Users -->
-        <div class="space-y-4">
-          <div class="flex items-center gap-2 text-primary">
-            <.icon name="hero-lock-closed" class="w-5 h-5" />
-            <span class="font-medium">Privacy Protected Areas</span>
-            <span class="text-sm text-primary/80">(0.5-mile radius)</span>
-          </div>
+        <div class="notice">
+          <.icon name="hero-lock-closed" />
+          <p>You see the exact addresses once the rider chooses you.</p>
+        </div>
 
-          <%= if @location_type in [:pickup, :both] do %>
-            <div>
-              <h4 class="text-sm font-medium text-base-content/80 mb-2">
-                Pickup Area: {@ride.pickup_name}
-              </h4>
-              <.privacy_radius_map ride={@ride} location_type={:pickup} class="h-80 rounded-lg" />
-            </div>
-          <% end %>
+        <div :if={@location_type in [:pickup, :both]}>
+          <p class="data-label mb-2">Pickup area: {@ride.pickup_name}</p>
+          <.privacy_radius_map ride={@ride} location_type={:pickup} class={@class} />
+        </div>
 
-          <%= if @location_type in [:destination, :both] do %>
-            <div>
-              <h4 class="text-sm font-medium text-base-content/80 mb-2">
-                Destination Area: {@ride.destination_name}
-              </h4>
-              <.privacy_radius_map ride={@ride} location_type={:destination} class="h-80 rounded-lg" />
-            </div>
-          <% end %>
+        <div :if={@location_type in [:destination, :both]}>
+          <p class="data-label mb-2">Destination area: {@ride.destination_name}</p>
+          <.privacy_radius_map ride={@ride} location_type={:destination} class={@class} />
         </div>
       <% end %>
     </div>
@@ -174,70 +152,30 @@ defmodule CarlosassistWeb.UI.MapComponents do
       |> assign(:destination_info, destination_info)
 
     ~H"""
-    <div class="grid md:grid-cols-2 gap-4">
-      <!-- Pickup Card -->
-      <div class="card bg-base-100 border border-base-300 p-4">
-        <div class="flex items-start justify-between mb-2">
-          <h3 class="font-medium text-base-content flex items-center gap-2">
-            <.icon name="hero-map-pin" class="w-4 h-4" /> Pickup
-          </h3>
-          <%= if @pickup_info.privacy_protected do %>
-            <span class="badge badge-primary badge-sm">Protected</span>
-          <% else %>
-            <span class="badge badge-success badge-sm">Exact</span>
-          <% end %>
-        </div>
+    <div class="data-grid">
+      <.location_card label="Pickup" icon="hero-map-pin" info={@pickup_info} />
+      <.location_card label="Going to" icon="hero-flag" info={@destination_info} />
+    </div>
+    """
+  end
 
-        <div class="space-y-2">
-          <div>
-            <span class="text-sm text-base-content/60">Location:</span>
-            <p class="font-medium">{@pickup_info.name}</p>
-          </div>
+  attr :label, :string, required: true
+  attr :icon, :string, required: true
+  attr :info, :map, required: true
 
-          <%= if @pickup_info.address do %>
-            <div>
-              <span class="text-sm text-base-content/60">Address:</span>
-              <p class="text-sm">{@pickup_info.address}</p>
-            </div>
-          <% else %>
-            <p class="text-xs text-primary">
-              Exact address will be shared after volunteer acceptance
-            </p>
-          <% end %>
-        </div>
+  defp location_card(assigns) do
+    ~H"""
+    <div class="inset">
+      <div class="mb-2 flex items-start justify-between gap-3">
+        <p class="data-label"><.icon name={@icon} class="size-5" /> {@label}</p>
+        <span :if={@info.privacy_protected} class="badge badge-notice">General area</span>
+        <span :if={!@info.privacy_protected} class="badge badge-positive">Exact</span>
       </div>
-      
-    <!-- Destination Card -->
-      <div class="card bg-base-100 border border-base-300 p-4">
-        <div class="flex items-start justify-between mb-2">
-          <h3 class="font-medium text-base-content flex items-center gap-2">
-            <.icon name="hero-flag" class="w-4 h-4" /> Destination
-          </h3>
-          <%= if @destination_info.privacy_protected do %>
-            <span class="badge badge-primary badge-sm">Protected</span>
-          <% else %>
-            <span class="badge badge-success badge-sm">Exact</span>
-          <% end %>
-        </div>
-
-        <div class="space-y-2">
-          <div>
-            <span class="text-sm text-base-content/60">Location:</span>
-            <p class="font-medium">{@destination_info.name}</p>
-          </div>
-
-          <%= if @destination_info.address do %>
-            <div>
-              <span class="text-sm text-base-content/60">Address:</span>
-              <p class="text-sm">{@destination_info.address}</p>
-            </div>
-          <% else %>
-            <p class="text-xs text-primary">
-              Exact address will be shared after volunteer acceptance
-            </p>
-          <% end %>
-        </div>
-      </div>
+      <p class="data-value">{@info.name}</p>
+      <p :if={@info.address} class="data-note">{@info.address}</p>
+      <p :if={!@info.address} class="data-note">
+        You see the exact address once the rider chooses you.
+      </p>
     </div>
     """
   end

@@ -2,7 +2,8 @@ defmodule CarlosassistWeb.RiderDashboardLive do
   @moduledoc """
   Rider home (`/dashboard/rider`): 4-step ride-request wizard (state in
   `:wizard_data`, submitted as hidden inputs at step 4) plus the rider's rides
-  grouped by status, with volunteer-offer accept/reject. Not PubSub-subscribed —
+  grouped by status. Each ride is a card; its details open in a modal, where
+  the rider looks at the volunteers' offers and accepts or refuses them. Not PubSub-subscribed —
   new offers show up on refresh. Template: rider_dashboard_live.html.heex;
   wizard/card markup lives in function components below.
   """
@@ -356,29 +357,30 @@ defmodule CarlosassistWeb.RiderDashboardLive do
   # Private UI component functions
   defp new_ride_form(assigns) do
     ~H"""
-    <div class="card-modern mb-8 max-w-4xl mx-auto relative">
-      <div class="p-8">
-        <div class="flex justify-between items-center mb-8">
-          <h2 class="text-2xl font-semibold text-base-content">Request a Ride</h2>
-          <button phx-click="hide_form" class="btn btn-ghost btn-sm p-2 hover:bg-slate-100 rounded-lg">
-            <.icon name="hero-x-mark" class="w-5 h-5 text-base-content/60" />
-          </button>
+    <div class="sheet">
+      <div class="modal-head">
+        <div>
+          <p class="kicker mb-1">New ride</p>
+          <h1 class="page-title">Ask for a ride</h1>
         </div>
+        <button phx-click="hide_form" class="btn-icon" aria-label="Close without saving">
+          <.icon name="hero-x-mark" class="size-7" />
+        </button>
+      </div>
 
-        <.wizard_step_indicator step={@wizard_step} />
+      <.wizard_step_indicator step={@wizard_step} />
 
-        <div class="mt-8">
-          <%= case @wizard_step do %>
-            <% 1 -> %>
-              <.wizard_step_1 wizard_data={@wizard_data} />
-            <% 2 -> %>
-              <.wizard_step_2 wizard_data={@wizard_data} />
-            <% 3 -> %>
-              <.wizard_step_3 wizard_data={@wizard_data} />
-            <% 4 -> %>
-              <.wizard_step_4 wizard_data={@wizard_data} form={@form} />
-          <% end %>
-        </div>
+      <div class="mx-auto mt-8 max-w-2xl">
+        <%= case @wizard_step do %>
+          <% 1 -> %>
+            <.wizard_step_1 wizard_data={@wizard_data} />
+          <% 2 -> %>
+            <.wizard_step_2 wizard_data={@wizard_data} />
+          <% 3 -> %>
+            <.wizard_step_3 wizard_data={@wizard_data} />
+          <% 4 -> %>
+            <.wizard_step_4 wizard_data={@wizard_data} form={@form} />
+        <% end %>
       </div>
     </div>
     """
@@ -386,755 +388,486 @@ defmodule CarlosassistWeb.RiderDashboardLive do
 
   defp wizard_step_indicator(assigns) do
     ~H"""
-    <div class="mb-8">
-      <div class="flex justify-center items-center space-x-4 mb-4">
-        <div class={"flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium border-2 " <>
-                   if(@step >= 1, do: "bg-primary border-primary text-primary-content", else: "border-base-300 text-base-content/50")}>
-          1
-        </div>
-        <div class={"h-0.5 w-12 " <> if(@step > 1, do: "bg-primary", else: "bg-base-300")}></div>
-        <div class={"flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium border-2 " <>
-                   if(@step >= 2, do: "bg-primary border-primary text-primary-content", else: "border-base-300 text-base-content/50")}>
-          2
-        </div>
-        <div class={"h-0.5 w-12 " <> if(@step > 2, do: "bg-primary", else: "bg-base-300")}></div>
-        <div class={"flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium border-2 " <>
-                   if(@step >= 3, do: "bg-primary border-primary text-primary-content", else: "border-base-300 text-base-content/50")}>
-          3
-        </div>
-        <div class={"h-0.5 w-12 " <> if(@step > 3, do: "bg-primary", else: "bg-base-300")}></div>
-        <div class={"flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium border-2 " <>
-                   if(@step >= 4, do: "bg-primary border-primary text-primary-content", else: "border-base-300 text-base-content/50")}>
-          4
-        </div>
-      </div>
-      <div class="text-center">
-        <p class="text-sm font-medium text-base-content mb-1">
-          <%= case @step do %>
-            <% 1 -> %>
-              Pickup Location
-            <% 2 -> %>
-              Destination
-            <% 3 -> %>
-              Date & Time
-            <% 4 -> %>
-              Review & Submit
-          <% end %>
-        </p>
-        <p class="text-xs text-base-content/60">Step {@step} of 4</p>
-      </div>
+    <div>
+      <ol class="steps" aria-hidden="true">
+        <li :for={n <- 1..4}>
+          <span class={[
+            "step-dot",
+            n < @step && "step-dot-done",
+            n == @step && "step-dot-current"
+          ]}>
+            {n}
+          </span>
+        </li>
+      </ol>
+      <p class="kicker text-center">Step {@step} of 4</p>
     </div>
     """
   end
 
   defp wizard_step_1(assigns) do
     ~H"""
-    <div class="max-w-2xl mx-auto">
-      <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <.icon name="hero-map-pin" class="w-8 h-8 text-primary" />
-        </div>
-        <h3 class="text-lg font-semibold text-base-content mb-2">Pickup Location</h3>
-        <p class="text-base-content/70">Where should we pick you up?</p>
+    <h2 class="section-title text-center">Where should we pick you up?</h2>
+    <.divider />
+
+    <form phx-submit="next_step">
+      <input type="hidden" name="step_data[step]" value="1" />
+
+      <div class="field">
+        <label for="pickup-name-input" class="field-label">Name of the place</label>
+        <input
+          type="text"
+          id="pickup-name-input"
+          name="step_data[pickup_name]"
+          value={Map.get(@wizard_data, "pickup_name", "")}
+          placeholder="Home"
+          class="field-input"
+          required
+        />
+        <p class="field-help">A short name, such as Home or St. Mary's Church.</p>
       </div>
 
-      <form phx-submit="next_step" class="space-y-6">
-        <input type="hidden" name="step_data[step]" value="1" />
-
-        <div class="space-y-4">
-          <label class="block text-sm font-medium text-base-content/80">Location Name</label>
+      <div class="field relative z-10">
+        <label for="pickup-address-input" class="field-label">Full address</label>
+        <div class="relative">
           <input
             type="text"
-            name="step_data[pickup_name]"
-            value={Map.get(@wizard_data, "pickup_name", "")}
-            placeholder="Home, Office, Doctor's Office..."
-            class="input input-bordered w-full"
+            name="step_data[pickup_address]"
+            value={Map.get(@wizard_data, "pickup_address", "")}
+            placeholder="123 Main Street, City, State 12345"
+            class="field-input location-search"
+            id="pickup-address-input"
+            phx-hook="LocationSearch"
+            data-location-type="pickup"
             required
           />
-          <p class="text-xs text-base-content/60">
-            A simple name that helps volunteers identify the location
-          </p>
         </div>
+      </div>
 
-        <div class="space-y-4 relative z-10">
-          <label class="block text-sm font-medium text-base-content/80">Complete Address</label>
-          <div class="relative mapbox-geocoder-wrapper">
-            <input
-              type="text"
-              name="step_data[pickup_address]"
-              value={Map.get(@wizard_data, "pickup_address", "")}
-              placeholder="123 Main Street, City, State 12345"
-              class="input input-bordered w-full location-search"
-              id="pickup-address-input"
-              phx-hook="LocationSearch"
-              data-location-type="pickup"
-              required
-            />
-          </div>
-          <div class="flex items-start gap-2 text-xs text-base-content/60 bg-base-200 p-3 rounded-lg">
-            <.icon name="hero-lock-closed" class="w-4 h-4 mt-0.5 text-base-content/40" />
-            <span>
-              Your exact address will only be shared with the volunteer after you accept them
-            </span>
-          </div>
-        </div>
+      <div class="notice mb-8">
+        <.icon name="hero-lock-closed" />
+        <p>Only the driver you choose sees your full address.</p>
+      </div>
 
-        <div class="pt-6">
-          <button
-            type="submit"
-            class="btn btn-primary btn-modern w-full flex items-center justify-center gap-2"
-          >
-            Continue <.icon name="hero-arrow-right" class="w-4 h-4" />
-          </button>
-        </div>
-      </form>
-    </div>
+      <button type="submit" class="btn btn-gold btn-block">
+        Continue <.icon name="hero-arrow-right" class="size-6" />
+      </button>
+    </form>
     """
   end
 
   defp wizard_step_2(assigns) do
     ~H"""
-    <div class="max-w-2xl mx-auto">
-      <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <.icon name="hero-flag" class="w-8 h-8 text-primary" />
-        </div>
-        <h3 class="text-lg font-semibold text-base-content mb-2">Destination</h3>
-        <p class="text-base-content/70">Where do you need to go?</p>
+    <h2 class="section-title text-center">Where do you need to go?</h2>
+    <.divider />
+
+    <form phx-submit="next_step">
+      <input type="hidden" name="step_data[step]" value="2" />
+
+      <div class="field">
+        <label for="destination-name-input" class="field-label">Name of the place</label>
+        <input
+          type="text"
+          id="destination-name-input"
+          name="step_data[destination_name]"
+          value={Map.get(@wizard_data, "destination_name", "")}
+          placeholder="Doctor's office"
+          class="field-input"
+          required
+        />
+        <p class="field-help">A short name, such as Church, Hospital or Grocery store.</p>
       </div>
 
-      <form phx-submit="next_step" class="space-y-6">
-        <input type="hidden" name="step_data[step]" value="2" />
-
-        <div class="space-y-4">
-          <label class="block text-sm font-medium text-base-content/80">Location Name</label>
+      <div class="field relative z-10 mb-8">
+        <label for="destination-address-input" class="field-label">Full address</label>
+        <div class="relative">
           <input
             type="text"
-            name="step_data[destination_name]"
-            value={Map.get(@wizard_data, "destination_name", "")}
-            placeholder="Hospital, Grocery Store, Church..."
-            class="input input-bordered w-full"
+            name="step_data[destination_address]"
+            value={Map.get(@wizard_data, "destination_address", "")}
+            placeholder="456 Oak Avenue, City, State 12345"
+            class="field-input location-search"
+            id="destination-address-input"
+            phx-hook="LocationSearch"
+            data-location-type="destination"
             required
           />
         </div>
+      </div>
 
-        <div class="space-y-4 relative z-10">
-          <label class="block text-sm font-medium text-base-content/80">Complete Address</label>
-          <div class="relative mapbox-geocoder-wrapper">
-            <input
-              type="text"
-              name="step_data[destination_address]"
-              value={Map.get(@wizard_data, "destination_address", "")}
-              placeholder="456 Oak Avenue, City, State 12345"
-              class="input input-bordered w-full location-search"
-              id="destination-address-input"
-              phx-hook="LocationSearch"
-              data-location-type="destination"
-              required
-            />
-          </div>
-        </div>
-
-        <div class="flex gap-3 pt-6">
-          <button
-            type="button"
-            phx-click="prev_step"
-            class="btn btn-outline btn-modern flex-1 flex items-center justify-center gap-2"
-          >
-            <.icon name="hero-arrow-left" class="w-4 h-4" /> Back
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary btn-modern flex-1 flex items-center justify-center gap-2"
-          >
-            Continue <.icon name="hero-arrow-right" class="w-4 h-4" />
-          </button>
-        </div>
-      </form>
-    </div>
+      <.wizard_buttons />
+    </form>
     """
   end
 
   defp wizard_step_3(assigns) do
     ~H"""
-    <div class="max-w-2xl mx-auto">
-      <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <.icon name="hero-clock" class="w-8 h-8 text-primary" />
-        </div>
-        <h3 class="text-lg font-semibold text-base-content mb-2">Date & Time</h3>
-        <p class="text-base-content/70">When do you need this ride?</p>
+    <h2 class="section-title text-center">When do you need the ride?</h2>
+    <.divider />
+
+    <form phx-submit="next_step">
+      <input type="hidden" name="step_data[step]" value="3" />
+
+      <div class="field">
+        <label for="ride-date-input" class="field-label">Day and time</label>
+        <input
+          type="datetime-local"
+          id="ride-date-input"
+          name="step_data[ride_date]"
+          value={Map.get(@wizard_data, "ride_date", "")}
+          class="field-input"
+          required
+        />
+        <p class="field-help">If you can, ask at least 2 hours before the ride.</p>
       </div>
 
-      <form phx-submit="next_step" class="space-y-6">
-        <input type="hidden" name="step_data[step]" value="3" />
+      <div class="field mb-8">
+        <label for="ride-description-input" class="field-label">
+          Anything your driver should know (you can leave this empty)
+        </label>
+        <textarea
+          id="ride-description-input"
+          name="step_data[description]"
+          placeholder="I use a walker. My appointment is at 2 PM."
+          class="field-input"
+          rows="4"
+        >{Map.get(@wizard_data, "description", "")}</textarea>
+      </div>
 
-        <div class="space-y-4">
-          <label class="block text-sm font-medium text-base-content/80">
-            Pick your date and time
-          </label>
-          <input
-            type="datetime-local"
-            name="step_data[ride_date]"
-            value={Map.get(@wizard_data, "ride_date", "")}
-            class="input input-bordered w-full"
-            required
-          />
-          <p class="text-xs text-base-content/60">
-            Please give at least 2 hours notice when possible
-          </p>
-        </div>
+      <.wizard_buttons />
+    </form>
+    """
+  end
 
-        <div class="space-y-4">
-          <label class="block text-sm font-medium text-base-content/80">
-            Add any special notes (optional)
-          </label>
-          <textarea
-            name="step_data[description]"
-            placeholder="I need help with groceries, I use a walker, appointment at 2pm..."
-            class="textarea textarea-bordered w-full h-32"
-            rows="4"
-          >{Map.get(@wizard_data, "description", "")}</textarea>
-        </div>
-
-        <div class="flex gap-3 pt-6">
-          <button
-            type="button"
-            phx-click="prev_step"
-            class="btn btn-outline btn-modern flex-1 flex items-center justify-center gap-2"
-          >
-            <.icon name="hero-arrow-left" class="w-4 h-4" /> Back
-          </button>
-          <button
-            type="submit"
-            class="btn btn-primary btn-modern flex-1 flex items-center justify-center gap-2"
-          >
-            Continue <.icon name="hero-arrow-right" class="w-4 h-4" />
-          </button>
-        </div>
-      </form>
+  defp wizard_buttons(assigns) do
+    ~H"""
+    <div class="flex flex-col-reverse gap-3 sm:flex-row">
+      <button type="button" phx-click="prev_step" class="btn btn-outline sm:flex-1">
+        <.icon name="hero-arrow-left" class="size-6" /> Back
+      </button>
+      <button type="submit" class="btn btn-gold sm:flex-1">
+        Continue <.icon name="hero-arrow-right" class="size-6" />
+      </button>
     </div>
     """
   end
 
   defp wizard_step_4(assigns) do
     ~H"""
-    <div class="max-w-2xl mx-auto">
-      <div class="text-center mb-8">
-        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <.icon name="hero-check-circle" class="w-8 h-8 text-primary" />
-        </div>
-        <h3 class="text-lg font-semibold text-base-content mb-2">Review Your Ride Request</h3>
-        <p class="text-base-content/70">Please review your details before submitting</p>
-      </div>
+    <h2 class="section-title text-center">Check your ride request</h2>
+    <.divider />
 
-      <div class="bg-base-200/50 p-6 rounded-lg space-y-6">
-        <div class="grid gap-6">
-          <div>
-            <h4 class="text-sm font-medium mb-2 text-base-content/80 flex items-center gap-2">
-              <.icon name="hero-map-pin" class="w-5 h-5" /> Pickup Location
-            </h4>
-            <p class="text-base font-medium text-base-content">
-              {Map.get(@wizard_data, "pickup_name", "")}
-            </p>
-            <p class="text-base-content/70">{Map.get(@wizard_data, "pickup_address", "")}</p>
-          </div>
+    <div class="inset mb-8">
+      <div class="data-grid">
+        <.datum label="Pickup" icon="hero-map-pin">
+          {Map.get(@wizard_data, "pickup_name", "")}
+          <:note>{Map.get(@wizard_data, "pickup_address", "")}</:note>
+        </.datum>
 
-          <div>
-            <h4 class="text-sm font-medium mb-2 text-base-content/80 flex items-center gap-2">
-              <.icon name="hero-flag" class="w-5 h-5" /> Destination
-            </h4>
-            <p class="text-base font-medium text-base-content">
-              {Map.get(@wizard_data, "destination_name", "")}
-            </p>
-            <p class="text-base-content/70">{Map.get(@wizard_data, "destination_address", "")}</p>
-          </div>
+        <.datum label="Going to" icon="hero-flag">
+          {Map.get(@wizard_data, "destination_name", "")}
+          <:note>{Map.get(@wizard_data, "destination_address", "")}</:note>
+        </.datum>
 
-          <div>
-            <h4 class="text-sm font-medium mb-2 text-base-content/80 flex items-center gap-2">
-              <.icon name="hero-clock" class="w-5 h-5" /> Date & Time
-            </h4>
-            <p class="text-base font-medium text-base-content">
-              {format_datetime(Map.get(@wizard_data, "ride_date", ""))}
-            </p>
-          </div>
+        <.datum label="Day and time" icon="hero-clock" class="data-span">
+          {format_datetime(Map.get(@wizard_data, "ride_date", ""))}
+        </.datum>
 
-          <div :if={Map.get(@wizard_data, "description", "") != ""}>
-            <h4 class="text-sm font-medium mb-2 text-base-content/80 flex items-center gap-2">
-              <.icon name="hero-document-text" class="w-5 h-5" /> Special Notes
-            </h4>
-            <p class="text-base font-medium text-base-content">
-              {Map.get(@wizard_data, "description", "")}
-            </p>
-          </div>
+        <div :if={Map.get(@wizard_data, "description", "") != ""} class="data-span">
+          <p class="data-label"><.icon name="hero-document-text" class="size-5" /> Your note</p>
+          <p class="quote mt-1">{Map.get(@wizard_data, "description", "")}</p>
         </div>
       </div>
-
-      <.form for={@form} phx-submit="save">
-        <!-- Include wizard data as hidden inputs -->
-        <input
-          type="hidden"
-          name="ride[pickup_name]"
-          value={Map.get(@wizard_data, "pickup_name", "")}
-        />
-        <input
-          type="hidden"
-          name="ride[pickup_address]"
-          value={Map.get(@wizard_data, "pickup_address", "")}
-        />
-        <input type="hidden" name="ride[pickup_lat]" value={Map.get(@wizard_data, "pickup_lat", "")} />
-        <input
-          type="hidden"
-          name="ride[pickup_long]"
-          value={Map.get(@wizard_data, "pickup_long", "")}
-        />
-        <input
-          type="hidden"
-          name="ride[destination_name]"
-          value={Map.get(@wizard_data, "destination_name", "")}
-        />
-        <input
-          type="hidden"
-          name="ride[destination_address]"
-          value={Map.get(@wizard_data, "destination_address", "")}
-        />
-        <input
-          type="hidden"
-          name="ride[destination_lat]"
-          value={Map.get(@wizard_data, "destination_lat", "")}
-        />
-        <input
-          type="hidden"
-          name="ride[destination_long]"
-          value={Map.get(@wizard_data, "destination_long", "")}
-        />
-        <input type="hidden" name="ride[ride_date]" value={Map.get(@wizard_data, "ride_date", "")} />
-        <input
-          type="hidden"
-          name="ride[description]"
-          value={Map.get(@wizard_data, "description", "")}
-        />
-
-        <div class="flex gap-3 pt-6">
-          <button
-            type="button"
-            phx-click="prev_step"
-            class="btn btn-outline btn-modern flex-1 flex items-center justify-center gap-2"
-          >
-            <.icon name="hero-arrow-left" class="w-4 h-4" /> Back to Edit
-          </button>
-          <button
-            type="submit"
-            class="btn btn-success btn-modern flex-1 flex items-center justify-center gap-2"
-          >
-            <.icon name="hero-check" class="w-4 h-4" /> Post My Ride Request
-          </button>
-        </div>
-      </.form>
     </div>
+
+    <.form for={@form} phx-submit="save">
+      <!-- Include wizard data as hidden inputs -->
+      <input type="hidden" name="ride[pickup_name]" value={Map.get(@wizard_data, "pickup_name", "")} />
+      <input
+        type="hidden"
+        name="ride[pickup_address]"
+        value={Map.get(@wizard_data, "pickup_address", "")}
+      />
+      <input type="hidden" name="ride[pickup_lat]" value={Map.get(@wizard_data, "pickup_lat", "")} />
+      <input type="hidden" name="ride[pickup_long]" value={Map.get(@wizard_data, "pickup_long", "")} />
+      <input
+        type="hidden"
+        name="ride[destination_name]"
+        value={Map.get(@wizard_data, "destination_name", "")}
+      />
+      <input
+        type="hidden"
+        name="ride[destination_address]"
+        value={Map.get(@wizard_data, "destination_address", "")}
+      />
+      <input
+        type="hidden"
+        name="ride[destination_lat]"
+        value={Map.get(@wizard_data, "destination_lat", "")}
+      />
+      <input
+        type="hidden"
+        name="ride[destination_long]"
+        value={Map.get(@wizard_data, "destination_long", "")}
+      />
+      <input type="hidden" name="ride[ride_date]" value={Map.get(@wizard_data, "ride_date", "")} />
+      <input type="hidden" name="ride[description]" value={Map.get(@wizard_data, "description", "")} />
+
+      <div class="flex flex-col-reverse gap-3 sm:flex-row">
+        <button type="button" phx-click="prev_step" class="btn btn-outline sm:flex-1">
+          <.icon name="hero-arrow-left" class="size-6" /> Back to change it
+        </button>
+        <button type="submit" class="btn btn-gold sm:flex-1">
+          <.icon name="hero-check" class="size-6" /> Send my ride request
+        </button>
+      </div>
+    </.form>
     """
   end
 
   defp rides_list(assigns) do
-    # Group rides by status
     grouped_rides = Enum.group_by(assigns.rides, & &1.status)
-    pending_rides = Map.get(grouped_rides, "pending", [])
-    confirmed_rides = Map.get(grouped_rides, "confirmed", [])
-    completed_rides = Map.get(grouped_rides, "completed", [])
-    cancelled_rides = Map.get(grouped_rides, "cancelled", [])
 
-    assigns = assign(assigns, :pending_rides, pending_rides)
-    assigns = assign(assigns, :confirmed_rides, confirmed_rides)
-    assigns = assign(assigns, :completed_rides, completed_rides)
-    assigns = assign(assigns, :cancelled_rides, cancelled_rides)
+    groups =
+      for {status, title} <- [
+            {"pending", "Waiting for a driver"},
+            {"confirmed", "Driver chosen"},
+            {"completed", "Finished rides"},
+            {"cancelled", "Cancelled rides"}
+          ],
+          rides = Map.get(grouped_rides, status, []),
+          rides != [] do
+        %{status: status, title: title, rides: rides}
+      end
+
+    assigns = assign(assigns, :groups, groups)
 
     ~H"""
-    <div :if={@rides == []} class="text-center py-12">
-      <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-        <.icon name="hero-truck" class="w-8 h-8 text-primary" />
-      </div>
-      <h3 class="text-lg font-semibold text-base-content mb-2">No rides yet</h3>
-      <p class="text-base-content/70 mb-8">
-        Ready to get started? Request your first ride!
-      </p>
-      <button
-        phx-click="show_form"
-        class="btn btn-primary btn-modern px-6 py-3 flex items-center gap-2 mx-auto"
-      >
-        <.icon name="hero-plus" class="w-5 h-5" /> Request Your First Ride
+    <div :if={@rides == []} class="sheet text-center">
+      <h2 class="section-title">You have no rides yet</h2>
+      <.divider />
+      <p class="muted mb-8">When you ask for a ride, it is listed here.</p>
+      <button phx-click="show_form" class="btn btn-outline">
+        <.icon name="hero-plus" class="size-6" /> Ask for your first ride
       </button>
     </div>
 
-    <div :if={@rides != []} class="space-y-6">
-      <!-- Pending Rides -->
-      <div :if={@pending_rides != []}>
-        <div class="flex items-center gap-2 mb-3">
-          <.icon name="hero-clock" class="w-4 h-4 text-warning" />
-          <h3 class="text-sm font-semibold text-warning">Pending Rides</h3>
-          <span class="text-xs text-base-content/60">({length(@pending_rides)})</span>
+    <div :if={@rides != []} class="grid gap-10">
+      <section :for={group <- @groups} aria-labelledby={"rides-#{group.status}"}>
+        <h2 id={"rides-#{group.status}"} class="section-title mb-4">
+          {group.title} <span class="muted">({length(group.rides)})</span>
+        </h2>
+        <div class="grid gap-5">
+          <.compact_ride_card :for={ride <- group.rides} ride={ride} />
         </div>
-        <div class="space-y-3">
-          <.compact_ride_card
-            :for={ride <- @pending_rides}
-            ride={ride}
-            volunteer_indices={@volunteer_indices}
-          />
-        </div>
-      </div>
-      
-    <!-- Confirmed Rides -->
-      <div :if={@confirmed_rides != []}>
-        <div class="flex items-center gap-2 mb-3">
-          <.icon name="hero-check-circle" class="w-4 h-4 text-success" />
-          <h3 class="text-sm font-semibold text-success">Confirmed Rides</h3>
-          <span class="text-xs text-base-content/60">({length(@confirmed_rides)})</span>
-        </div>
-        <div class="space-y-3">
-          <.compact_ride_card
-            :for={ride <- @confirmed_rides}
-            ride={ride}
-            volunteer_indices={@volunteer_indices}
-          />
-        </div>
-      </div>
-      
-    <!-- Completed Rides -->
-      <div :if={@completed_rides != []}>
-        <div class="flex items-center gap-2 mb-3">
-          <.icon name="hero-check-badge" class="w-4 h-4 text-primary" />
-          <h3 class="text-sm font-semibold text-primary">Completed Rides</h3>
-          <span class="text-xs text-base-content/60">({length(@completed_rides)})</span>
-        </div>
-        <div class="space-y-3">
-          <.compact_ride_card
-            :for={ride <- @completed_rides}
-            ride={ride}
-            volunteer_indices={@volunteer_indices}
-          />
-        </div>
-      </div>
-      
-    <!-- Cancelled Rides -->
-      <div :if={@cancelled_rides != []}>
-        <div class="flex items-center gap-2 mb-3">
-          <.icon name="hero-x-circle" class="w-4 h-4 text-error" />
-          <h3 class="text-sm font-semibold text-error">Cancelled Rides</h3>
-          <span class="text-xs text-base-content/60">({length(@cancelled_rides)})</span>
-        </div>
-        <div class="space-y-3">
-          <.compact_ride_card
-            :for={ride <- @cancelled_rides}
-            ride={ride}
-            volunteer_indices={@volunteer_indices}
-          />
-        </div>
-      </div>
+      </section>
     </div>
     """
   end
 
   defp compact_ride_card(assigns) do
-    ~H"""
-    <div class="bg-base-100 border rounded-lg hover:shadow-md transition-shadow">
-      <div class="p-4">
-        <!-- Main ride info - always visible -->
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div
-            class="flex items-center gap-3 flex-1 cursor-pointer hover:bg-base-200/50 -m-2 p-2 rounded"
-            phx-click="show_ride_details"
-            phx-value-ride_id={@ride.id}
-          >
-            <div class="flex-shrink-0">
-              <.icon name="hero-truck" class="w-5 h-5 text-primary" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
-                <p class="font-medium text-sm">
-                  {@ride.pickup_name} → {@ride.destination_name}
-                </p>
-                <span class={"inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium " <> status_badge_class(@ride.status)}>
-                  {format_status(@ride.status)}
-                </span>
-              </div>
-              <p class="text-xs text-base-content/60 flex items-center gap-1">
-                <.icon name="hero-clock" class="w-3 h-3" />
-                {Calendar.strftime(@ride.ride_date, "%b %d, %I:%M %p")}
-              </p>
-            </div>
-            <div class="flex-shrink-0 hidden sm:block">
-              <.icon name="hero-chevron-right" class="w-4 h-4 text-base-content/40" />
-            </div>
-          </div>
+    assigns = assign(assigns, :offers, length(assigns.ride.volunteer_requests || []))
 
-          <div class="flex items-center justify-between sm:justify-start gap-2 sm:ml-4">
-            <!-- Volunteer count indicator -->
-            <div
-              :if={
-                @ride.status == "pending" && @ride.volunteer_requests &&
-                  length(@ride.volunteer_requests) > 0
-              }
-              class="flex items-center gap-1 text-xs text-primary"
-            >
-              <.icon name="hero-hand-raised" class="w-4 h-4" />
-              {length(@ride.volunteer_requests)}
-            </div>
-            
-    <!-- Chat button for confirmed rides -->
-            <button
-              :if={@ride.status == "confirmed" && @ride.conversation}
-              onclick={"window.location.href='/dashboard/chat/#{@ride.conversation.id}'"}
-              class="btn btn-primary btn-xs flex-1 sm:flex-none"
-            >
-              <.icon name="hero-chat-bubble-left-right" class="w-3 h-3" />
-              <span class="hidden xs:inline ml-1">Chat</span>
-            </button>
-            
-    <!-- Complete / cancel for confirmed rides -->
-            <button
-              :if={@ride.status == "confirmed"}
-              phx-click="complete_ride"
-              phx-value-ride_id={@ride.id}
-              data-confirm="Mark this ride as completed?"
-              class="btn btn-success btn-xs flex-shrink-0"
-            >
-              <.icon name="hero-check" class="w-3 h-3" />
-              <span class="hidden xs:inline ml-1">Done</span>
-            </button>
-            <button
-              :if={@ride.status == "confirmed"}
-              phx-click="cancel_ride"
-              phx-value-ride_id={@ride.id}
-              data-confirm="Cancel this ride? Your volunteer will see it as cancelled."
-              class="btn btn-ghost btn-xs p-2 hover:bg-error/10 hover:text-error flex-shrink-0"
-            >
-              <.icon name="hero-x-circle" class="w-3 h-3" />
-            </button>
-            
-    <!-- Delete button (only before a volunteer is attached) -->
-            <button
-              :if={@ride.status == "pending"}
-              phx-click="delete"
-              phx-value-id={@ride.id}
-              data-confirm="Are you sure you want to delete this ride request?"
-              class="btn btn-ghost btn-xs p-2 hover:bg-error/10 hover:text-error flex-shrink-0"
-            >
-              <.icon name="hero-trash" class="w-3 h-3" />
-            </button>
-          </div>
+    ~H"""
+    <article class="sheet">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p class="kicker mb-1">{format_ride_date(@ride.ride_date)}</p>
+          <h3 class="card-title">{@ride.pickup_name} to {@ride.destination_name}</h3>
         </div>
-        
-    <!-- Description if present -->
-        <div
-          :if={@ride.description && @ride.description != ""}
-          class="mt-3 pt-3 border-t border-base-300"
-        >
-          <p class="text-xs text-base-content/70 bg-base-200 p-2 rounded">
-            {@ride.description}
-          </p>
-        </div>
-        
-    <!-- Volunteer section for pending rides -->
-        <div
-          :if={
-            @ride.status == "pending" && @ride.volunteer_requests &&
-              length(@ride.volunteer_requests) > 0
-          }
-          class="mt-4 pt-4 border-t border-primary/20"
-        >
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-sm font-medium text-primary">Volunteers Available</p>
-            <span class="text-xs text-base-content/60">
-              {length(@ride.volunteer_requests)} waiting
-            </span>
-          </div>
-          <.volunteer_browser
-            requests={@ride.volunteer_requests}
-            current_index={Map.get(@volunteer_indices, @ride.id, 0)}
-            ride_id={@ride.id}
-          />
-        </div>
-        
-    <!-- Confirmed volunteer info -->
-        <div
-          :if={@ride.status == "confirmed" && @ride.volunteer}
-          class="mt-4 pt-4 border-t border-success/20"
-        >
-          <div class="flex items-center gap-3">
-            <.avatar src={@ride.volunteer.profile_pic_location} alt="Volunteer" size="sm" />
-            <div class="flex-1">
-              <p class="text-sm font-medium text-success">Confirmed Volunteer</p>
-              <p class="text-xs text-base-content/60">{@ride.volunteer.email}</p>
-            </div>
-            <.icon name="hero-check-circle" class="w-5 h-5 text-success" />
-          </div>
+        <span class={["badge self-start", status_badge_class(@ride.status)]}>
+          {format_status(@ride.status)}
+        </span>
+      </div>
+
+      <p :if={@ride.description && @ride.description != ""} class="quote mt-4">
+        {@ride.description}
+      </p>
+      
+    <!-- Offers on a pending ride -->
+      <div :if={@ride.status == "pending" && @offers > 0} class="notice notice-positive mt-5">
+        <.icon name="hero-hand-raised" />
+        <p>
+          <strong>
+            {if @offers == 1,
+              do: "1 driver has offered to take you.",
+              else: "#{@offers} drivers have offered to take you."}
+          </strong>
+          Look at each one and choose your driver.
+        </p>
+      </div>
+      <p :if={@ride.status == "pending" && @offers == 0} class="muted mt-5">
+        No driver has offered yet. When one does, you will see it here.
+      </p>
+      
+    <!-- The driver of a confirmed ride -->
+      <div :if={@ride.status == "confirmed" && @ride.volunteer} class="mt-5 flex items-center gap-4">
+        <.avatar src={@ride.volunteer.profile_pic_location} alt="Your driver" size="md" />
+        <div class="min-w-0">
+          <p class="data-label">Your driver</p>
+          <p class="data-value">{@ride.volunteer.email}</p>
         </div>
       </div>
-    </div>
+
+      <hr class="sheet-rule" />
+
+      <div class="btn-row">
+        <button
+          :if={@ride.status == "pending" && @offers > 0}
+          phx-click="show_ride_details"
+          phx-value-ride_id={@ride.id}
+          class="btn btn-gold"
+        >
+          Choose your driver
+        </button>
+        <.link
+          :if={@ride.status == "confirmed" && @ride.conversation}
+          navigate={~p"/dashboard/chat/#{@ride.conversation.id}"}
+          class="btn btn-gold"
+        >
+          <.icon name="hero-chat-bubble-left-right" class="size-6" /> Message your driver
+        </.link>
+        <button
+          :if={!(@ride.status == "pending" && @offers > 0)}
+          phx-click="show_ride_details"
+          phx-value-ride_id={@ride.id}
+          class="btn btn-outline"
+        >
+          See the details
+        </button>
+        <button
+          :if={@ride.status == "pending"}
+          phx-click="delete"
+          phx-value-id={@ride.id}
+          data-confirm="Are you sure you want to delete this ride request?"
+          class="btn btn-danger sm:ml-auto"
+        >
+          <.icon name="hero-trash" class="size-6" /> Delete
+        </button>
+      </div>
+    </article>
     """
   end
 
   defp ride_details_modal(assigns) do
+    assigns = assign(assigns, :offers, length(assigns.ride.volunteer_requests || []))
+
     ~H"""
     <div
-      class="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50"
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ride-details-title"
       phx-key="Escape"
       phx-window-keydown="hide_ride_details"
     >
-      <div
-        class="relative top-8 mx-auto p-6 border w-full max-w-4xl shadow-lg rounded-lg bg-base-100 m-4"
-        phx-click-away="hide_ride_details"
-      >
-        <!-- Header -->
-        <div class="flex justify-between items-start mb-6">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-              <.icon name="hero-truck" class="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h2 class="text-xl font-semibold text-base-content">
-                Ride Details
-              </h2>
-              <span class={"inline-flex items-center px-3 py-1 rounded-full text-sm font-medium " <> status_badge_class(@ride.status)}>
-                {format_status(@ride.status)}
-              </span>
-            </div>
+      <div class="sheet modal-sheet" phx-click-away="hide_ride_details">
+        <div class="modal-head">
+          <div>
+            <p class="kicker mb-1">Ride details</p>
+            <h2 id="ride-details-title" class="page-title">
+              {@ride.pickup_name} to {@ride.destination_name}
+            </h2>
+            <span class={["badge mt-3", status_badge_class(@ride.status)]}>
+              {format_status(@ride.status)}
+            </span>
           </div>
-          <button
-            phx-click="hide_ride_details"
-            class="btn btn-ghost btn-sm p-2 hover:bg-base-200 rounded-lg"
-          >
-            <.icon name="hero-x-mark" class="w-5 h-5" />
+          <button phx-click="hide_ride_details" class="btn-icon" aria-label="Close">
+            <.icon name="hero-x-mark" class="size-7" />
           </button>
         </div>
-        
-    <!-- Ride Information -->
-        <div class="grid md:grid-cols-2 gap-6 mb-8">
-          <div class="space-y-4">
-            <div>
-              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
-                <.icon name="hero-map-pin" class="w-4 h-4" /> Pickup Location
-              </h3>
-              <p class="font-semibold text-base-content">{@ride.pickup_name}</p>
-              <p class="text-sm text-base-content/70">{@ride.pickup_address}</p>
-            </div>
 
-            <div>
-              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
-                <.icon name="hero-flag" class="w-4 h-4" /> Destination
-              </h3>
-              <p class="font-semibold text-base-content">{@ride.destination_name}</p>
-              <p class="text-sm text-base-content/70">{@ride.destination_address}</p>
-            </div>
-          </div>
+        <div class="data-grid">
+          <.datum label="Pickup" icon="hero-map-pin">
+            {@ride.pickup_name}
+            <:note>{@ride.pickup_address}</:note>
+          </.datum>
 
-          <div class="space-y-4">
-            <div>
-              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
-                <.icon name="hero-clock" class="w-4 h-4" /> Date & Time
-              </h3>
-              <p class="font-semibold text-base-content">
-                {Calendar.strftime(@ride.ride_date, "%A, %B %d, %Y")}
-              </p>
-              <p class="text-sm text-base-content/70">
-                {Calendar.strftime(@ride.ride_date, "%I:%M %p")}
-              </p>
-            </div>
+          <.datum label="Going to" icon="hero-flag">
+            {@ride.destination_name}
+            <:note>{@ride.destination_address}</:note>
+          </.datum>
 
-            <div :if={@ride.description && @ride.description != ""}>
-              <h3 class="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2">
-                <.icon name="hero-document-text" class="w-4 h-4" /> Special Notes
-              </h3>
-              <p class="text-sm text-base-content bg-base-200 p-3 rounded-lg">
-                {@ride.description}
-              </p>
-            </div>
+          <.datum label="Day and time" icon="hero-clock" class="data-span">
+            {format_ride_date(@ride.ride_date)}
+          </.datum>
+
+          <div :if={@ride.description && @ride.description != ""} class="data-span">
+            <p class="data-label"><.icon name="hero-document-text" class="size-5" /> Your note</p>
+            <p class="quote mt-1">{@ride.description}</p>
           </div>
         </div>
         
-    <!-- Status-specific sections -->
-        <div class="space-y-6">
-          <!-- Confirmed Volunteer (for confirmed rides) -->
-          <div :if={@ride.status == "confirmed" && @ride.volunteer} class="border-t pt-6">
-            <h3 class="text-lg font-semibold mb-4 text-success flex items-center gap-3">
-              <.icon name="hero-check-circle" class="w-5 h-5" /> Your Confirmed Volunteer
-            </h3>
-            <div class="bg-success/10 border border-success/20 p-6 rounded-lg">
-              <div class="flex items-start gap-4 mb-4">
-                <.avatar src={@ride.volunteer.profile_pic_location} alt="Volunteer Profile" size="lg" />
-                <div class="flex-1">
-                  <p class="font-semibold text-base text-base-content mb-1">
-                    {@ride.volunteer.email}
-                  </p>
-                  <p class="text-sm text-base-content/70 flex items-center gap-1">
-                    <.icon name="hero-phone" class="w-4 h-4" />
-                    {@ride.volunteer.phone}
-                  </p>
-                </div>
-                <.link
-                  :if={@ride.conversation}
-                  navigate={~p"/dashboard/chat/#{@ride.conversation.id}"}
-                  class="btn btn-primary btn-sm flex items-center gap-2"
-                >
-                  <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" /> Chat
-                </.link>
+    <!-- The driver of a confirmed ride -->
+        <div :if={@ride.status == "confirmed" && @ride.volunteer}>
+          <hr class="sheet-rule" />
+          <h3 class="section-title mb-4">Your driver</h3>
+          <div class="inset">
+            <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <.avatar src={@ride.volunteer.profile_pic_location} alt="Your driver" size="lg" />
+              <div class="min-w-0 flex-1">
+                <p class="data-value">{@ride.volunteer.email}</p>
+                <p class="data-note flex items-center gap-2">
+                  <.icon name="hero-phone" class="size-5" />
+                  {@ride.volunteer.phone}
+                </p>
               </div>
-              <.volunteer_details volunteer={@ride.volunteer} />
+              <.link
+                :if={@ride.conversation}
+                navigate={~p"/dashboard/chat/#{@ride.conversation.id}"}
+                class="btn btn-gold"
+              >
+                <.icon name="hero-chat-bubble-left-right" class="size-6" /> Message your driver
+              </.link>
             </div>
-          </div>
-          
-    <!-- Volunteer Requests (for pending rides) -->
-          <div
-            :if={
-              @ride.status == "pending" && @ride.volunteer_requests &&
-                length(@ride.volunteer_requests) > 0
-            }
-            class="border-t pt-6"
-          >
-            <h3 class="text-lg font-semibold mb-4 text-primary flex items-center gap-3">
-              <.icon name="hero-hand-raised" class="w-5 h-5" />
-              Volunteers Available ({length(@ride.volunteer_requests)})
-            </h3>
-            <.volunteer_browser
-              requests={@ride.volunteer_requests}
-              current_index={Map.get(@volunteer_indices, @ride.id, 0)}
-              ride_id={@ride.id}
-            />
+            <.volunteer_details volunteer={@ride.volunteer} />
           </div>
         </div>
         
-    <!-- Actions -->
-        <div class="flex justify-between items-center mt-8 pt-6 border-t">
-          <div class="flex items-center gap-2">
-            <button
-              :if={@ride.status == "pending"}
-              phx-click="delete"
-              phx-value-id={@ride.id}
-              data-confirm="Are you sure you want to delete this ride request?"
-              class="btn btn-error btn-outline btn-sm flex items-center gap-2"
-            >
-              <.icon name="hero-trash" class="w-4 h-4" /> Delete Ride
-            </button>
-            <button
-              :if={@ride.status == "confirmed"}
-              phx-click="complete_ride"
-              phx-value-ride_id={@ride.id}
-              data-confirm="Mark this ride as completed?"
-              class="btn btn-success btn-sm flex items-center gap-2"
-            >
-              <.icon name="hero-check" class="w-4 h-4" /> Mark Completed
-            </button>
-            <button
-              :if={@ride.status == "confirmed"}
-              phx-click="cancel_ride"
-              phx-value-ride_id={@ride.id}
-              data-confirm="Cancel this ride? Your volunteer will see it as cancelled."
-              class="btn btn-error btn-outline btn-sm flex items-center gap-2"
-            >
-              <.icon name="hero-x-circle" class="w-4 h-4" /> Cancel Ride
-            </button>
-          </div>
+    <!-- Offers on a pending ride -->
+        <div :if={@ride.status == "pending"}>
+          <hr class="sheet-rule" />
+          <h3 class="section-title mb-4">
+            {if @offers == 0, do: "Drivers", else: "Drivers who have offered (#{@offers})"}
+          </h3>
+          <.volunteer_browser
+            requests={@ride.volunteer_requests || []}
+            current_index={Map.get(@volunteer_indices, @ride.id, 0)}
+            ride_id={@ride.id}
+          />
+        </div>
 
-          <button phx-click="hide_ride_details" class="btn btn-primary">
+        <hr class="sheet-rule" />
+
+        <div class="btn-row btn-row-between">
+          <button
+            :if={@ride.status == "confirmed"}
+            phx-click="complete_ride"
+            phx-value-ride_id={@ride.id}
+            data-confirm="Mark this ride as completed?"
+            class="btn btn-outline"
+          >
+            <.icon name="hero-check" class="size-6" /> The ride is done
+          </button>
+          <button
+            :if={@ride.status == "confirmed"}
+            phx-click="cancel_ride"
+            phx-value-ride_id={@ride.id}
+            data-confirm="Cancel this ride? Your volunteer will see it as cancelled."
+            class="btn btn-danger"
+          >
+            <.icon name="hero-x-circle" class="size-6" /> Cancel this ride
+          </button>
+          <button
+            :if={@ride.status == "pending"}
+            phx-click="delete"
+            phx-value-id={@ride.id}
+            data-confirm="Are you sure you want to delete this ride request?"
+            class="btn btn-danger"
+          >
+            <.icon name="hero-trash" class="size-6" /> Delete this request
+          </button>
+          <button phx-click="hide_ride_details" class="btn btn-outline sm:ml-auto">
             Close
           </button>
         </div>
@@ -1145,33 +878,45 @@ defmodule CarlosassistWeb.RiderDashboardLive do
 
   defp volunteer_browser(assigns) do
     ~H"""
-    <div :if={@requests == []} class="text-center py-8 text-base-content/60 italic">
-      No volunteer requests yet. Your ride will be visible to volunteers once posted.
-    </div>
-    <div :if={@requests != []} class="max-w-2xl mx-auto">
+    <p :if={@requests == []} class="muted">
+      No driver has offered yet. When one does, you will see it here.
+    </p>
+    <div :if={@requests != []}>
       <% current_request = Enum.at(@requests, @current_index) %>
-      
-    <!-- Progress indicator -->
-      <div class="flex justify-center items-center mb-6">
-        <span class="text-sm text-base-content/60 bg-base-200 px-3 py-1 rounded-full">
-          Volunteer {@current_index + 1} of {length(@requests)}
-        </span>
+
+      <div :if={length(@requests) > 1} class="mb-4 flex items-center justify-between gap-3">
+        <button
+          phx-click="previous_volunteer"
+          phx-value-ride_id={@ride_id}
+          class="btn btn-outline"
+          aria-label="Previous driver"
+        >
+          <.icon name="hero-chevron-left" class="size-6" />
+          <span class="hidden sm:inline">Previous</span>
+        </button>
+        <span class="badge">Driver {@current_index + 1} of {length(@requests)}</span>
+        <button
+          phx-click="next_volunteer"
+          phx-value-ride_id={@ride_id}
+          class="btn btn-outline"
+          aria-label="Next driver"
+        >
+          <span class="hidden sm:inline">Next</span>
+          <.icon name="hero-chevron-right" class="size-6" />
+        </button>
       </div>
-      
-    <!-- Single volunteer card -->
-      <div class="bg-primary/10 border-2 border-primary/20 p-6 rounded-lg">
-        <div class="flex items-start gap-6 mb-6">
+
+      <div class="inset">
+        <div class="mb-5 flex items-center gap-4">
           <.avatar
             src={current_request.volunteer_user.profile_pic_location}
-            alt="Volunteer Profile"
+            alt="Photo of this driver"
             size="xl"
           />
-          <div class="flex-1">
-            <p class="font-semibold text-lg text-base-content mb-1">
-              {current_request.volunteer_user.email}
-            </p>
-            <p class="text-sm text-base-content/70 flex items-center gap-1">
-              <.icon name="hero-phone" class="w-4 h-4" />
+          <div class="min-w-0">
+            <p class="data-value">{current_request.volunteer_user.email}</p>
+            <p class="data-note flex items-center gap-2">
+              <.icon name="hero-phone" class="size-5" />
               {current_request.volunteer_user.phone}
             </p>
           </div>
@@ -1179,53 +924,33 @@ defmodule CarlosassistWeb.RiderDashboardLive do
 
         <.volunteer_details volunteer={current_request.volunteer_user} />
 
-        <div :if={current_request.message} class="mt-6">
-          <p class="text-sm font-medium text-base-content/70 mb-2 flex items-center gap-2">
-            <.icon name="hero-chat-bubble-bottom-center-text" class="w-5 h-5" />
-            Message from Volunteer:
+        <div :if={current_request.message} class="mt-5">
+          <p class="data-label">
+            <.icon name="hero-chat-bubble-bottom-center-text" class="size-5" />
+            Message from this driver
           </p>
-          <p class="text-base bg-base-200 p-4 rounded-lg border-2 border-base-300 italic">
-            "{current_request.message}"
-          </p>
+          <p class="quote mt-1">"{current_request.message}"</p>
         </div>
-        
-    <!-- Navigation and action buttons -->
-        <div class="flex justify-between items-center mt-6 pt-4 border-t border-primary/20">
-          <button
-            phx-click="previous_volunteer"
-            phx-value-ride_id={@ride_id}
-            class="btn btn-ghost btn-sm"
-            disabled={length(@requests) <= 1}
-          >
-            <.icon name="hero-chevron-left" class="w-4 h-4" /> Previous
-          </button>
 
-          <div class="flex gap-3">
-            <button
-              phx-click="next_volunteer"
-              phx-value-ride_id={@ride_id}
-              class="btn btn-outline btn-sm"
-              disabled={length(@requests) <= 1}
-            >
-              <.icon name="hero-chevron-right" class="w-4 h-4" /> Skip
-            </button>
-            <button
-              phx-click="reject_volunteer"
-              phx-value-request_id={current_request.id}
-              class="btn btn-error btn-outline btn-sm px-4 flex items-center gap-2"
-            >
-              <.icon name="hero-x-mark" class="w-4 h-4" /> Pass
-            </button>
-            <button
-              phx-click="accept_volunteer"
-              phx-value-request_id={current_request.id}
-              phx-value-ride_id={@ride_id}
-              class="btn btn-success btn-sm px-4 flex items-center gap-2"
-              data-confirm="Accept this volunteer? This will confirm your ride and other volunteers will be notified."
-            >
-              <.icon name="hero-heart" class="w-5 h-5" /> Accept
-            </button>
-          </div>
+        <hr class="sheet-rule" />
+
+        <div class="flex flex-col gap-3 sm:flex-row-reverse">
+          <button
+            phx-click="accept_volunteer"
+            phx-value-request_id={current_request.id}
+            phx-value-ride_id={@ride_id}
+            class="btn btn-gold sm:flex-1"
+            data-confirm="Accept this volunteer? This will confirm your ride and other volunteers will be notified."
+          >
+            <.icon name="hero-check" class="size-6" /> Choose this driver
+          </button>
+          <button
+            phx-click="reject_volunteer"
+            phx-value-request_id={current_request.id}
+            class="btn btn-danger sm:flex-1"
+          >
+            No, thank you
+          </button>
         </div>
       </div>
     </div>
@@ -1234,54 +959,42 @@ defmodule CarlosassistWeb.RiderDashboardLive do
 
   defp volunteer_details(assigns) do
     ~H"""
-    <div class="grid md:grid-cols-2 gap-6">
-      <div>
-        <p class="text-sm font-medium text-base-content/70 mb-2 flex items-center gap-2">
-          <.icon name="hero-identification" class="w-5 h-5" /> License Plate
-        </p>
-        <p class="text-base font-semibold text-base-content">
-          {@volunteer.volunteer_license_plate || "Not provided"}
-        </p>
-      </div>
-      <div>
-        <p class="text-sm font-medium text-base-content/70 mb-2 flex items-center gap-2">
-          <.icon name="hero-truck" class="w-5 h-5" /> Car Details
-        </p>
-        <p class="text-base font-semibold text-base-content">
-          {@volunteer.volunteer_car || "Not provided"}
-        </p>
-      </div>
-      <div :if={@volunteer.volunteer_bio} class="md:col-span-2">
-        <p class="text-sm font-medium text-base-content/70 mb-2 flex items-center gap-2">
-          <.icon name="hero-user" class="w-5 h-5" /> About This Volunteer
-        </p>
-        <p class="text-sm text-base-content/80 bg-base-200 p-3 rounded-lg">
-          {@volunteer.volunteer_bio}
-        </p>
+    <div class="data-grid">
+      <.datum label="License plate" icon="hero-identification">
+        {@volunteer.volunteer_license_plate || "Not given"}
+      </.datum>
+      <.datum label="Car" icon="hero-truck">
+        {@volunteer.volunteer_car || "Not given"}
+      </.datum>
+      <div :if={@volunteer.volunteer_bio} class="data-span">
+        <p class="data-label"><.icon name="hero-user" class="size-5" /> About this driver</p>
+        <p class="mt-1">{@volunteer.volunteer_bio}</p>
       </div>
     </div>
     """
   end
 
   # Helper functions
-  defp status_badge_class("pending"), do: "bg-warning/20 text-warning border border-warning/30"
-  defp status_badge_class("confirmed"), do: "bg-success/20 text-success border border-success/30"
-  defp status_badge_class("completed"), do: "bg-primary/20 text-primary border border-primary/30"
-  defp status_badge_class("cancelled"), do: "bg-error/20 text-error border border-error/30"
-  defp status_badge_class(_), do: "bg-neutral/20 text-neutral border border-neutral/30"
+  defp status_badge_class("pending"), do: "badge-caution"
+  defp status_badge_class("confirmed"), do: "badge-positive"
+  defp status_badge_class("completed"), do: "badge-notice"
+  defp status_badge_class("cancelled"), do: "badge-danger"
+  defp status_badge_class(_), do: nil
 
-  defp format_status("pending"), do: "Waiting for Volunteer"
-  defp format_status("confirmed"), do: "Volunteer Assigned"
-  defp format_status("completed"), do: "Ride Completed"
+  defp format_status("pending"), do: "Waiting for a driver"
+  defp format_status("confirmed"), do: "Driver chosen"
+  defp format_status("completed"), do: "Finished"
   defp format_status("cancelled"), do: "Cancelled"
   defp format_status(status), do: String.capitalize(status)
+
+  defp format_ride_date(datetime), do: Calendar.strftime(datetime, "%A, %B %-d at %-I:%M %p")
 
   defp format_datetime(""), do: ""
 
   defp format_datetime(datetime_string) when is_binary(datetime_string) do
     case DateTime.from_iso8601(datetime_string <> ":00Z") do
       {:ok, datetime, _} ->
-        Calendar.strftime(datetime, "%A, %B %d, %Y at %I:%M %p")
+        format_ride_date(datetime)
 
       _ ->
         datetime_string

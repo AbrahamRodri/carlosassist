@@ -7,20 +7,24 @@ defmodule CarlosassistWeb.UserLive.Registration do
 
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm">
-        <.header class="text-center">
-          Register for an account
+    <Layouts.app flash={@flash} current_scope={@current_scope} width="narrow">
+      <div class="sheet">
+        <.header kicker="Register">
+          Create your account
           <:subtitle>
-            Already registered?
-            <.link navigate={~p"/users/log-in"} class="font-semibold text-brand hover:underline">
-              Log in
-            </.link>
-            to your account now.
+            Already have an account?
+            <.link navigate={~p"/users/log-in"} class="link link-inline">Log in</.link>
           </:subtitle>
         </.header>
 
         <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
+          <.input
+            field={@form[:role]}
+            type="select"
+            label="What would you like to do?"
+            options={[{"I need a ride", "rider"}, {"I want to drive", "volunteer"}]}
+          />
+
           <.input
             field={@form[:email]}
             type="email"
@@ -30,61 +34,55 @@ defmodule CarlosassistWeb.UserLive.Registration do
             phx-mounted={JS.focus()}
           />
 
-          <.input
-            field={@form[:phone]}
-            type="text"
-            label="Phone Number"
-            autocomplete="phone"
-            required
-          />
+          <.input field={@form[:phone]} type="text" label="Phone number" autocomplete="tel" required />
 
-          <.input field={@form[:role]} type="select" label="Role" options={["rider", "volunteer"]} />
-
-          <div class="mt-4">
-            <.live_file_input upload={@uploads.profile_pic} class="mt-1" />
+          <div class="field">
+            <label for={@uploads.profile_pic.ref} class="field-label">
+              Your photo (you can add it later)
+            </label>
+            <.live_file_input upload={@uploads.profile_pic} class="field-file" />
+            <p class="field-help">
+              A photo helps the other person know who to look for. JPG or PNG.
+            </p>
 
             <%= for entry <- @uploads.profile_pic.entries do %>
-              <div class="mt-2">
-                <%= if entry.progress > 0 do %>
-                  <div class="progress-bar">
-                    <span style={"width: #{entry.progress}%"}>
-                      {entry.progress}%
-                    </span>
-                  </div>
-                <% end %>
-
-                <%= for err <- upload_errors(@uploads.profile_pic, entry) do %>
-                  <div class="alert alert-danger">{err}</div>
-                <% end %>
+              <div :if={entry.progress > 0} class="upload-progress">
+                <span style={"width: #{entry.progress}%"}></span>
               </div>
+
+              <p :for={err <- upload_errors(@uploads.profile_pic, entry)} class="field-error">
+                <.icon name="hero-exclamation-circle" class="size-6 shrink-0" />
+                {upload_error_text(err)}
+              </p>
             <% end %>
           </div>
 
-          <div :if={@selected_role == "volunteer"} class="space-y-4 mt-4 p-4 bg-base-100 rounded-lg">
-            <h3 class="text-lg font-medium text-base-content">Volunteer Information</h3>
+          <div :if={@selected_role == "volunteer"} class="inset mb-6">
+            <h2 class="card-title mb-1">About you and your car</h2>
+            <p class="muted small mb-4">Riders see this when you offer to drive them.</p>
             <.input
               field={@form[:volunteer_license_plate]}
               type="text"
-              label="License Plate Number"
+              label="License plate number"
               required
             />
             <.input
               field={@form[:volunteer_car]}
               type="text"
-              label="Car Make/Model/Color"
-              placeholder="e.g., Red Toyota Camry 2018"
+              label="Car make, model and color"
+              placeholder="Red Toyota Camry 2018"
               required
             />
 
             <.input
               field={@form[:volunteer_bio]}
               type="textarea"
-              label="Bio / Notes (Optional)"
-              placeholder="Tell riders a bit about yourself, your experience, or anything else you'd like them to know..."
+              label="A few words about you (you can leave this empty)"
+              placeholder="Anything you would like riders to know about you."
             />
           </div>
 
-          <.button variant="primary" phx-disable-with="Creating account..." class="w-full">
+          <.button variant="primary" phx-disable-with="Creating account..." class="btn-block">
             Create an account
           </.button>
         </.form>
@@ -92,6 +90,11 @@ defmodule CarlosassistWeb.UserLive.Registration do
     </Layouts.app>
     """
   end
+
+  defp upload_error_text(:too_large), do: "This photo is too large. The limit is 10 MB."
+  defp upload_error_text(:not_accepted), do: "Please choose a JPG or PNG photo."
+  defp upload_error_text(:too_many_files), do: "Please choose one photo only."
+  defp upload_error_text(_), do: "This photo could not be uploaded."
 
   def mount(_params, _session, %{assigns: %{current_scope: %{user: user}}} = socket)
       when not is_nil(user) do

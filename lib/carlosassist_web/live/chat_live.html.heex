@@ -1,7 +1,9 @@
-<CarlosassistWeb.UI.MessageComponents.chat_interface
-  conversation={@conversation}
-  other_user={@other_user}
-  current_user={@current_user}
-  messages={@messages}
-  new_message={@new_message}
-/>
+<Layouts.app flash={@flash} current_scope={@current_scope} width="text">
+  <CarlosassistWeb.UI.MessageComponents.chat_interface
+    conversation={@conversation}
+    other_user={@other_user}
+    current_user={@current_user}
+    messages={@messages}
+    new_message={@new_message}
+  />
+</Layouts.app>

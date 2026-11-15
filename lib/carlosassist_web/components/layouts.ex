@@ -4,22 +4,122 @@ defmodule CarlosassistWeb.Layouts do
 
   See the `layouts` directory for all templates available.
   The "root" layout is a skeleton rendered as part of the
-  application router. The "app" layout is rendered as component
-  in regular views and live views.
+  application router: the page head, the site header and the site
+  footer. The "app" layout is rendered as component in regular views
+  and live views: the page's `<main>` and its flash messages.
+
+  The look is one system for the whole app; its tokens and component
+  classes are in `assets/css/app.css`.
   """
   use CarlosassistWeb, :html
 
   embed_templates "layouts/*"
 
+  @doc """
+  The page body: `<main>`, a centred container and the flash messages.
+
+  `width` is the container's reading width: `"wide"` for dashboards,
+  `"text"` for a single column, `"narrow"` for a short form.
+  """
+  attr :flash, :map, required: true
+  attr :current_scope, :map, default: nil
+  attr :width, :string, default: "wide", values: ~w(wide text narrow)
+  slot :inner_block, required: true
+
   def app(assigns) do
     ~H"""
-    <main class="flex-1">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <main id="main" class="site-main">
+      <div class={[
+        "wrap page",
+        @width == "text" && "wrap-text",
+        @width == "narrow" && "wrap-narrow"
+      ]}>
         {render_slot(@inner_block)}
       </div>
     </main>
 
     <.flash_group flash={@flash} />
+    """
+  end
+
+  @doc """
+  The site header: the mark and the name, then the account links.
+  On a phone the links sit on their own row under the name.
+  """
+  attr :current_scope, :map, default: nil
+
+  def site_header(assigns) do
+    ~H"""
+    <header class="site-header">
+      <div class="wrap site-header-row">
+        <.link href={~p"/"} class="brand" aria-label="CarlosAssist home">
+          <img
+            src={~p"/images/carlosassist-mark.webp"}
+            alt=""
+            width="48"
+            height="48"
+            class="brand-mark"
+          />
+          <span>
+            <span class="brand-name">CarlosAssist</span>
+            <span class="brand-line">Rides from parish volunteers</span>
+          </span>
+        </.link>
+
+        <nav class="site-nav" aria-label="Account">
+          <%= if @current_scope && @current_scope.user do %>
+            <.link
+              :if={@current_scope.user.role == "volunteer"}
+              href={~p"/dashboard/volunteer"}
+              class="site-nav-link"
+            >
+              Ride requests
+            </.link>
+            <.link
+              :if={@current_scope.user.role != "volunteer"}
+              href={~p"/dashboard/rider"}
+              class="site-nav-link"
+            >
+              My rides
+            </.link>
+            <.link href={~p"/dashboard/inbox"} class="site-nav-link">Messages</.link>
+            <.link href={~p"/users/settings"} class="site-nav-link">Settings</.link>
+            <.link href={~p"/users/log-out"} method="delete" class="site-nav-link">
+              Log out
+            </.link>
+          <% else %>
+            <.link href={~p"/users/log-in"} class="site-nav-link">Log in</.link>
+            <.link href={~p"/users/register"} class="site-nav-link">Register</.link>
+          <% end %>
+        </nav>
+      </div>
+    </header>
+    """
+  end
+
+  @doc """
+  The site footer: the ornament, one line about the service and the
+  account links.
+  """
+  attr :current_scope, :map, default: nil
+
+  def site_footer(assigns) do
+    ~H"""
+    <footer class="site-footer">
+      <div class="wrap">
+        <.divider class="mt-0" />
+        <p class="text-xl italic">CarlosAssist</p>
+        <p class="kicker mt-2">Rides given by parish volunteers</p>
+        <nav
+          :if={!(@current_scope && @current_scope.user)}
+          class="site-footer-nav"
+          aria-label="Footer"
+        >
+          <.link href={~p"/users/log-in"} class="link">Log in</.link>
+          <.link href={~p"/users/register"} class="link">Create an account</.link>
+        </nav>
+      </div>
+    </footer>
     """
   end
 
@@ -35,7 +135,7 @@ defmodule CarlosassistWeb.Layouts do
 
   def flash_group(assigns) do
     ~H"""
-    <div id={@id} aria-live="polite">
+    <div id={@id} class="flash-stack" aria-live="polite">
       <.flash kind={:info} flash={@flash} />
       <.flash kind={:error} flash={@flash} />
 
@@ -48,7 +148,7 @@ defmodule CarlosassistWeb.Layouts do
         hidden
       >
         {gettext("Attempting to reconnect")}
-        <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 motion-safe:animate-spin" />
+        <.icon name="hero-arrow-path" class="ml-1 size-5 motion-safe:animate-spin" />
       </.flash>
 
       <.flash
@@ -60,33 +160,8 @@ defmodule CarlosassistWeb.Layouts do
         hidden
       >
         {gettext("Hang in there while we get back on track")}
-        <.icon name="hero-arrow-path" class="ml-1 h-3 w-3 motion-safe:animate-spin" />
+        <.icon name="hero-arrow-path" class="ml-1 size-5 motion-safe:animate-spin" />
       </.flash>
-    </div>
-    """
-  end
-
-  @doc """
-  Provides dark vs light theme toggle based on themes defined in app.css.
-
-  See <head> in root.html.heex which applies the theme before page load.
-  """
-  def theme_toggle(assigns) do
-    ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-[33%] h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-[33%] [[data-theme=dark]_&]:left-[66%] transition-[left]" />
-
-      <button phx-click={JS.dispatch("phx:set-theme", detail: %{theme: "system"})} class="flex p-2">
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button phx-click={JS.dispatch("phx:set-theme", detail: %{theme: "light"})} class="flex p-2">
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button phx-click={JS.dispatch("phx:set-theme", detail: %{theme: "dark"})} class="flex p-2">
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
     </div>
     """
   end
