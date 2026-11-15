@@ -1,7 +1,7 @@
 /* See the Tailwind configuration guide for advanced usage
    https://tailwindcss.com/docs/configuration */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap');
 @import "tailwindcss";
 @import "mapbox-gl/dist/mapbox-gl.css";
 @import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -269,4 +269,474 @@ h1, h2, h3, h4, h5, h6 {
 /* Hide mapbox logo in geocoder */
 .mapboxgl-ctrl-geocoder .mapboxgl-ctrl-logo {
   display: none !important;
+}
+
+/* === Home page ===
+   The public home page has its own look, kept under .ca-home so the
+   dashboards are not touched: ivory paper, dark brown ink, the heart red of
+   the logo for actions and a thin gold rule. Lora for headings, Source
+   Sans 3 for everything read. Body text is 20px and every button is at
+   least 56px tall, for older readers. */
+.ca-home {
+  --ca-paper: #fbf6ea;
+  --ca-cream: #f4ead5;
+  --ca-card: #fffdf7;
+  --ca-ink: #2a1f1a;
+  --ca-ink-soft: #54453b;
+  --ca-red: #9e2a22;
+  --ca-red-dark: #7c1f19;
+  --ca-gold: #b18b49;
+  --ca-line: #e0d0ae;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ca-paper);
+  color: var(--ca-ink);
+  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.25rem;
+  line-height: 1.6;
+  letter-spacing: 0;
+  word-spacing: 0;
+  font-feature-settings: normal;
+  font-variant-numeric: normal;
+}
+
+/* Keep the paper colour behind the page when it is scrolled past its ends. */
+html:has(.ca-home) {
+  background: #fbf6ea;
+}
+
+.ca-home * {
+  transition: none;
+}
+
+.ca-home main {
+  flex: 1;
+}
+
+.ca-wrap {
+  width: 100%;
+  max-width: 70rem;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.ca-skip {
+  position: absolute;
+  left: -9999px;
+}
+
+.ca-skip:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--ca-card);
+  color: var(--ca-ink);
+  border: 2px solid var(--ca-ink);
+  border-radius: 0.5rem;
+}
+
+/* Type */
+.ca-h1,
+.ca-h2,
+.ca-h3,
+.ca-brand-name {
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ca-ink);
+}
+
+.ca-h1 {
+  font-size: clamp(2.25rem, 5.2vw, 3.75rem);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.ca-h2 {
+  font-size: clamp(1.875rem, 3.6vw, 2.5rem);
+  line-height: 1.2;
+  text-align: center;
+}
+
+.ca-h3 {
+  font-size: 1.625rem;
+  line-height: 1.25;
+}
+
+.ca-eyebrow {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ca-red);
+  margin-bottom: 0.75rem;
+}
+
+.ca-lead {
+  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  line-height: 1.55;
+  color: var(--ca-ink-soft);
+  max-width: 34rem;
+}
+
+.ca-rule {
+  display: block;
+  width: 4.5rem;
+  height: 3px;
+  margin: 1.5rem 0;
+  background: var(--ca-gold);
+  border-radius: 2px;
+}
+
+.ca-rule-center {
+  margin: 1.25rem auto 0;
+}
+
+.ca-link {
+  color: var(--ca-red);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 2px;
+  display: inline-block;
+  padding: 0.625rem 0.125rem;
+}
+
+.ca-link:hover {
+  color: var(--ca-red-dark);
+}
+
+/* Buttons */
+.ca-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-height: 3.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 0.625rem;
+  font-family: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ca-btn-lg {
+  min-height: 4rem;
+  padding: 0.875rem 2rem;
+  font-size: 1.375rem;
+}
+
+.ca-btn-block {
+  width: 100%;
+}
+
+.ca-btn-primary {
+  background: var(--ca-red);
+  border-color: var(--ca-red);
+  color: #fff;
+}
+
+.ca-btn-primary:hover {
+  background: var(--ca-red-dark);
+  border-color: var(--ca-red-dark);
+}
+
+.ca-btn-outline {
+  background: var(--ca-card);
+  border-color: var(--ca-red);
+  color: var(--ca-red);
+}
+
+.ca-btn-outline:hover {
+  background: var(--ca-cream);
+  color: var(--ca-red-dark);
+  border-color: var(--ca-red-dark);
+}
+
+.ca-btn-quiet {
+  background: transparent;
+  border-color: var(--ca-line);
+  color: var(--ca-ink);
+}
+
+.ca-btn-quiet:hover {
+  background: var(--ca-cream);
+}
+
+.ca-home a:focus-visible,
+.ca-home button:focus-visible {
+  outline: 3px solid var(--ca-ink);
+  outline-offset: 3px;
+}
+
+/* Header */
+.ca-header {
+  border-bottom: 1px solid var(--ca-line);
+  background: var(--ca-paper);
+}
+
+.ca-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.ca-header-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.ca-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 3rem;
+  text-decoration: none;
+}
+
+/* The logo file has its own cream ground (#fef9f0), so it sits in a
+   round badge of that colour instead of straight on the paper. */
+.ca-brand-mark {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 1px solid var(--ca-gold);
+  background: #fef9f0;
+}
+
+.ca-brand-name {
+  font-size: 1.5rem;
+}
+
+/* Hero */
+.ca-hero {
+  padding: 2.5rem 0 3.5rem;
+}
+
+.ca-hero-grid {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+.ca-hero-art {
+  order: -1;
+  display: flex;
+  justify-content: center;
+}
+
+.ca-arch {
+  width: 11rem;
+  padding: 1.25rem 0.75rem 0.75rem;
+  background: #fef9f0;
+  border: 2px solid var(--ca-gold);
+  border-radius: 999px 999px 0.75rem 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 0 0 6px var(--ca-paper), 0 0 0 7px var(--ca-line);
+}
+
+.ca-arch-img {
+  width: 100%;
+  height: auto;
+}
+
+.ca-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.ca-signin-line {
+  margin-top: 1.25rem;
+  color: var(--ca-ink-soft);
+}
+
+/* Sections */
+.ca-section,
+.ca-band {
+  padding: 3.5rem 0;
+}
+
+.ca-band {
+  background: var(--ca-cream);
+  border-top: 1px solid var(--ca-line);
+  border-bottom: 1px solid var(--ca-line);
+}
+
+.ca-steps {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.ca-step {
+  background: var(--ca-card);
+  border: 1px solid var(--ca-line);
+  border-radius: 0.875rem;
+  padding: 1.75rem 1.5rem;
+}
+
+.ca-step p {
+  margin-top: 0.5rem;
+  color: var(--ca-ink-soft);
+}
+
+.ca-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background: var(--ca-red);
+  color: #fff;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 1.625rem;
+  font-weight: 600;
+}
+
+.ca-cards {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.ca-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--ca-card);
+  border: 1px solid var(--ca-line);
+  border-top: 4px solid var(--ca-gold);
+  border-radius: 0.875rem;
+  padding: 2rem 1.5rem;
+}
+
+.ca-list {
+  flex: 1;
+  display: grid;
+  align-content: start;
+  gap: 0.875rem;
+  margin: 1.25rem 0 1.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.ca-list li {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.ca-check {
+  flex: none;
+  width: 1.625rem;
+  height: 1.625rem;
+  margin-top: 0.2rem;
+  color: var(--ca-red);
+}
+
+.ca-signin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.ca-band-signin {
+  border-bottom: 0;
+}
+
+/* Footer */
+.ca-footer {
+  border-top: 1px solid var(--ca-line);
+  background: var(--ca-paper);
+  padding: 2rem 0;
+  font-size: 1.125rem;
+  color: var(--ca-ink-soft);
+}
+
+.ca-footer-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.ca-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.75rem;
+}
+
+@media (min-width: 40rem) {
+  .ca-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .ca-steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .ca-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ca-card {
+    padding: 2.25rem 2rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .ca-wrap {
+    padding: 0 2rem;
+  }
+
+  .ca-hero {
+    padding: 5rem 0 5.5rem;
+  }
+
+  .ca-hero-grid {
+    grid-template-columns: 1.25fr 1fr;
+    gap: 4rem;
+  }
+
+  .ca-hero-art {
+    order: 0;
+  }
+
+  .ca-arch {
+    width: 22rem;
+    padding: 3rem 1.5rem 2rem;
+  }
+
+  .ca-section,
+  .ca-band {
+    padding: 5rem 0;
+  }
+
+  .ca-footer-row {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+  }
 }

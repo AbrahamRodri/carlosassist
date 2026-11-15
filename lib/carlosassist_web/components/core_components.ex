@@ -400,7 +400,7 @@ defmodule CarlosassistWeb.CoreComponents do
       <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
   """
   attr :name, :string, required: true
-  attr :class, :string, default: "size-4"
+  attr :class, :any, default: "size-4"
 
   def icon(%{name: "hero-" <> _} = assigns) do
     ~H"""
@@ -457,13 +457,6 @@ defmodule CarlosassistWeb.CoreComponents do
   """
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
-  end
-
-  defp hide_modal(js \\ %JS{}, id) do
-    js
-    |> JS.hide(to: "##{id}", transition: hide_modal_transition())
-    |> JS.hide(to: "##{id}-bg", transition: "fade-out")
-    |> JS.remove_class("overflow-hidden", to: "body")
   end
 
   @doc """
@@ -532,9 +525,4 @@ defmodule CarlosassistWeb.CoreComponents do
   defp avatar_icon_size_class("xl"), do: "size-10"
   defp avatar_icon_size_class("2xl"), do: "size-12"
   defp avatar_icon_size_class(_), do: "size-6"
-
-  defp hide_modal_transition do
-    {"transition-all ease-in duration-200", "opacity-100 translate-y-0 sm:scale-100",
-     "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
-  end
 end
