@@ -1,217 +1,159 @@
-<div class="ca-home" data-theme="light">
-  <Layouts.flash_group flash={@flash} />
+<main id="main" class="site-main">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="kicker mb-3">Parish ride help</p>
+        <h1 class="display">A ride to Mass, the doctor or the store</h1>
+        <.divider class="divider-start" />
+        <p class="lead max-w-xl">
+          CarlosAssist connects people who need a ride with parish volunteers
+          who are glad to drive them. There is no charge.
+        </p>
 
-  <a href="#main" class="ca-skip">Skip to the main part of the page</a>
-
-  <header class="ca-header">
-    <div class="ca-wrap ca-header-row">
-      <.link href={~p"/"} class="ca-brand" aria-label="CarlosAssist home">
-        <img
-          src={~p"/images/carlosassist-mark.webp"}
-          alt=""
-          width="48"
-          height="48"
-          class="ca-brand-mark"
-        />
-        <span class="ca-brand-name">CarlosAssist</span>
-      </.link>
-
-      <nav class="ca-header-nav" aria-label="Account">
         <%= if @current_scope do %>
-          <.link href={~p"/users/settings"} class="ca-btn ca-btn-quiet">
-            Settings
-          </.link>
-          <.link href={~p"/users/log-out"} method="delete" class="ca-btn ca-btn-quiet">
-            Log out
-          </.link>
-        <% else %>
-          <.link href={~p"/users/log-in"} class="ca-btn ca-btn-outline">
-            Sign in
-          </.link>
-        <% end %>
-      </nav>
-    </div>
-  </header>
-
-  <main id="main">
-    <section class="ca-hero">
-      <div class="ca-wrap ca-hero-grid">
-        <div class="ca-hero-text">
-          <p class="ca-eyebrow">Parish ride help</p>
-          <h1 class="ca-h1">A ride to Mass, the doctor or the store</h1>
-          <span class="ca-rule" aria-hidden="true"></span>
-          <p class="ca-lead">
-            CarlosAssist connects people who need a ride with parish volunteers
-            who are glad to drive them. There is no charge.
-          </p>
-
-          <%= if @current_scope do %>
-            <div class="ca-actions">
-              <.link
-                :if={@current_scope.user.role == "volunteer"}
-                href={~p"/dashboard/volunteer"}
-                class="ca-btn ca-btn-primary ca-btn-lg"
-              >
-                See ride requests <.icon name="hero-arrow-right" class="size-6" />
-              </.link>
-              <.link
-                :if={@current_scope.user.role != "volunteer"}
-                href={~p"/dashboard/rider"}
-                class="ca-btn ca-btn-primary ca-btn-lg"
-              >
-                Go to my rides <.icon name="hero-arrow-right" class="size-6" />
-              </.link>
-              <.link href={~p"/dashboard/inbox"} class="ca-btn ca-btn-outline ca-btn-lg">
-                Messages
-              </.link>
-            </div>
-          <% else %>
-            <div class="ca-actions">
-              <.link href={~p"/users/register?role=rider"} class="ca-btn ca-btn-primary ca-btn-lg">
-                I need a ride
-              </.link>
-              <.link
-                href={~p"/users/register?role=volunteer"}
-                class="ca-btn ca-btn-outline ca-btn-lg"
-              >
-                I want to drive
-              </.link>
-            </div>
-            <p class="ca-signin-line">
-              Already have an account?
-              <.link href={~p"/users/log-in"} class="ca-link">Sign in</.link>
-            </p>
-          <% end %>
-        </div>
-
-        <div class="ca-hero-art" aria-hidden="true">
-          <div class="ca-arch">
-            <img
-              src={~p"/images/carlosassist-mark.webp"}
-              alt=""
-              width="360"
-              height="360"
-              class="ca-arch-img"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="ca-band" aria-labelledby="how-heading">
-      <div class="ca-wrap">
-        <h2 id="how-heading" class="ca-h2">How it works</h2>
-        <span class="ca-rule ca-rule-center" aria-hidden="true"></span>
-
-        <ol class="ca-steps">
-          <li class="ca-step">
-            <span class="ca-step-num" aria-hidden="true">1</span>
-            <h3 class="ca-h3">Ask for a ride</h3>
-            <p>Enter where you need to go, and the day and time.</p>
-          </li>
-          <li class="ca-step">
-            <span class="ca-step-num" aria-hidden="true">2</span>
-            <h3 class="ca-h3">Choose your driver</h3>
-            <p>
-              Volunteers offer to take you. You see each one's photo, car and
-              message, and you choose who drives you.
-            </p>
-          </li>
-          <li class="ca-step">
-            <span class="ca-step-num" aria-hidden="true">3</span>
-            <h3 class="ca-h3">Agree on the pickup</h3>
-            <p>Send your driver a message here to settle the time and the place.</p>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <section class="ca-section" aria-labelledby="who-heading">
-      <div class="ca-wrap">
-        <h2 id="who-heading" class="ca-h2">Riders and drivers</h2>
-        <span class="ca-rule ca-rule-center" aria-hidden="true"></span>
-
-        <div class="ca-cards">
-          <article class="ca-card">
-            <h3 class="ca-h3 ca-card-title">If you need a ride</h3>
-            <ul class="ca-list">
-              <li>
-                <.icon name="hero-check" class="ca-check" />
-                <span>Ask from a phone or a computer, on any day.</span>
-              </li>
-              <li>
-                <.icon name="hero-check" class="ca-check" />
-                <span>You decide who drives you.</span>
-              </li>
-              <li>
-                <.icon name="hero-check" class="ca-check" />
-                <span>You can write to your driver before the ride.</span>
-              </li>
-            </ul>
+          <div class="btn-row mt-8">
             <.link
-              :if={!@current_scope}
-              href={~p"/users/register?role=rider"}
-              class="ca-btn ca-btn-primary ca-btn-block"
+              :if={@current_scope.user.role == "volunteer"}
+              href={~p"/dashboard/volunteer"}
+              class="btn btn-gold btn-lg"
             >
+              See ride requests <.icon name="hero-arrow-right" class="size-6" />
+            </.link>
+            <.link
+              :if={@current_scope.user.role != "volunteer"}
+              href={~p"/dashboard/rider"}
+              class="btn btn-gold btn-lg"
+            >
+              Go to my rides <.icon name="hero-arrow-right" class="size-6" />
+            </.link>
+            <.link href={~p"/dashboard/inbox"} class="btn btn-outline btn-lg">
+              Messages
+            </.link>
+          </div>
+        <% else %>
+          <div class="btn-row mt-8">
+            <.link href={~p"/users/register?role=rider"} class="btn btn-gold btn-lg">
               I need a ride
             </.link>
-          </article>
-
-          <article class="ca-card">
-            <h3 class="ca-h3 ca-card-title">If you can drive</h3>
-            <ul class="ca-list">
-              <li>
-                <.icon name="hero-check" class="ca-check" />
-                <span>See the rides people are asking for.</span>
-              </li>
-              <li>
-                <.icon name="hero-check" class="ca-check" />
-                <span>Offer to help with the ones that fit your day.</span>
-              </li>
-              <li>
-                <.icon name="hero-check" class="ca-check" />
-                <span>Share your photo and your car, so riders know who is coming.</span>
-              </li>
-            </ul>
-            <.link
-              :if={!@current_scope}
-              href={~p"/users/register?role=volunteer"}
-              class="ca-btn ca-btn-outline ca-btn-block"
-            >
+            <.link href={~p"/users/register?role=volunteer"} class="btn btn-outline btn-lg">
               I want to drive
             </.link>
-          </article>
+          </div>
+          <p class="muted mt-5">
+            Already have an account? <.link href={~p"/users/log-in"} class="link">Log in</.link>
+          </p>
+        <% end %>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <div class="arch">
+          <img src={~p"/images/carlosassist-mark.webp"} alt="" width="360" height="360" />
         </div>
       </div>
-    </section>
-
-    <section :if={!@current_scope} class="ca-band ca-band-signin" aria-labelledby="signin-heading">
-      <div class="ca-wrap ca-signin">
-        <h2 id="signin-heading" class="ca-h2">Already have an account?</h2>
-        <.link href={~p"/users/log-in"} class="ca-btn ca-btn-primary ca-btn-lg">
-          Sign in
-        </.link>
-      </div>
-    </section>
-  </main>
-
-  <footer class="ca-footer">
-    <div class="ca-wrap ca-footer-row">
-      <div class="ca-brand">
-        <img
-          src={~p"/images/carlosassist-mark.webp"}
-          alt=""
-          width="40"
-          height="40"
-          class="ca-brand-mark"
-        />
-        <span class="ca-brand-name">CarlosAssist</span>
-      </div>
-      <p class="ca-footer-note">Rides given by parish volunteers.</p>
-      <nav :if={!@current_scope} class="ca-footer-nav" aria-label="Footer">
-        <.link href={~p"/users/log-in"} class="ca-link">Sign in</.link>
-        <.link href={~p"/users/register"} class="ca-link">Create an account</.link>
-      </nav>
     </div>
-  </footer>
-</div>
+  </section>
+
+  <section class="band band-deep" aria-labelledby="how-heading">
+    <div class="wrap">
+      <p class="kicker text-center mb-2">Three steps</p>
+      <h2 id="how-heading" class="section-title text-center">How it works</h2>
+      <.divider />
+
+      <ol class="step-list">
+        <li class="hairline-card">
+          <span class="numeral" aria-hidden="true">1</span>
+          <h3 class="card-title">Ask for a ride</h3>
+          <p class="muted mt-2">Enter where you need to go, and the day and time.</p>
+        </li>
+        <li class="hairline-card">
+          <span class="numeral" aria-hidden="true">2</span>
+          <h3 class="card-title">Choose your driver</h3>
+          <p class="muted mt-2">
+            Volunteers offer to take you. You see each one's photo, car and
+            message, and you choose who drives you.
+          </p>
+        </li>
+        <li class="hairline-card">
+          <span class="numeral" aria-hidden="true">3</span>
+          <h3 class="card-title">Agree on the pickup</h3>
+          <p class="muted mt-2">
+            Send your driver a message here to settle the time and the place.
+          </p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="who-heading">
+    <div class="wrap">
+      <p class="kicker text-center mb-2">Who it is for</p>
+      <h2 id="who-heading" class="section-title text-center">Riders and drivers</h2>
+      <.divider />
+
+      <div class="card-pair">
+        <article class="sheet">
+          <p class="kicker mb-1">Riders</p>
+          <h3 class="card-title">If you need a ride</h3>
+          <ul class="check-list">
+            <li>
+              <.icon name="hero-check" />
+              <span>Ask from a phone or a computer, on any day.</span>
+            </li>
+            <li>
+              <.icon name="hero-check" />
+              <span>You decide who drives you.</span>
+            </li>
+            <li>
+              <.icon name="hero-check" />
+              <span>You can write to your driver before the ride.</span>
+            </li>
+          </ul>
+          <.link
+            :if={!@current_scope}
+            href={~p"/users/register?role=rider"}
+            class="btn btn-gold btn-block"
+          >
+            I need a ride
+          </.link>
+        </article>
+
+        <article class="sheet">
+          <p class="kicker mb-1">Drivers</p>
+          <h3 class="card-title">If you can drive</h3>
+          <ul class="check-list">
+            <li>
+              <.icon name="hero-check" />
+              <span>See the rides people are asking for.</span>
+            </li>
+            <li>
+              <.icon name="hero-check" />
+              <span>Offer to help with the ones that fit your day.</span>
+            </li>
+            <li>
+              <.icon name="hero-check" />
+              <span>Share your photo and your car, so riders know who is coming.</span>
+            </li>
+          </ul>
+          <.link
+            :if={!@current_scope}
+            href={~p"/users/register?role=volunteer"}
+            class="btn btn-outline btn-block"
+          >
+            I want to drive
+          </.link>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section :if={!@current_scope} class="band band-deep" aria-labelledby="signin-heading">
+    <div class="wrap flex flex-col items-center gap-6 text-center">
+      <h2 id="signin-heading" class="section-title">Already have an account?</h2>
+      <.link href={~p"/users/log-in"} class="btn btn-outline btn-lg">
+        Log in
+      </.link>
+    </div>
+  </section>
+</main>
+
+<Layouts.flash_group flash={@flash} />

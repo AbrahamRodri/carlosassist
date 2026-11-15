@@ -1,11 +1,9 @@
 <!DOCTYPE html>
-<html
-  lang="en"
-  class="[[data-theme=light]_&]:sage-gradient-light [[data-theme=dark]_&]:sage-gradient-dark"
->
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#070E1F" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <meta name="mapbox-token" content={Application.get_env(:carlosassist, :mapbox)[:public_key]} />
     <.live_title default="CarlosAssist" suffix={assigns[:page_title] && " · CarlosAssist"}>
@@ -14,112 +12,28 @@
     <link rel="icon" href={~p"/favicon.ico"} sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href={~p"/images/favicon-32.png"} />
     <link rel="apple-touch-icon" href={~p"/images/apple-touch-icon.png"} />
+    <link
+      rel="preload"
+      href={~p"/fonts/eb-garamond-latin.woff2"}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href={~p"/fonts/cormorant-garamond-latin.woff2"}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
-    <script>
-      (() => {
-        const setTheme = (theme) => {
-          if (theme === "system") {
-            localStorage.removeItem("phx:theme");
-            document.documentElement.removeAttribute("data-theme");
-          } else {
-            localStorage.setItem("phx:theme", theme);
-            document.documentElement.setAttribute("data-theme", theme);
-          }
-        };
-        setTheme(localStorage.getItem("phx:theme") || "system");
-        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        window.addEventListener("phx:set-theme", ({ detail: { theme } }) => setTheme(theme));
-      })();
-    </script>
   </head>
-  <body class="min-h-screen transition-colors duration-300">
-    <!-- Modern Navigation Header -->
-    <header
-      :if={!assigns[:home_page]}
-      class="sticky top-0 z-50 backdrop-blur-md bg-base-100/80 border-b border-base-300/50"
-    >
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <!-- Logo/Brand -->
-          <div class="flex items-center">
-            <.link navigate={~p"/"} class="flex items-center space-x-3 group">
-              <div class="w-8 h-8 bg-primary rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                <span class="text-primary-content font-bold text-sm">C</span>
-              </div>
-              <span class="text-xl font-semibold text-base-content">CarlosAssist</span>
-            </.link>
-          </div>
-          
-<!-- Navigation Actions -->
-          <div class="flex items-center space-x-4">
-            <!-- Theme Toggle (hidden on mobile) -->
-            <div class="hidden sm:block">
-              <Layouts.theme_toggle />
-            </div>
-            
-<!-- User Menu -->
-            <div class="flex items-center space-x-2">
-              <%= if @current_scope do %>
-                <div class="hidden sm:flex items-center space-x-3">
-                  <%!-- <div class="text-right">
-                    <div class="text-sm font-medium text-base-content">
-                      {@current_scope.user.email}
-                    </div>
-                    <div class="text-sm text-base-content/70 capitalize">
-                      {@current_scope.user.role}
-                    </div>
-                  </div> --%>
-                  <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                    <span class="text-primary text-sm font-medium">
-                      <.avatar
-                        src={@current_scope.user.profile_pic_location}
-                        alt="Profile Picture"
-                        size="xs"
-                      />
-                    </span>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-1 sm:space-x-2">
-                  <.link navigate={~p"/dashboard/inbox"} class="btn btn-ghost btn-xs sm:btn-sm">
-                    <.icon name="hero-chat-bubble-left-right" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Chat</span>
-                  </.link>
-                  <.link href={~p"/users/settings"} class="btn btn-ghost btn-xs sm:btn-sm">
-                    <.icon name="hero-cog-6-tooth" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Settings</span>
-                  </.link>
-                  <.link
-                    href={~p"/users/log-out"}
-                    method="delete"
-                    class="btn btn-outline btn-xs sm:btn-sm"
-                  >
-                    <.icon name="hero-arrow-right-start-on-rectangle" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Log out</span>
-                  </.link>
-                </div>
-              <% else %>
-                <div class="flex items-center space-x-1 sm:space-x-2">
-                  <.link href={~p"/users/log-in"} class="btn btn-ghost btn-xs sm:btn-sm">
-                    <.icon name="hero-arrow-left-end-on-rectangle" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Log in</span>
-                  </.link>
-                  <.link href={~p"/users/register"} class="btn btn-primary btn-xs sm:btn-sm">
-                    <.icon name="hero-user-plus" class="w-4 h-4" />
-                    <span class="hidden sm:inline ml-1">Register</span>
-                  </.link>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-    
-<!-- Main Content -->
-    <main class="flex-1">
-      {@inner_content}
-    </main>
+  <body>
+    <a href="#main" class="skip-link">Skip to the main part of the page</a>
+    <Layouts.site_header current_scope={assigns[:current_scope]} />
+    {@inner_content}
+    <Layouts.site_footer current_scope={assigns[:current_scope]} />
   </body>
 </html>

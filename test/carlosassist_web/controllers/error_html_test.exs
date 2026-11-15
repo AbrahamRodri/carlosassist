@@ -5,10 +5,14 @@ defmodule CarlosassistWeb.ErrorHTMLTest do
   import Phoenix.Template, only: [render_to_string: 4]
 
   test "renders 404.html" do
-    assert render_to_string(CarlosassistWeb.ErrorHTML, "404", "html", []) == "Not Found"
+    html = render_to_string(CarlosassistWeb.ErrorHTML, "404", "html", [])
+    assert html =~ "Not Found"
+    assert html =~ "We could not find that page"
   end
 
   test "renders 500.html" do
-    assert render_to_string(CarlosassistWeb.ErrorHTML, "500", "html", []) == "Internal Server Error"
+    html = render_to_string(CarlosassistWeb.ErrorHTML, "500", "html", [])
+    assert html =~ "Internal Server Error"
+    assert html =~ "Something went wrong on our side"
   end
 end

@@ -1,60 +1,39 @@
-<div class="min-h-screen bg-base-200/50">
-  <!-- Header -->
-  <div class="bg-base-100 shadow-sm border-b">
-    <div class="max-w-6xl mx-auto p-4 sm:p-6">
-      <.header>
-        Volunteer Dashboard
-        <:subtitle>Manage your requests and discover new rides to help with</:subtitle>
-      </.header>
-    </div>
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <.header kicker="Volunteer driver">
+    Ride requests
+    <:subtitle>Offer to drive the rides that fit your day.</:subtitle>
+  </.header>
+
+  <div class="grid gap-10 lg:grid-cols-5 lg:gap-8">
+    <section class="lg:order-2 lg:col-span-2" aria-labelledby="my-offers">
+      <h2 id="my-offers" class="section-title mb-4">
+        My offers <span :if={@my_requests != []} class="muted">({length(@my_requests)})</span>
+      </h2>
+      <CarlosassistWeb.UI.VolunteerComponents.volunteer_requests_section requests={@my_requests} />
+    </section>
+
+    <section
+      class="lg:order-1 lg:col-span-3"
+      aria-labelledby="open-rides"
+      phx-window-keydown="navigate_rides"
+    >
+      <h2 id="open-rides" class="section-title mb-4">Rides that need a driver</h2>
+      <CarlosassistWeb.UI.VolunteerComponents.single_ride_browser
+        rides={@pending_rides}
+        current_index={@current_ride_index}
+      />
+    </section>
   </div>
 
-  <div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 lg:grid lg:grid-cols-3 lg:gap-8 lg:space-y-0">
-    
-    <!-- My Requests Section - Sidebar -->
-    <div class="lg:col-span-1">
-      <div class="bg-base-100 rounded-xl shadow-sm border p-4 sm:p-6 lg:sticky lg:top-6">
-        <div class="flex items-center gap-2 mb-6">
-          <.icon name="hero-clipboard-document-list" class="w-5 h-5 text-primary" />
-          <h2 class="text-lg font-semibold">My Requests</h2>
-        </div>
-        
-        <div>
-          <CarlosassistWeb.UI.VolunteerComponents.volunteer_requests_section requests={@my_requests} />
-        </div>
-      </div>
-    </div>
-    
-    <!-- Available Rides Section - Main Content -->
-    <div class="lg:col-span-2" phx-window-keydown="navigate_rides">
-      <div class="bg-base-100 rounded-xl shadow-sm border p-4 sm:p-6">
-        <div class="flex items-center gap-2 mb-6">
-          <.icon name="hero-magnifying-glass" class="w-5 h-5 text-primary" />
-          <h2 class="text-lg font-semibold">Discover Rides</h2>
-          <div class="ml-auto text-sm text-base-content/60">
-            Use ← → keys to navigate
-          </div>
-        </div>
-        
-        <CarlosassistWeb.UI.VolunteerComponents.single_ride_browser 
-          rides={@pending_rides} 
-          current_index={@current_ride_index} 
-        />
-      </div>
-    </div>
-  </div>
-  
-  <!-- Request Modal -->
   <CarlosassistWeb.UI.VolunteerComponents.volunteer_request_modal
     :if={@show_request_modal}
     selected_ride={@selected_ride}
     request_message={@request_message}
     rides={@pending_rides}
   />
-  
-  <!-- Request Details Modal -->
+
   <CarlosassistWeb.UI.VolunteerComponents.volunteer_request_details_modal
     :if={@show_request_details && @detailed_request}
     request={@detailed_request}
   />
-</div>
+</Layouts.app>

@@ -5,32 +5,34 @@ defmodule CarlosassistWeb.UserLive.Login do
 
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm space-y-4">
-        <.header class="text-center">
-          <p>Log in</p>
+    <Layouts.app flash={@flash} current_scope={@current_scope} width="narrow">
+      <div class="sheet">
+        <.header kicker="Welcome back">
+          Log in
           <:subtitle>
             <%= if @current_scope do %>
               You need to reauthenticate to perform sensitive actions on your account.
             <% else %>
-              Don't have an account? <.link
-                navigate={~p"/users/register"}
-                class="font-semibold text-brand hover:underline"
-                phx-no-format
-              >Sign up</.link> for an account now.
+              Do not have an account yet?
+              <.link navigate={~p"/users/register"} class="link link-inline">Sign up</.link>
             <% end %>
           </:subtitle>
         </.header>
 
-        <div :if={local_mail_adapter?()} class="alert alert-info">
-          <.icon name="hero-information-circle" class="size-6 shrink-0" />
+        <div :if={local_mail_adapter?()} class="notice mb-6">
+          <.icon name="hero-information-circle" />
           <div>
             <p>You are running the local mail adapter.</p>
             <p>
-              To see sent emails, visit <.link href="/dev/mailbox" class="underline">the mailbox page</.link>.
+              To see sent emails, visit <.link href="/dev/mailbox" class="link link-inline">the mailbox page</.link>.
             </p>
           </div>
         </div>
+
+        <h2 class="card-title mb-1">Get a link by email</h2>
+        <p class="muted small mb-4">
+          No password needed. We send a link to your email, and the link logs you in.
+        </p>
 
         <.form
           :let={f}
@@ -48,12 +50,15 @@ defmodule CarlosassistWeb.UserLive.Login do
             required
             phx-mounted={JS.focus()}
           />
-          <.button class="w-full" variant="primary">
-            Log in with email <span aria-hidden="true">→</span>
+          <.button class="btn-block" variant="primary">
+            Log in with email <.icon name="hero-arrow-right" class="size-6" />
           </.button>
         </.form>
 
-        <div class="divider">or</div>
+        <.divider class="my-8" />
+
+        <h2 class="card-title mb-1">Or use your password</h2>
+        <p class="muted small mb-4">If you have set a password, enter it here.</p>
 
         <.form
           :let={f}
@@ -83,8 +88,8 @@ defmodule CarlosassistWeb.UserLive.Login do
             type="checkbox"
             label="Keep me logged in"
           />
-          <.button class="w-full" variant="primary">
-            Log in <span aria-hidden="true">→</span>
+          <.button class="btn-block">
+            Log in
           </.button>
         </.form>
       </div>

@@ -1,4 +1,7 @@
 defmodule CarlosassistWeb.UI.MessageComponents do
+  @moduledoc """
+  The messages pages' parts: the list of conversations and one conversation.
+  """
   use Phoenix.Component
   import CarlosassistWeb.CoreComponents
   use CarlosassistWeb, :verified_routes
@@ -12,7 +15,7 @@ defmodule CarlosassistWeb.UI.MessageComponents do
   def conversations_list(assigns) do
     ~H"""
     <.empty_conversations_state :if={@conversations == []} />
-    <div :if={@conversations != []} class="space-y-4 mt-6">
+    <div :if={@conversations != []} class="grid gap-5">
       <.conversation_card
         :for={conversation <- @conversations}
         conversation={conversation}
@@ -29,57 +32,31 @@ defmodule CarlosassistWeb.UI.MessageComponents do
   attr :current_user, :map, required: true
 
   def conversation_card(assigns) do
+    assigns =
+      assign(assigns, :other_user, get_other_user(assigns.conversation, assigns.current_user))
+
     ~H"""
-    <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow">
-      <div class="card-body p-4">
-        <.link navigate={~p"/dashboard/chat/#{@conversation.id}"} class="block">
-          <div class="flex items-start gap-4">
-            <% other_user = get_other_user(@conversation, @current_user) %>
-            <.avatar src={other_user.profile_pic_location} alt={other_user.email} size="md" />
-
-            <div class="flex-1 min-w-0">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="font-medium text-base-content">
-                    {other_user.email}
-                  </h3>
-                  <p class="text-sm text-base-content/60">
-                    <.user_role_badge user_id={@current_user.id} conversation={@conversation} />
-                    {@conversation.ride.pickup_name} → {@conversation.ride.destination_name}
-                  </p>
-                </div>
-                <time class="text-xs text-base-content/50">
-                  {Calendar.strftime(@conversation.updated_at, "%b %d, %Y")}
-                </time>
-              </div>
-
-              <div class="mt-2">
-                <p class="text-sm text-base-content/80">
-                  <strong>Ride Date:</strong>
-                  {Calendar.strftime(@conversation.ride.ride_date, "%B %d, %Y at %I:%M %p")}
-                </p>
-              </div>
-            </div>
-
-            <div class="flex-shrink-0">
-              <svg
-                class="h-5 w-5 text-base-content/40"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
-          </div>
-        </.link>
+    <article class="sheet">
+      <div class="flex items-center gap-4">
+        <.avatar src={@other_user.profile_pic_location} alt={@other_user.email} size="md" />
+        <div class="min-w-0">
+          <p class="data-label">
+            <.other_role user_id={@current_user.id} conversation={@conversation} />
+          </p>
+          <h2 class="card-title break-words">{@other_user.email}</h2>
+        </div>
       </div>
-    </div>
+
+      <p class="mt-4">
+        <strong>{@conversation.ride.pickup_name} to {@conversation.ride.destination_name}</strong>
+        <br />
+        <span class="muted">{format_ride_date(@conversation.ride.ride_date)}</span>
+      </p>
+
+      <.link navigate={~p"/dashboard/chat/#{@conversation.id}"} class="btn btn-gold mt-5">
+        Open the conversation <.icon name="hero-arrow-right" class="size-6" />
+      </.link>
+    </article>
     """
   end
 
@@ -94,7 +71,11 @@ defmodule CarlosassistWeb.UI.MessageComponents do
 
   def chat_interface(assigns) do
     ~H"""
-    <div class="flex flex-col h-screen max-w-4xl mx-auto">
+    <.link navigate={~p"/dashboard/inbox"} class="link mb-4">
+      <.icon name="hero-arrow-left" class="size-5" /> Back to all conversations
+    </.link>
+
+    <div class="sheet">
       <.chat_header
         conversation={@conversation}
         other_user={@other_user}
@@ -110,24 +91,12 @@ defmodule CarlosassistWeb.UI.MessageComponents do
 
   defp empty_conversations_state(assigns) do
     ~H"""
-    <div class="text-center py-12">
-      <div class="text-base-content/60">
-        <svg
-          class="mx-auto h-12 w-12 mb-4 opacity-40"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.959 8.959 0 01-4.906-1.471c-1.11 1.302-2.79 2.471-4.094 2.471a1 1 0 01-.894-1.447L5.382 16.9A7.962 7.962 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"
-          />
-        </svg>
-        <p class="text-lg font-medium">No conversations yet</p>
-        <p class="text-sm">Conversations will appear here once you accept volunteer requests</p>
-      </div>
+    <div class="sheet text-center">
+      <h2 class="section-title">No conversations yet</h2>
+      <.divider />
+      <p class="muted">
+        A conversation opens here when a rider chooses a driver.
+      </p>
     </div>
     """
   end
@@ -140,40 +109,32 @@ defmodule CarlosassistWeb.UI.MessageComponents do
     end
   end
 
-  defp user_role_badge(assigns) do
+  # The other person's part in the ride, as the current user sees it.
+  defp other_role(assigns) do
     ~H"""
-    <span :if={@user_id == @conversation.rider_user_id} class="badge badge-primary badge-sm mr-2">
-      Volunteer
-    </span>
-    <span
-      :if={@user_id == @conversation.volunteer_user_id}
-      class="badge badge-secondary badge-sm mr-2"
-    >
-      Rider
-    </span>
+    <span :if={@user_id == @conversation.rider_user_id}>Your driver</span>
+    <span :if={@user_id == @conversation.volunteer_user_id}>Your rider</span>
     """
   end
 
   defp chat_header(assigns) do
     ~H"""
-    <div class="bg-base-100 border-b border-base-300 p-4">
-      <div class="flex items-center gap-4">
-        <.link navigate={~p"/dashboard/inbox"} class="btn btn-sm btn-ghost">
-          ← Back to Inbox
-        </.link>
-        <.avatar src={@other_user.profile_pic_location} alt={@other_user.email} size="md" />
-        <div class="flex-1">
-          <h1 class="font-semibold text-lg">{@other_user.email}</h1>
-          <p class="text-sm text-base-content/60">
-            <.user_role_badge user_id={@current_user.id} conversation={@conversation} />
-            {@conversation.ride.pickup_name} → {@conversation.ride.destination_name}
+    <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div class="flex min-w-0 flex-1 items-center gap-4">
+        <.avatar src={@other_user.profile_pic_location} alt={@other_user.email} size="lg" />
+        <div class="min-w-0">
+          <p class="data-label">
+            <.other_role user_id={@current_user.id} conversation={@conversation} />
           </p>
+          <h1 class="card-title break-words">{@other_user.email}</h1>
         </div>
-        <div class="text-right text-sm text-base-content/60">
-          <p><strong>Ride Date:</strong></p>
-          <p>{Calendar.strftime(@conversation.ride.ride_date, "%b %d, %Y")}</p>
-          <p>{Calendar.strftime(@conversation.ride.ride_date, "%I:%M %p")}</p>
-        </div>
+      </div>
+      <div class="sm:text-right">
+        <p class="data-label sm:justify-end">The ride</p>
+        <p class="font-semibold">
+          {@conversation.ride.pickup_name} to {@conversation.ride.destination_name}
+        </p>
+        <p class="muted small">{format_ride_date(@conversation.ride.ride_date)}</p>
       </div>
     </div>
     """
@@ -183,9 +144,14 @@ defmodule CarlosassistWeb.UI.MessageComponents do
     ~H"""
     <div
       id="messages-container"
-      class="flex-1 overflow-y-auto p-4 space-y-4"
+      class="chat-log"
       phx-hook="ScrollToBottom"
+      role="log"
+      aria-label="Messages"
     >
+      <p :if={@messages == []} class="muted m-auto text-center">
+        No messages yet. Write the first one below.
+      </p>
       <.chat_message
         :for={message <- @messages}
         message={message}
@@ -198,54 +164,39 @@ defmodule CarlosassistWeb.UI.MessageComponents do
 
   defp chat_message(assigns) do
     ~H"""
-    <div class={[
-      "chat",
-      (@message.sender_user_id == @current_user.id && "chat-end") || "chat-start"
-    ]}>
-      <div class="chat-image avatar">
-        <div class="w-8 rounded-full">
-          <.avatar
-            src={@message.sender_user.profile_pic_location}
-            alt={@message.sender_user.email}
-            size="sm"
-          />
-        </div>
-      </div>
-      <div class="chat-header">
+    <div class={["chat-msg", @message.sender_user_id == @current_user.id && "chat-msg-mine"]}>
+      <p class="chat-meta">
         {if @message.sender_user_id == @current_user.id, do: "You", else: @other_user.email}
-        <time class="text-xs opacity-50 ml-1">
-          {Calendar.strftime(@message.inserted_at, "%H:%M")}
-        </time>
-      </div>
-      <div class={[
-        "chat-bubble",
-        (@message.sender_user_id == @current_user.id && "chat-bubble-primary") ||
-          "chat-bubble-secondary"
-      ]}>
-        {@message.content}
-      </div>
+        <span aria-hidden="true">·</span>
+        <time>{Calendar.strftime(@message.inserted_at, "%-I:%M %p")}</time>
+      </p>
+      <div class="chat-bubble">{@message.content}</div>
     </div>
     """
   end
 
   defp message_input(assigns) do
     ~H"""
-    <div class="bg-base-100 border-t border-base-300 p-4">
-      <form phx-submit="send_message" class="flex gap-2">
+    <form phx-submit="send_message" class="mt-5">
+      <label for="chat-message-input" class="field-label">Your message</label>
+      <div class="flex flex-col gap-3 sm:flex-row">
         <input
           type="text"
+          id="chat-message-input"
           value={@new_message}
           phx-change="update_message"
           name="message"
-          placeholder="Type your message..."
-          class="input input-bordered flex-1"
+          placeholder="Write your message here"
+          class="field-input sm:flex-1"
           autocomplete="off"
         />
-        <button type="submit" class="btn btn-primary" disabled={String.trim(@new_message) == ""}>
-          Send
+        <button type="submit" class="btn btn-gold" disabled={String.trim(@new_message) == ""}>
+          Send <.icon name="hero-paper-airplane" class="size-6" />
         </button>
-      </form>
-    </div>
+      </div>
+    </form>
     """
   end
+
+  defp format_ride_date(datetime), do: Calendar.strftime(datetime, "%A, %B %-d at %-I:%M %p")
 end
